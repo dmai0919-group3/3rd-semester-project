@@ -12,15 +12,15 @@ using web_app.Services;
 
 namespace web_app.Controllers.Api
 {
-    [Route("api/[controller]")]
+    [Route("api/User")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserApiController : ControllerBase
     {
 
         private IUserService _userService;
         private readonly AppSettings _appSettings;
 
-        public UserController(
+        public UserApiController(
             IUserService userService,
             IOptions<AppSettings> appSettings)
         {
@@ -33,7 +33,7 @@ namespace web_app.Controllers.Api
         [HttpPost]
         public IActionResult Login(AuthenticateModel model)
         {
-            var user = _userService.Authenticate(model.Username, model.Password);
+            var user = _userService.Authenticate(model.Email, model.Password);
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
@@ -45,7 +45,7 @@ namespace web_app.Controllers.Api
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     // TODO: Change to ID later
-                    new Claim(ClaimTypes.Name, user.Username.ToString())
+                    new Claim(ClaimTypes.Name, user.Email.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -57,7 +57,7 @@ namespace web_app.Controllers.Api
             return Ok(new
             {
                 Id = user.Id,
-                Username = user.Username,
+                Email = user.Email,
                 Token = tokenString
             });
         }
@@ -69,7 +69,7 @@ namespace web_app.Controllers.Api
         {
             User user = new User();
 
-            user.Username = model.Username;
+            user.Email = model.Email;
 
             try
             {

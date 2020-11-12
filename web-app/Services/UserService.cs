@@ -9,7 +9,7 @@ namespace web_app.Services
 {
     public interface IUserService
     {
-        User Authenticate(string username, string password);
+        User Authenticate(string email, string password);
         User GetById(int id);
         User Create(User user, string password);
         void Update(User user, string password = null);
@@ -20,14 +20,14 @@ namespace web_app.Services
     {
         // TODO: Add user repository to every part of this service
 
-        public User Authenticate(string username, string password)
+        public User Authenticate(string email, string password)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 return null;
 
             // TODO: Replace with user repository. Legacy code: _context.Users.SingleOrDefault(x => x.Username == username);
             var user = new User();
-            user.Username = "feri";
+            user.Email = "feri";
 
             // check if username exists
             if (user == null)
