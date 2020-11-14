@@ -1,0 +1,28 @@
+﻿<Window x:Class="desktop_app.Registration"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:desktop_app"
+        mc:Ignorable="d"
+        Title="Register" Height="450" Width="800">
+
+    <StackPanel Margin="200,0,200,0">
+        <Label Content="Registration" Foreground="Gray" FontSize="24" HorizontalAlignment="Center"/>
+        <Label Content="First name" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+        <TextBox Name="firstName" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
+        <Label Content="Last name" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+        <TextBox Name="lastName" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
+        <Label Content="Email address" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+        <TextBox Name="email" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
+        <Label Content="Password" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+        <PasswordBox Name="password1" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
+        <Label Content="Password again" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+        <PasswordBox Name="password2" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
+        <StackPanel Orientation="Horizontal" Margin="125 25" HorizontalAlignment="Center">
+            <Button Name="btnRegister" Click="btnRegister_Click" Content="Submit" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
+            <Button Name="btnCancel" Click="btnCancel_Click" Content="Cancel" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Right" Margin="10"/>
+
+        </StackPanel>
+    </StackPanel>
+</Window>
