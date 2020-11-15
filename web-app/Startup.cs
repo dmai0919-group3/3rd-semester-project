@@ -9,6 +9,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using web_app.Services;
 using Microsoft.IdentityModel.Tokens;
+using web_app.Repositories;
 
 namespace web_app
 {
@@ -69,6 +70,7 @@ namespace web_app
             // configure DI for application services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IApiService, ApiService>();
+            services.AddScoped<IUserRepository, UserRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

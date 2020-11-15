@@ -48,18 +48,22 @@ namespace web_app.Controllers
         }
 
         // GET: UserController/Register
+        [Route("register")]
         public ActionResult Register()
         {
             return View();
         }
 
         // POST: UserController/Register
+        [Route("register")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Register(IFormCollection collection)
+        public ActionResult Register(RegisterModel model)
         {
             try
             {
+                var result = _apiService.Register(model);
+                ViewBag.Result = result;
                 return RedirectToAction(nameof(Register));
             }
             catch

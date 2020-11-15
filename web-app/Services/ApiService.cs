@@ -2,6 +2,7 @@ using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using web_app.Entities;
 using web_app.Models.Users;
 
 namespace web_app.Services
@@ -9,11 +10,14 @@ namespace web_app.Services
     public interface IApiService
     {
         public LoginResultModel Login(string email, string password);
+
+        public User Register(RegisterModel model);
     }
     
     public class ApiService : IApiService
     {
-        private const string LoginUrl = "user/login";
+        private const string LoginUrl = "https://localhost:44306/api/User/login";
+        private const string RegisterUrl = "https://localhost:44306/api/User/register";
         
         
         public LoginResultModel Login(string email, string password)
@@ -27,6 +31,21 @@ namespace web_app.Services
             return resultModel;
         }
 
+        public User Register(RegisterModel model)
+        {
+            try
+            {
+                var result = this.PostRequest(RegisterUrl, model);
+
+                var resultModel = JsonConvert.DeserializeObject<User>(result);
+
+                return resultModel;
+            } 
+            catch (Exception exception)
+            {
+                return null;
+            }
+        }
 
         protected string PostRequest(string url, object parameter)
         {

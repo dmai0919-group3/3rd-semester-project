@@ -67,15 +67,12 @@ namespace web_app.Controllers.Api
         [HttpPost]
         public IActionResult Register(RegisterModel model)
         {
-            User user = new User();
-
-            user.Email = model.Email;
-
             try
             {
                 // create user
-                _userService.Create(user, model.Password);
-                return Ok();
+                var user = _userService.Create(model);
+
+                return Ok(user);
             }
             catch (Exception ex)
             {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using web_app.Entities;
 using web_app.Models.Users;
+using web_app.Repositories;
 
 namespace web_app.Services
 {
@@ -11,7 +12,7 @@ namespace web_app.Services
     {
         User Authenticate(string email, string password);
         User GetById(int id);
-        User Create(User user, string password);
+        User Create(RegisterModel model);
         void Update(User user, string password = null);
         void Delete(int id);
     }
@@ -19,23 +20,27 @@ namespace web_app.Services
     public class UserService : IUserService
     {
         // TODO: Add user repository to every part of this service
+        IUserRepository _userRepository;
+
+        public UserService(IUserRepository userRepository)
+        {
+            _userRepository = userRepository;
+        }
 
         public User Authenticate(string email, string password)
         {
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 return null;
 
-            // TODO: Replace with user repository. Legacy code: _context.Users.SingleOrDefault(x => x.Username == username);
-            var user = new User();
-            user.Email = "feri";
+            var user = _userRepository.GetByEmail(email);
 
             // check if username exists
             if (user == null)
                 return null;
 
             // check if password is correct
-           /* if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                return null;*/
+            if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+                return null;
 
             // authentication successful
             return user;
@@ -43,27 +48,32 @@ namespace web_app.Services
 
         public User GetById(int id)
         {
-            /*return _context.Users.Find(id);*/
-            return new User();
+            return _userRepository.Get(id);
         }
 
-        public User Create(User user, string password)
+        public User Create(RegisterModel model)
         {
             // validation
-            if (string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(model.Password))
                 throw new Exception("Password is required");
 
-            /*if (_context.Users.Any(x => x.Username == user.Username))
-                throw new AppException("Username \"" + user.Username + "\" is already taken");*/
+            var dbUser = _userRepository.GetByEmail(model.Email);
+
+            if (dbUser != null)
+                throw new Exception("User with email " + model.Email + " is already registered");
 
             byte[] passwordHash, passwordSalt;
-            CreatePasswordHash(password, out passwordHash, out passwordSalt);
+            CreatePasswordHash(model.Password, out passwordHash, out passwordSalt);
+
+            User user = new User() { Email = model.Email, Name = model.Name };
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
-           /* _context.Users.Add(user);
-            _context.SaveChanges();*/
+            bool success = _userRepository.Insert(user);
+
+            if (!success)
+                throw new Exception("User not created");
 
             return user;
         }
