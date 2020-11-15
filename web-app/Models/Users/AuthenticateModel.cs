@@ -9,15 +9,5 @@ namespace web_app.Models.Users
 
         [Required]
         public string Password { get; set; }
-
-        public AuthenticateModel(string email, string password)
-        {
-            Email = email;
-            Password = password;
-        }
-
-        public AuthenticateModel()
-        {
-        }
     }
 }

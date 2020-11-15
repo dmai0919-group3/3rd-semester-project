@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace web_app.Models.Users
 {
     public class UserModel
-    {
+    { 
         public int Id { get; set; }
         
         public string Email { get; set; }

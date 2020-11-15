@@ -18,7 +18,7 @@ namespace web_app.Services
         
         public LoginResultModel Login(string email, string password)
         {
-            var model = new AuthenticateModel(email, password);
+            var model = new AuthenticateModel() { Email = email, Password = email };
 
             var result = this.PostRequest(LoginUrl, model);
 

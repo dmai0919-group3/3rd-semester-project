@@ -17,7 +17,7 @@ namespace web_app.Models.FileSystem
         public string Name { get ; set; }
         public string UUID { get; set; }
 
-        public IFileSystemEntry Parent { get; private set; }
+        public IFileSystemEntry Parent { get; set; }
     }
 
     public class FileEntry : IFileSystemEntry
