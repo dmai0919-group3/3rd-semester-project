@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>desktop_app</RootNamespace>
+    <RootNamespace>Group3.Semester3.DesktopClient</RootNamespace>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 

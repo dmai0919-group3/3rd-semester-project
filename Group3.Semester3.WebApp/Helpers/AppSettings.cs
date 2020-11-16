@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace web_app.Helpers
+namespace Group3.Semester3.WebApp.Helpers
 {
     public class AppSettings
     {

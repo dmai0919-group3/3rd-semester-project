@@ -3,13 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using web_app.Services;
+using Group3.Semester3.WebApp.Services;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
-using web_app.Helpers;
+using Group3.Semester3.WebApp.Helpers;
 using System;
 
-namespace web_app.Controllers
+namespace Group3.Semester3.WebApp.Controllers
 {
     [Route("file")]
     public class FileController : Controller

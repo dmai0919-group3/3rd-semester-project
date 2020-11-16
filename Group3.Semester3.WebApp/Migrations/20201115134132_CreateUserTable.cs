@@ -1,6 +1,6 @@
 ﻿using FluentMigrator;
 
-namespace web_app.Migrations
+namespace Group3.Semester3.WebApp.Migrations
 {
     [Migration(20201115134132)]
     public class CreateUserTable : Migration

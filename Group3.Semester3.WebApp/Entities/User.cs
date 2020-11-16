@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace web_app.Entities
+namespace Group3.Semester3.WebApp.Entities
 {
     public class User
     {

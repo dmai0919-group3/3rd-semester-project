@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using web_app.Models.Users;
-using web_app.Services;
+using Group3.Semester3.WebApp.Models.Users;
+using Group3.Semester3.WebApp.Services;
 
-namespace web_app.Controllers
+namespace Group3.Semester3.WebApp.Controllers
 {
     [Route("user")]
     public class UserController : Controller

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using web_app.Entities;
-using web_app.Models.Users;
-using web_app.Repositories;
+using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Models.Users;
+using Group3.Semester3.WebApp.Repositories;
 
-namespace web_app.Services
+namespace Group3.Semester3.WebApp.Services
 {
     public interface IUserService
     {

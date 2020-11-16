@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using web_app.Entities;
+using Group3.Semester3.WebApp.Entities;
 using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 using Dapper;
 
-namespace web_app.Repositories
+namespace Group3.Semester3.WebApp.Repositories
 {
     public interface IUserRepository
     {

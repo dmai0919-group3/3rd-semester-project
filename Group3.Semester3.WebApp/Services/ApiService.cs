@@ -2,10 +2,10 @@ using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using web_app.Entities;
-using web_app.Models.Users;
+using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Models.Users;
 
-namespace web_app.Services
+namespace Group3.Semester3.WebApp.Services
 {
     public interface IApiService
     {

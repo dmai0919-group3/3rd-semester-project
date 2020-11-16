@@ -8,9 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using web_app.Migrations;
+using Group3.Semester3.WebApp.Migrations;
 
-namespace web_app
+namespace Group3.Semester3.WebApp
 {
     public class Program
     {

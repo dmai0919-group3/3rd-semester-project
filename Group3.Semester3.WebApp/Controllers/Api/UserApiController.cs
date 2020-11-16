@@ -5,12 +5,12 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using web_app.Entities;
-using web_app.Helpers;
-using web_app.Models.Users;
-using web_app.Services;
+using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
+using Group3.Semester3.WebApp.Models.Users;
+using Group3.Semester3.WebApp.Services;
 
-namespace web_app.Controllers.Api
+namespace Group3.Semester3.WebApp.Controllers.Api
 {
     [Route("api/User")]
     [ApiController]

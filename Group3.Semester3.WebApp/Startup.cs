@@ -4,14 +4,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using web_app.Helpers;
+using Group3.Semester3.WebApp.Helpers;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using web_app.Services;
+using Group3.Semester3.WebApp.Services;
 using Microsoft.IdentityModel.Tokens;
-using web_app.Repositories;
+using Group3.Semester3.WebApp.Repositories;
 
-namespace web_app
+namespace Group3.Semester3.WebApp
 {
     public class Startup
     {
