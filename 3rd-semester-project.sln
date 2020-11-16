@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "web-app", "web-app\web-app.csproj", "{EFD52536-CEA3-4926-A747-826B66051AEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Group3.Semester3.WebApp", "Group3.Semester3.WebApp\Group3.Semester3.WebApp.csproj", "{EFD52536-CEA3-4926-A747-826B66051AEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "desktop-app", "desktop-app\desktop-app.csproj", "{964E42E0-38B9-4F5A-9E53-463F2A7505D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Group3.Semester3.DesktopClient", "Group3.Semester3.DesktopClient\Group3.Semester3.DesktopClient.csproj", "{964E42E0-38B9-4F5A-9E53-463F2A7505D1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

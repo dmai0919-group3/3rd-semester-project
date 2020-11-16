@@ -1,0 +1,29 @@
+﻿
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+    
+}
+
+<div class="row justify-content-center">
+    <img src="~/Resources/Images/question-mark-logo.png" alt="Question logo" />
+</div>
+
+<div class="row justify-content-center">
+    @Html.Raw(ViewBag.Result)
+    <form action="login" method="post">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" name="Email" class="form-control" placeholder="Enter email" />
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" name="Password" class="form-control" placeholder="Password" />
+        </div>
+        @Html.AntiForgeryToken()
+
+        <button type="submit" class="btn btn-info">Submit</button>
+    </form>
+</div>
+
+
