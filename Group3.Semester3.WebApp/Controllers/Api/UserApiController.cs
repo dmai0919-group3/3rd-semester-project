@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
-using Group3.Semester3.WebApp.Services;
+using Group3.Semester3.WebApp.BusinessLayer;
 
 namespace Group3.Semester3.WebApp.Controllers.Api
 {
@@ -18,14 +18,10 @@ namespace Group3.Semester3.WebApp.Controllers.Api
     {
 
         private IUserService _userService;
-        private readonly AppSettings _appSettings;
 
-        public UserApiController(
-            IUserService userService,
-            IOptions<AppSettings> appSettings)
+        public UserApiController(IUserService userService)
         {
             _userService = userService;
-            _appSettings = appSettings.Value;
         }
 
         // POST api/<UserController>
@@ -33,33 +29,15 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [HttpPost]
         public IActionResult Login(AuthenticateModel model)
         {
-            var user = _userService.Authenticate(model.Email, model.Password);
-
-            if (user == null)
-                return BadRequest(new { message = "Username or password is incorrect" });
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
+            try
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    // TODO: Change to ID later
-                    new Claim(ClaimTypes.Name, user.Email.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
-
-            // return basic user info and authentication token
-            return Ok(new
+                var user = _userService.Login(model);
+                return Ok(user);
+            }
+            catch (Exception exception)
             {
-                Id = user.Id,
-                Email = user.Email,
-                Token = tokenString
-            });
+                return BadRequest(new { message = exception.Message });
+            }
         }
 
         // POST api/<UserController
@@ -70,7 +48,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 // create user
-                var user = _userService.Create(model);
+                var user = _userService.Register(model);
 
                 return Ok(user);
             }

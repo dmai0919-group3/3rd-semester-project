@@ -120,7 +120,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception exception)
                 {
-                    return false;
+                    throw exception;
                 }
             }
 

@@ -1,57 +1,95 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
-namespace Group3.Semester3.WebApp.Services
+namespace Group3.Semester3.WebApp.BusinessLayer
 {
     public interface IUserService
     {
-        User Authenticate(string email, string password);
-        User GetById(int id);
-        User Create(RegisterModel model);
-        void Update(User user, string password = null);
+        LoginResultModel Login(AuthenticateModel model);
+        UserModel GetById(int id);
+        UserModel Register(RegisterModel model);
+        void Update(UserModel user, string password = null);
         void Delete(int id);
     }
 
     public class UserService : IUserService
     {
-        // TODO: Add user repository to every part of this service
-        IUserRepository _userRepository;
 
-        public UserService(IUserRepository userRepository)
+        private IUserRepository _userRepository;
+        private readonly AppSettings _appSettings;
+
+        public UserService(IUserRepository userRepository, IOptions<AppSettings> appSettings)
         {
             _userRepository = userRepository;
+            _appSettings = appSettings.Value;
         }
 
-        public User Authenticate(string email, string password)
+        public LoginResultModel Login(AuthenticateModel model)
         {
+            var email = model.Email;
+            var password = model.Password;
+
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-                return null;
+                throw new Exception("Email or password can't be empty");
 
             var user = _userRepository.GetByEmail(email);
 
             // check if username exists
             if (user == null)
-                return null;
+                throw new Exception("User with this email does not exist");
 
             // check if password is correct
             if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                return null;
+                throw new Exception("Incorrect password");
 
-            // authentication successful
-            return user;
+            // authentication successful, generate token
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Email, user.Email.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            var loginResult = new LoginResultModel()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Token = tokenString
+            };
+            
+            return loginResult;
         }
 
-        public User GetById(int id)
+        public UserModel GetById(int id)
         {
-            return _userRepository.Get(id);
+            var user = _userRepository.Get(id);
+            return new UserModel() {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name
+            };
         }
 
-        public User Create(RegisterModel model)
+        public UserModel Register(RegisterModel model)
         {
             // validation
             if (string.IsNullOrWhiteSpace(model.Password))
@@ -75,10 +113,14 @@ namespace Group3.Semester3.WebApp.Services
             if (!success)
                 throw new Exception("User not created");
 
-            return user;
+            return new UserModel() { 
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name
+            };
         }
 
-        public void Update(User userParam, string password = null)
+        public void Update(UserModel userParam, string password = null)
         {
             /*var user = _context.Users.Find(userParam.Id);
 

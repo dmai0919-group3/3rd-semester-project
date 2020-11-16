@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Services;
+using Group3.Semester3.WebApp.BusinessLayer;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -15,11 +16,11 @@ namespace Group3.Semester3.WebApp.Controllers
     public class UserController : Controller
     {
 
-        private IApiService _apiService;
+        private IUserService _userService;
 
-        public UserController(IApiService apiService)
+        public UserController(IUserService userService)
         {
-            _apiService = apiService;
+            _userService = userService;
         }
         
         // GET: User/Login
@@ -37,7 +38,7 @@ namespace Group3.Semester3.WebApp.Controllers
         {
             try
             {
-                var result = _apiService.Login(model.Email, model.Password);
+                var result = _userService.Login(model);
                 ViewBag.Result = result;
                 return RedirectToAction(nameof(Login));
             }
@@ -62,7 +63,7 @@ namespace Group3.Semester3.WebApp.Controllers
         {
             try
             {
-                var result = _apiService.Register(model);
+                var result = _userService.Register(model);
                 ViewBag.Result = result;
                 return RedirectToAction(nameof(Register));
             }

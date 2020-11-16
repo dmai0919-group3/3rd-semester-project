@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Group3.Semester3.WebApp.Services;
 using Microsoft.IdentityModel.Tokens;
 using Group3.Semester3.WebApp.Repositories;
+using Group3.Semester3.WebApp.BusinessLayer;
 
 namespace Group3.Semester3.WebApp
 {
