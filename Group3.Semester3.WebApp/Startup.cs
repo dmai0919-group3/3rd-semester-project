@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Group3.Semester3.WebApp.Helpers;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Group3.Semester3.WebApp.Services;
 using Microsoft.IdentityModel.Tokens;
 using Group3.Semester3.WebApp.Repositories;
 using Group3.Semester3.WebApp.BusinessLayer;
@@ -70,7 +69,6 @@ namespace Group3.Semester3.WebApp
 
             // configure DI for application services
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IApiService, ApiService>();
             services.AddScoped<IUserRepository, UserRepository>();
         }
 

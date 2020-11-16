@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Group3.Semester3.WebApp.Models.Users;
-using Group3.Semester3.WebApp.Services;
 using Group3.Semester3.WebApp.BusinessLayer;
 
 namespace Group3.Semester3.WebApp.Controllers
@@ -39,11 +38,12 @@ namespace Group3.Semester3.WebApp.Controllers
             try
             {
                 var result = _userService.Login(model);
-                ViewBag.Result = result;
-                return RedirectToAction(nameof(Login));
+                addMessage("User logged in successfully");
+                return View();
             }
-            catch
+            catch (Exception exception)
             {
+                addMessage(exception.Message);
                 return View();
             }
         }
@@ -64,13 +64,24 @@ namespace Group3.Semester3.WebApp.Controllers
             try
             {
                 var result = _userService.Register(model);
-                ViewBag.Result = result;
-                return RedirectToAction(nameof(Register));
-            }
-            catch
-            {
+                addMessage("User registered successfully");
                 return View();
             }
+            catch (Exception exception)
+            {
+                addMessage(exception.Message);
+                return View();
+            }
+        }
+
+        protected void addMessage(string message)
+        {
+            if (ViewBag.Messages == null)
+            {
+                ViewBag.Messages = new List<string>();
+            }
+
+            ViewBag.Messages.Add(message);
         }
     }
 }

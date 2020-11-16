@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Group3.Semester3.WebApp.Services;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using Group3.Semester3.WebApp.Helpers;
@@ -15,12 +14,10 @@ namespace Group3.Semester3.WebApp.Controllers
     public class FileController : Controller
     {
 
-        private IApiService _apiService;
         private IConfiguration _configuration;
 
-        public FileController(IApiService apiService, IConfiguration configuration)
+        public FileController(IConfiguration configuration)
         {
-            _apiService = apiService;
             _configuration = configuration;
         }
         

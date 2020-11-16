@@ -6,6 +6,17 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"></head>
 <body>
+
+    @if (ViewBag.Messages != null)
+    {
+        @foreach (var message in ViewBag.Messages)
+        {
+            <div class="alert alert-primary" role="alert">
+                @message
+            </div>
+        }
+    }
+
     <div class="row">
         <h2>Logo</h2>
     </div>

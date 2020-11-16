@@ -2,16 +2,15 @@ using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Models.Users;
 
-namespace Group3.Semester3.WebApp.Services
+namespace Group3.Semester3.DesktopClient.Services
 {
     public interface IApiService
     {
         public LoginResultModel Login(string email, string password);
 
-        public User Register(RegisterModel model);
+        public UserModel Register(RegisterModel model);
     }
     
     public class ApiService : IApiService
@@ -31,13 +30,13 @@ namespace Group3.Semester3.WebApp.Services
             return resultModel;
         }
 
-        public User Register(RegisterModel model)
+        public UserModel Register(RegisterModel model)
         {
             try
             {
                 var result = this.PostRequest(RegisterUrl, model);
 
-                var resultModel = JsonConvert.DeserializeObject<User>(result);
+                var resultModel = JsonConvert.DeserializeObject<UserModel>(result);
 
                 return resultModel;
             } 
