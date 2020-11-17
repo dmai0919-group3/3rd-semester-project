@@ -1,0 +1,24 @@
+﻿
+@{
+    ViewData["Title"] = "Upload Test";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<div class="row justify-content-center">
+    @Html.Raw(ViewBag.Result)
+    <form enctype="multipart/form-data" method="post">
+        <div class="form-group">
+            <input type="file" name="files" class="form-control-file" multiple />
+        </div>
+        <div class="form-group">
+            <input type="checkbox" name="toAzure" class="form-check-input" value="1" />
+            <label class="form-check-label" for="toAzure">Upload to Azure?</label>
+        </div>
+        @Html.AntiForgeryToken()
+
+        <button type="submit" class="btn btn-info"> Upload </button>
+    </form>
+</div>
+
+

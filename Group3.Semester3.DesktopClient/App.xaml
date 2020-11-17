@@ -1,8 +1,8 @@
-﻿<Application x:Class="desktop_app.App"
+﻿<Application x:Class="Group3.Semester3.DesktopClient.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:desktop_app"
-             StartupUri="Registration.xaml">
+             xmlns:local="clr-namespace:Group3.Semester3.DesktopClient"
+             StartupUri="MainWindow.xaml">
     <Application.Resources>
          
     </Application.Resources>
