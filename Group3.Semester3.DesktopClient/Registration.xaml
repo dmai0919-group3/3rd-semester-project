@@ -5,14 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:desktop_app"
         mc:Ignorable="d"
-        Title="Register" Height="450" Width="800">
+        Title="FILESHARING" Height="450" Width="800">
 
     <StackPanel Margin="200,0,200,0">
+        
         <Label Content="Registration" Foreground="Gray" FontSize="24" HorizontalAlignment="Center"/>
-        <Label Content="First name" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
-        <TextBox Name="firstName" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
-        <Label Content="Last name" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
-        <TextBox Name="lastName" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
+        <Label Content="Name" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+        <TextBox Name="name" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
         <Label Content="Email address" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
         <TextBox Name="email" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
         <Label Content="Password" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>

@@ -40,7 +40,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
                 return resultModel;
             } 
-            catch (Exception exception)
+            catch (Exception exception) //TODO Are we sure we just catch a general exception and don't do anything with it?
             {
                 return null;
             }

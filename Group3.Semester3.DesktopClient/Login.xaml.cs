@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Group3.Semester3.DesktopClient.Services;
+using Group3.Semester3.WebApp.Models.Users;
 
 namespace desktop_app
 {
@@ -29,11 +30,11 @@ namespace desktop_app
 
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
-            HttpClient client = new HttpClient();
-            client.BaseAddress = new Uri("https://dmai0919-group3-sem3.azurewebsites.net");
-
-            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            HttpResponseMessage response = client.PostAsJsonAsync<Object>("api/Authenticate", new object()).Result; //TODO change Object to User and add data from form
+            ApiService apiService = new ApiService();
+            
+            String email = emailTextbox.Text;
+            String password = passwordTextbox.Password;
+            LoginResultModel loginResultModel = apiService.Login(email, password);
         }
     }
 }
