@@ -9,6 +9,7 @@ using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -16,8 +17,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 {
     public interface IUserService
     {
-        LoginResultModel Login(AuthenticateModel model);
+        UserModel Login(AuthenticateModel model);
         UserModel GetById(int id);
+        UserModel GetFromHttpContext(HttpContext httpContext);
         UserModel Register(RegisterModel model);
         void Update(UserModel user, string password = null);
         void Delete(int id);
@@ -27,15 +29,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     {
 
         private IUserRepository _userRepository;
-        private readonly AppSettings _appSettings;
 
-        public UserService(IUserRepository userRepository, IOptions<AppSettings> appSettings)
+        public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-            _appSettings = appSettings.Value;
         }
 
-        public LoginResultModel Login(AuthenticateModel model)
+        public UserModel Login(AuthenticateModel model)
         {
             var email = model.Email;
             var password = model.Password;
@@ -55,28 +55,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             // authentication successful, generate token
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Email, user.Email.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var tokenString = tokenHandler.WriteToken(token);
-
-            var loginResult = new LoginResultModel()
-            {
+            return new UserModel() {
                 Id = user.Id,
                 Email = user.Email,
-                Token = tokenString
+                Name = user.Name
             };
-            
-            return loginResult;
         }
 
         public UserModel GetById(int id)
@@ -87,6 +70,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 Email = user.Email,
                 Name = user.Name
             };
+        }
+
+        public UserModel GetFromHttpContext(HttpContext httpContext)
+        {
+            var userId = int.Parse(httpContext.User.Identity.Name);
+
+            var user = GetById(userId);
+
+            return user;
         }
 
         public UserModel Register(RegisterModel model)

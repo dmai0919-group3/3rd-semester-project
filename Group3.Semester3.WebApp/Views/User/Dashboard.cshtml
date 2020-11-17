@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var user = ViewBag.User;
+}
+
+@if(user != null)
+{
+    <h1>Welcome @user.Name</h1>
+
+    <p>Your id: @user.Id</p>
+    <p>Your email: @user.Email</p>
+
+    <a href="logout">Logout</a>
+}

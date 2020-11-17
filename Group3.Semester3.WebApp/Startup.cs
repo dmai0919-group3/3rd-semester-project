@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Group3.Semester3.WebApp.Repositories;
 using Group3.Semester3.WebApp.BusinessLayer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Group3.Semester3.WebApp
 {
@@ -39,6 +40,13 @@ namespace Group3.Semester3.WebApp
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+            .AddCookie(
+                CookieAuthenticationDefaults.AuthenticationScheme, 
+                options => { 
+                    Configuration.Bind("CookieSettings", options); 
+                    options.LoginPath = "/user/login";
+                }
+            )
             .AddJwtBearer(x =>
             {
                 x.Events = new JwtBearerEvents
@@ -84,12 +92,16 @@ namespace Group3.Semester3.WebApp
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseCookiePolicy();
+
             app.UseAuthentication();
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
         }
     }
