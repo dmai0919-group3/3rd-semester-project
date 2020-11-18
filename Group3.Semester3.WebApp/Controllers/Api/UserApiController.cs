@@ -9,30 +9,59 @@ using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.BusinessLayer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Group3.Semester3.WebApp.Controllers.Api
 {
     [Route("api/User")]
     [ApiController]
+    [Authorize]
     public class UserApiController : ControllerBase
     {
 
         private IUserService _userService;
+        private readonly AppSettings _appSettings;
 
-        public UserApiController(IUserService userService)
+        public UserApiController(IUserService userService, IOptions<AppSettings> appSettings)
         {
             _userService = userService;
+            _appSettings = appSettings.Value;
         }
 
         // POST api/<UserController>
         [Route("login")]
         [HttpPost]
+        [AllowAnonymous]
         public IActionResult Login(AuthenticateModel model)
         {
             try
             {
                 var user = _userService.Login(model);
-                return Ok(user);
+
+                // authentication successful, generate token
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(new Claim[]
+                    {
+                        new Claim(ClaimTypes.Name, user.Id.ToString())
+                    }),
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
+                var loginResult = new LoginResultModel()
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Token = tokenString
+                };
+
+                return Ok(loginResult);
             }
             catch (Exception exception)
             {
@@ -43,6 +72,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         // POST api/<UserController
         [Route("register")]
         [HttpPost]
+        [AllowAnonymous]
         public IActionResult Register(RegisterModel model)
         {
             try
@@ -57,6 +87,15 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 // return error message if there was an exception
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [Route("current")]
+        [HttpGet]
+        public IActionResult Current()
+        {
+            var user = _userService.GetFromHttpContext(HttpContext);
+
+            return Ok(user);
         }
 
     }

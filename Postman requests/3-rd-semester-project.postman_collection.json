@@ -1,0 +1,95 @@
+{
+	"info": {
+		"_postman_id": "f3e8cc13-9938-4631-872f-bac59845b2c2",
+		"name": "3-rd-semester-project",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"erik@erik.sk\",\r\n    \"Name\": \"erik\",\r\n    \"Password\": \"pass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/User/login",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"User",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Current user",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/User/current",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"User",
+						"current"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"erik@erik.sk\",\r\n    \"Name\": \"erik\",\r\n    \"Password\": \"pass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/User/register",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"User",
+						"register"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
