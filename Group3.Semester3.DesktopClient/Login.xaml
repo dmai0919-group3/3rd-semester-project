@@ -15,6 +15,7 @@
         <PasswordBox Name="passwordTextbox" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
         <StackPanel Orientation="Horizontal" Margin="125 25" HorizontalAlignment="Center">
             <Button Name="btnLogin" Click="btnLogin_Click" Content="Login" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
+            <Button Name="btnRegister" Click="btnRegister_Click" Content="Register" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
         </StackPanel>
     </StackPanel>
 </Window>

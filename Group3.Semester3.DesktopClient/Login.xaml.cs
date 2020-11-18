@@ -36,5 +36,12 @@ namespace desktop_app
             String password = passwordTextbox.Password;
             LoginResultModel loginResultModel = apiService.Login(email, password);
         }
+
+        private void btnRegister_Click(object sender, RoutedEventArgs e)
+        {
+            Hide();
+            new Registration().ShowDialog();
+            ShowDialog();
+        }
     }
 }

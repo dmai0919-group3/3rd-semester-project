@@ -47,14 +47,14 @@ namespace desktop_app
 
                 MessageBox.Show("You have successfully registered.\nPlease log in!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                //TODO Change back to Login window.
+                DialogResult = false;
             }
             
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            //TODO Change back to Login window.
+            DialogResult = false;
         }
     }
 }
