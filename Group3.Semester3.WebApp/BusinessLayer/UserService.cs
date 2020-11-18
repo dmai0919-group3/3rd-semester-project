@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Entities;
-using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
@@ -53,7 +44,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
                 throw new Exception("Incorrect password");
 
-            // authentication successful, generate token
+            // authentication successful, return user
 
             return new UserModel() {
                 Id = user.Id,
