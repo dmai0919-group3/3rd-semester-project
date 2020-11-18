@@ -54,7 +54,7 @@ namespace Group3.Semester3.WebApp
                     OnTokenValidated = context =>
                     {
                         var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
-                        var userId = int.Parse(context.Principal.Identity.Name);
+                        var userId = new System.Guid(context.Principal.Identity.Name);
                         var user = userService.GetById(userId);
                         if (user == null)
                         {
