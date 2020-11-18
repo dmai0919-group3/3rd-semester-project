@@ -8,21 +8,22 @@ namespace Group3.Semester3.WebApp.Models.FileSystem
     public interface IFileSystemEntry
     {
         public string Name { get; set; }
-        public string UUID { get; set; }
+        public Guid UUID { get; set; }
+        DirectoryEntry Parent { get; set; }
 
     }
 
     public class DirectoryEntry : IFileSystemEntry
     {
         public string Name { get ; set; }
-        public string UUID { get; set; }
-
-        public IFileSystemEntry Parent { get; set; }
+        public Guid UUID { get; set; }
+        public DirectoryEntry Parent { get; set; }
     }
 
     public class FileEntry : IFileSystemEntry
     {
         public string Name { get; set; }
-        public string UUID { get; set; }
+        public Guid UUID { get; set; }
+        public DirectoryEntry Parent { get; set; }
     }
 }
