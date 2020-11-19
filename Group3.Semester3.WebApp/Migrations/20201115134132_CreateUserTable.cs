@@ -8,7 +8,7 @@ namespace Group3.Semester3.WebApp.Migrations
         public override void Up()
         {
             Create.Table("Users")
-                .WithColumn("Id").AsInt64().PrimaryKey().Identity()
+                .WithColumn("Id").AsGuid().PrimaryKey()
                 .WithColumn("Email").AsString().NotNullable().Unique()
                 .WithColumn("Name").AsString().NotNullable()
                 .WithColumn("PasswordHash").AsString().NotNullable()

@@ -10,7 +10,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     public interface IUserService
     {
         UserModel Login(AuthenticateModel model);
-        UserModel GetById(int id);
+        UserModel GetById(Guid id);
         UserModel GetFromHttpContext(HttpContext httpContext);
         UserModel Register(RegisterModel model);
         void Update(UserModel user, string password = null);
@@ -57,7 +57,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             };
         }
         // getting the user from the db by user's ID
-        public UserModel GetById(int id)
+        public UserModel GetById(Guid id)
         {
             var user = _userRepository.Get(id);
             return new UserModel() {
@@ -70,7 +70,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public UserModel GetFromHttpContext(HttpContext httpContext)
         {
-            var userId = int.Parse(httpContext.User.Identity.Name);
+            var userId = new Guid(httpContext.User.Identity.Name);
 
             var user = GetById(userId);
 
