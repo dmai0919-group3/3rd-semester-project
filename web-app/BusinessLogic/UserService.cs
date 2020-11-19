@@ -1,86 +1,57 @@
 ﻿using System;
-using Group3.Semester3.WebApp.Entities;
-using Group3.Semester3.WebApp.Models.Users;
-using Group3.Semester3.WebApp.Repositories;
-using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using web_app.Entities;
+using web_app.Models.Users;
+using web_app.Repositories;
 
-namespace Group3.Semester3.WebApp.BusinessLayer
+namespace web_app.BusinessLogic
 {
-    // interface for a User service
     public interface IUserService
     {
-        UserModel Login(AuthenticateModel model);
-        UserModel GetById(Guid id);
-        UserModel GetFromHttpContext(HttpContext httpContext);
-        UserModel Register(RegisterModel model);
-        void Update(UserModel user, string password = null);
+        User Authenticate(string email, string password);
+        User GetById(int id);
+        User Create(RegisterModel model);
+        void Update(User user, string password = null);
         void Delete(int id);
     }
 
-    // actual implementation of a user service that implements the interface with all the logic
-
     public class UserService : IUserService
     {
-        // getting an instance of a user repository to be able to communicate with the db layer
-        private IUserRepository _userRepository;
+        // TODO: Add user repository to every part of this service
+        IUserRepository _userRepository;
 
         public UserService(IUserRepository userRepository)
         {
             _userRepository = userRepository;
         }
-        // logic of a login function, model is passed, user is then looked up in the db through repository
-        // if credentials are valid, UserModel is returned
-        public UserModel Login(AuthenticateModel model)
-        {
-            var email = model.Email;
-            var password = model.Password;
 
+        public User Authenticate(string email, string password)
+        {
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-                throw new Exception("Email or password can't be empty");
+                return null;
 
             var user = _userRepository.GetByEmail(email);
 
             // check if username exists
             if (user == null)
-                throw new Exception("User with this email does not exist");
+                return null;
 
             // check if password is correct
             if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                throw new Exception("Incorrect password");
+                return null;
 
-            // authentication successful, return user
-
-            return new UserModel() {
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.Name
-            };
-        }
-        // getting the user from the db by user's ID
-        public UserModel GetById(Guid id)
-        {
-            var user = _userRepository.Get(id);
-            return new UserModel() {
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.Name
-            };
-        }
-        // getting the user from the db by extracting the user information from a http response
-
-        public UserModel GetFromHttpContext(HttpContext httpContext)
-        {
-            var userId = new Guid(httpContext.User.Identity.Name);
-
-            var user = GetById(userId);
-
+            // authentication successful
             return user;
         }
 
-        // logic of a registration function with all the necessary validation, creating a pw hash and inserting
-        // the newly registered used into the db through repository, returning a UserModel
+        public User GetById(int id)
+        {
+            return _userRepository.Get(id);
+        }
 
-        public UserModel Register(RegisterModel model)
+        public User Create(RegisterModel model)
         {
             // validation
             if (string.IsNullOrWhiteSpace(model.Password))
@@ -104,16 +75,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (!success)
                 throw new Exception("User not created");
 
-            return new UserModel() { 
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.Name
-            };
+            return user;
         }
 
-        // method to update the information about the user that already exists
-
-        public void Update(UserModel userParam, string password = null)
+        public void Update(User userParam, string password = null)
         {
             /*var user = _context.Users.Find(userParam.Id);
 
@@ -150,8 +115,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _context.Users.Update(user);
             _context.SaveChanges();*/
         }
-
-        // method to completely delete a registered user from the database
 
         public void Delete(int id)
         {

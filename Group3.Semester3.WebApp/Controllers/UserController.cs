@@ -13,11 +13,12 @@ using Group3.Semester3.WebApp.Helpers;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
+    // user controller which
     [Route("user")]
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class UserController : Controller
     {
-
+        // defining a user service through interface to flawlessly access the db
         private IUserService _userService;
 
         public UserController(IUserService userService)
