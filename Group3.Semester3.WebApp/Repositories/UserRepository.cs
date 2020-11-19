@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,14 +9,17 @@ using Dapper;
 
 namespace Group3.Semester3.WebApp.Repositories
 {
+    // adding a layer of abstraction by creating an interface first
     public interface IUserRepository
     {
-        public User Get(int id);
+        public User Get(Guid id);
 
         public bool Insert(User user);
 
         public User GetByEmail(string email);
     }
+
+    // actual implementation of a user repository that accesses the database and makes changes to it
 
     public class UserRepository : IUserRepository
     {
@@ -27,7 +30,9 @@ namespace Group3.Semester3.WebApp.Repositories
              connectionString = configuration.GetConnectionString("DBConnection");
         }
 
-        public User Get(int id)
+        // logic for getting the model of a user by his ID from the database
+        // establishing an SQL connection with the db, querying the db, returning the user model
+        public User Get(Guid id)
         {
             string query = "SELECT TOP 1 * FROM Users WHERE id=@Id";
 
@@ -60,6 +65,9 @@ namespace Group3.Semester3.WebApp.Repositories
 
             return null;
         }
+
+        // logic for getting the model of a user by his email from the database
+        // establishing an SQL connection with the db, querying the db, returning the user model
 
         public User GetByEmail(string email)
         {
@@ -94,14 +102,20 @@ namespace Group3.Semester3.WebApp.Repositories
             }
         }
 
+        // inserting newly registered user into the database, taking user model as a parameter
+        // sql insert query is populated with data from user and executed, returning success
+
         public bool Insert(User user)
         {
-            string query = "INSERT INTO Users (Email, Name, PasswordHash, PasswordSalt)" +
-                " VALUES (@Email, @Name, @PasswordHash, @PasswordSalt)";
+            string query = "INSERT INTO Users (Id, Email, Name, PasswordHash, PasswordSalt)" +
+                " VALUES (@Id, @Email, @Name, @PasswordHash, @PasswordSalt)";
 
             using (var connection = new SqlConnection(connectionString))
             {
+                user.Id = Guid.NewGuid();
+
                 var parameters = new {
+                    Id = user.Id,
                     Email = user.Email,
                     Name = user.Name,
                     PasswordHash = Convert.ToBase64String(user.PasswordHash),

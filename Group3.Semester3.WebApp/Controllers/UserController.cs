@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.BusinessLayer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Group3.Semester3.WebApp.Helpers;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
+    // user controller which
     [Route("user")]
+    [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class UserController : Controller
     {
-
+        // defining a user service through interface to flawlessly access the db
         private IUserService _userService;
 
         public UserController(IUserService userService)
@@ -24,6 +28,7 @@ namespace Group3.Semester3.WebApp.Controllers
         
         // GET: User/Login
         [Route("login")]
+        [AllowAnonymous]
         public ActionResult Login()
         {
             return View();
@@ -32,14 +37,31 @@ namespace Group3.Semester3.WebApp.Controllers
         // POST: User/Login
         [Route("login")]
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public ActionResult Login(AuthenticateModel model)
+        public async Task<ActionResult> Login(AuthenticateModel model)
         {
             try
             {
                 var result = _userService.Login(model);
+
+                var claims = new List<Claim>
+                {
+                  new Claim(ClaimTypes.Name, result.Id.ToString())
+                };
+
+                var claimsIdentity = new ClaimsIdentity(
+                  claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var authProperties = new AuthenticationProperties();
+
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties
+                );
+
                 addMessage("User logged in successfully");
-                return View();
+                return RedirectToAction("Dashboard");
             }
             catch (Exception exception)
             {
@@ -50,6 +72,7 @@ namespace Group3.Semester3.WebApp.Controllers
 
         // GET: UserController/Register
         [Route("register")]
+        [AllowAnonymous]
         public ActionResult Register()
         {
             return View();
@@ -58,6 +81,7 @@ namespace Group3.Semester3.WebApp.Controllers
         // POST: UserController/Register
         [Route("register")]
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterModel model)
         {
@@ -74,14 +98,28 @@ namespace Group3.Semester3.WebApp.Controllers
             }
         }
 
+        // GET: user/dashboard
+        [Route("dashboard")]
+        public ActionResult Dashboard()
+        {
+            var user = _userService.GetFromHttpContext(HttpContext);
+
+            ViewBag.User = user;
+
+            return View();
+        }
+
+        [Route("logout")]
+        public async Task<ActionResult> LogOut()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            return RedirectToAction("Login");
+        }
+
         protected void addMessage(string message)
         {
-            if (ViewBag.Messages == null)
-            {
-                ViewBag.Messages = new List<string>();
-            }
-
-            ViewBag.Messages.Add(message);
+            Messenger.addMessage(message);
         }
     }
 }
