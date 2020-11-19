@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Group3.Semester3.WebApp.BusinessLayer;
@@ -20,7 +20,7 @@ namespace Group3.Semester3.WebAppTests
 
             var serviceProvider = services.BuildServiceProvider();
 
-            userService = serviceProvider.GetService<IUserService>();
+            userService = serviceProvider.GetService<UserService>();
         }
 
         [Test]
