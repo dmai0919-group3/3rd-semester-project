@@ -9,6 +9,7 @@ using Dapper;
 
 namespace Group3.Semester3.WebApp.Repositories
 {
+    // adding a layer of abstraction by creating an interface first
     public interface IUserRepository
     {
         public User Get(int id);
@@ -17,6 +18,8 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public User GetByEmail(string email);
     }
+
+    // actual implementation of a user repository that accesses the database and makes changes to it
 
     public class UserRepository : IUserRepository
     {
@@ -27,6 +30,8 @@ namespace Group3.Semester3.WebApp.Repositories
              connectionString = configuration.GetConnectionString("DBConnection");
         }
 
+        // logic for getting the model of a user by his ID from the database
+        // establishing an SQL connection with the db, querying the db, returning the user model
         public User Get(int id)
         {
             string query = "SELECT TOP 1 * FROM Users WHERE id=@Id";
@@ -61,6 +66,9 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
+        // logic for getting the model of a user by his email from the database
+        // establishing an SQL connection with the db, querying the db, returning the user model
+
         public User GetByEmail(string email)
         {
 
@@ -93,6 +101,9 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
             }
         }
+
+        // inserting newly registered user into the database, taking user model as a parameter
+        // sql insert query is populated with data from user and executed, returning success
 
         public bool Insert(User user)
         {
