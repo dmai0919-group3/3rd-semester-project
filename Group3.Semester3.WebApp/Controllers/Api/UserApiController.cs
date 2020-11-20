@@ -13,12 +13,13 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Group3.Semester3.WebApp.Controllers.Api
 {
+    // implementation of an user api controller for an api/User/... endpoints
     [Route("api/User")]
     [ApiController]
     [Authorize]
     public class UserApiController : ControllerBase
     {
-
+        // defining a user service through interface to flawlessly access the db
         private IUserService _userService;
         private readonly AppSettings _appSettings;
 
@@ -32,6 +33,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [Route("login")]
         [HttpPost]
         [AllowAnonymous]
+        // endpoint for logging the user into the app, validating his credentials, creating a session token 
         public IActionResult Login(AuthenticateModel model)
         {
             try
@@ -73,6 +75,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [Route("register")]
         [HttpPost]
         [AllowAnonymous]
+        // endpoint for registration, registerModel is passed to user Service where user is inserted into DB
         public IActionResult Register(RegisterModel model)
         {
             try
@@ -91,6 +94,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
         [Route("current")]
         [HttpGet]
+        // endpoint to get current user by retrieving the info from the httpcontext
         public IActionResult Current()
         {
             var user = _userService.GetFromHttpContext(HttpContext);

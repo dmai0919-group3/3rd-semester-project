@@ -6,15 +6,24 @@ using Group3.Semester3.WebApp.Models.Users;
 
 namespace Group3.Semester3.DesktopClient.Services
 {
+    /* 
+     * interface for an API service 
+     */ 
     public interface IApiService
     {
         public LoginResultModel Login(string email, string password);
 
         public UserModel Register(RegisterModel model);
     }
-    
+
+    /* 
+     * implementation of API service
+     */
+
     public class ApiService : IApiService
     {
+        // 2 constants, pointing at endpoints for login and registration 
+
         private const string LoginUrl = "https://localhost:44306/api/User/login";
         private const string RegisterUrl = "https://localhost:44306/api/User/register";
         
@@ -45,7 +54,10 @@ namespace Group3.Semester3.DesktopClient.Services
                 return null;
             }
         }
-
+        // method for posting a http request, taking url and model as a parameters
+        // model object is serialized via json, the request is then posted async-ly
+        // if the http response is 200 OK, the response is saved as string and returned
+        // if the response is not 200 OK, an exception is thrown with a status code
         protected string PostRequest(string url, object parameter)
         {
             var httpClient = new HttpClient();
