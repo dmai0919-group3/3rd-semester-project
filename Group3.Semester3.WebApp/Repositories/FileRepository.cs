@@ -11,14 +11,12 @@ namespace Group3.Semester3.WebApp.Repositories
 {
     public interface IFileRepository
     {
-        public File GetById(Guid id);
-        public List<File> GetByUserId(Guid userId);
-
-        public bool Insert(File file);
+        public FileEntity GetById(Guid id);
+        public List<FileEntity> GetByUserId(Guid userId);
+        public bool Insert(FileEntity fileEntity);
         public bool Delete(Guid id);
     }
     public class FileRepository : IFileRepository
-
     {
         string connectionString;
 
@@ -26,7 +24,7 @@ namespace Group3.Semester3.WebApp.Repositories
         {
             connectionString = configuration.GetConnectionString("DBConnection");
         }
-        public File GetById(Guid id)
+        public FileEntity GetById(Guid id)
         {
             string query = "SELECT TOP 1 * FROM Files WHERE id=@Id";
 
@@ -40,7 +38,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     var result = connection.QueryFirst(query, parameters);
 
-                    File file = new File()
+                    FileEntity fileEntity = new FileEntity()
                     {
                         Id = result.Id,
                         UserId = result.UserId,
@@ -48,7 +46,7 @@ namespace Group3.Semester3.WebApp.Repositories
                         Name = result.Name
                     };
 
-                    return file;
+                    return fileEntity;
                 }
                 catch (Exception exception)
                 {
@@ -59,7 +57,7 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
-        public List<File> GetByUserId(Guid userId)
+        public List<FileEntity> GetByUserId(Guid userId)
         {
             string query = "SELECT * FROM Files WHERE userId=@UserId";
 
@@ -71,7 +69,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 {
                     connection.Open();
 
-                    var result = connection.QueryFirst<List<File>>(query, parameters);
+                    var result = connection.QueryFirst<List<FileEntity>>(query, parameters);
 
                     return result;
                 }
@@ -84,18 +82,17 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
-        public bool Insert(File file)
+        public bool Insert(FileEntity fileEntity)
         {
             string query = "INSERT INTO Files (Id, UserId, AzureId, Name)" +
                    " VALUES (@Id, @UserId, @AzureId, @Name)";
 
             using (var connection = new SqlConnection(connectionString))
             {
-
                 try
                 {
                     connection.Open();
-                    int rowsChanged = connection.Execute(query, file);
+                    int rowsChanged = connection.Execute(query, fileEntity);
 
                     if (rowsChanged > 0)
                     {

@@ -8,6 +8,8 @@ using Group3.Semester3.WebApp.Models.FileSystem;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
@@ -19,10 +21,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     public class FileService : IFileService
     {
         private IConfiguration _configuration;
+        private IFileRepository _fileRepository;
 
-        public FileService(IConfiguration configuration)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository)
         {
             _configuration = configuration;
+            _fileRepository = fileRepository;
         }
 
         public async Task<List<FileEntry>> UploadFile(UserModel user, System.Guid parentGUID, List<IFormFile> files)
@@ -52,6 +56,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             UUID = blobName,
                             Parent = new DirectoryEntry { UUID = parentGUID }
                         });
+                        
+                        var file = new FileEntity()
+                        {
+                            Id = Guid.NewGuid(),
+                            AzureId = blobName,
+                            Name = formFile.FileName,
+                            UserId = user.Id,
+                        };
+                        
+                        _fileRepository.Insert(file);
                     }
                     catch
                     {

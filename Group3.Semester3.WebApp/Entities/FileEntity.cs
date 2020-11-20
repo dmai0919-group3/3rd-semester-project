@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Group3.Semester3.WebApp.Entities
 {
-    public class File
+    public class FileEntity
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }

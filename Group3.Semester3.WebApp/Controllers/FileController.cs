@@ -30,7 +30,7 @@ namespace Group3.Semester3.WebApp.Controllers
 
         [Route("upload")]
         [HttpGet]
-        [AllowAnonymous]
+        [Authorize]
         public ActionResult Upload()
         {
             return View();
@@ -38,6 +38,7 @@ namespace Group3.Semester3.WebApp.Controllers
 
         [Route("upload")]
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upload(List<IFormFile> files, string parentGuid)
         {
