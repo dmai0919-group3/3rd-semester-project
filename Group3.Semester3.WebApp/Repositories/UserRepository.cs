@@ -11,7 +11,7 @@ namespace Group3.Semester3.WebApp.Repositories
 {
     public interface IUserRepository
     {
-        public User Get(int id);
+        public User Get(Guid id);
 
         public bool Insert(User user);
 
@@ -27,7 +27,7 @@ namespace Group3.Semester3.WebApp.Repositories
              connectionString = configuration.GetConnectionString("DBConnection");
         }
 
-        public User Get(int id)
+        public User Get(Guid id)
         {
             string query = "SELECT TOP 1 * FROM Users WHERE id=@Id";
 
@@ -96,12 +96,15 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Insert(User user)
         {
-            string query = "INSERT INTO Users (Email, Name, PasswordHash, PasswordSalt)" +
-                " VALUES (@Email, @Name, @PasswordHash, @PasswordSalt)";
+            string query = "INSERT INTO Users (Id, Email, Name, PasswordHash, PasswordSalt)" +
+                " VALUES (@Id, @Email, @Name, @PasswordHash, @PasswordSalt)";
 
             using (var connection = new SqlConnection(connectionString))
             {
+                user.Id = Guid.NewGuid();
+
                 var parameters = new {
+                    Id = user.Id,
                     Email = user.Email,
                     Name = user.Name,
                     PasswordHash = Convert.ToBase64String(user.PasswordHash),
