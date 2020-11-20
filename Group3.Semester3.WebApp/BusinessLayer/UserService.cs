@@ -10,10 +10,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     {
         UserModel Login(AuthenticateModel model);
         UserModel GetById(Guid id);
+        UserModel GetByEmail(String email);
         UserModel GetFromHttpContext(HttpContext httpContext);
         UserModel Register(RegisterModel model);
         void Update(UserModel user, string password = null);
-        void Delete(int id);
+        bool Delete(Guid id);
     }
 
     public class UserService : IUserService
@@ -141,14 +142,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _context.SaveChanges();*/
         }
 
-        public void Delete(int id)
+        public bool Delete(Guid id)
         {
-            /*var user = _context.Users.Find(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-                _context.SaveChanges();
-            }*/
+            return _userRepository.Delete(id);
         }
 
         // private helper methods
@@ -182,6 +178,17 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
 
             return true;
+        }
+
+        public UserModel GetByEmail(string email)
+        {
+            var user = _userRepository.GetByEmail(email);
+            return new UserModel()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name
+            };
         }
     }
 }

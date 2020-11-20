@@ -16,6 +16,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Insert(User user);
 
         public User GetByEmail(string email);
+        public bool Delete(Guid id);
     }
 
     public class UserRepository : IUserRepository
@@ -25,6 +26,32 @@ namespace Group3.Semester3.WebApp.Repositories
         public UserRepository(IConfiguration configuration)
         {
              connectionString = configuration.GetConnectionString("DBConnection");
+        }
+
+        public bool Delete(Guid id)
+        {
+            string query = "DELETE FROM Users WHERE id=@Id";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { Id = id };
+
+                try
+                {
+                    connection.Open();
+
+                    int rowsChanged = connection.Execute(query, parameters);
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
+                return false;
+            }
         }
 
         public User Get(Guid id)
