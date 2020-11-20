@@ -15,12 +15,7 @@ namespace Group3.Semester3.WebAppTests
         [SetUp]
         public void Setup()
         {
-            var services = new ServiceCollection();
-            services.AddTransient<IUserService, UserService>();
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            userService = serviceProvider.GetService<UserService>();
+            userService = Helper.GetUserService();
         }
 
         [Test]
