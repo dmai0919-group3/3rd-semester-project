@@ -43,18 +43,22 @@ namespace desktop_app
                 registerModel.Password = password1.Password;
                 registerModel.Name = name.Text;
 
-                //UserModel userModel = apiService.Register(registerModel);
+                UserModel userModel = apiService.Register(registerModel);
 
                 MessageBox.Show("You have successfully registered.\nPlease log in!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                DialogResult = false;
+                Login login = new Login();
+                login.Show();
+                this.Close();
             }
             
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            Login login = new Login();
+            login.Show();
+            this.Close();
         }
     }
 }

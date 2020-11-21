@@ -41,5 +41,10 @@ namespace Group3.Semester3.DesktopClient
         {
             // TODO implement file ctrl logic
         }
+
+        private void btnUploadFile_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO implement file ctrl logic
+        }
     }
 }

@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Group3.Semester3.DesktopClient;
 using Group3.Semester3.DesktopClient.Services;
 using Group3.Semester3.WebApp.Models.Users;
 
@@ -35,13 +36,17 @@ namespace desktop_app
             String email = emailTextbox.Text;
             String password = passwordTextbox.Password;
             LoginResultModel loginResultModel = apiService.Login(email, password);
+
+            MainWindow mainWindow = new MainWindow(loginResultModel);
+            mainWindow.Show();
+            this.Close();
         }
 
         private void btnRegister_Click(object sender, RoutedEventArgs e)
         {
-            Hide();
-            new Registration().ShowDialog();
-            ShowDialog();
+            Registration registration = new Registration();
+            registration.Show();
+            this.Close();
         }
     }
 }
