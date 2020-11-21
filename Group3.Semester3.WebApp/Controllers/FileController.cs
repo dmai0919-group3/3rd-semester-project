@@ -1,26 +1,28 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Azure.Storage.Blobs;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
+using Group3.Semester3.WebApp.BusinessLayer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Group3.Semester3.WebApp.Helpers;
-using System;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
     [Route("file")]
+    [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class FileController : Controller
     {
 
-        private IConfiguration _configuration;
+        private IFileService _fileService;
+        private IUserService _userService;
 
-        public FileController(IConfiguration configuration)
+        public FileController(IFileService fileService, IUserService userService)
         {
-            _configuration = configuration;
+            _fileService = fileService;
+            _userService = userService;
         }
-        
+
         [Route("upload")]
         [HttpGet]
         public ActionResult Upload()
@@ -31,55 +33,23 @@ namespace Group3.Semester3.WebApp.Controllers
         [Route("upload")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Upload(List<IFormFile> files, string toAzure)
+        public async Task<IActionResult> Upload(List<IFormFile> files, string parentGuid)
         {
-            long size = files.Sum(f => f.Length);
 
-            List<string> fileNames = new List<string>();
+            List<Models.FileSystem.FileEntry> generatedEntries = await _fileService.UploadFile(
+                    _userService.GetFromHttpContext(HttpContext), 
+                    parentGuid, 
+                    files);
 
-            if (toAzure == "1")
+            // TODO compare with input, generate errors
+
+            foreach (var file in generatedEntries)
             {
-
-                BlobContainerClient containerClient =
-                    new BlobContainerClient(
-                        _configuration.GetConnectionString("AzureConnectionString"),
-                        _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
-
-                containerClient.CreateIfNotExists();
-
-                foreach (var formFile in files)
-                {
-                    if (formFile.Length > 0)
-                    {
-                        var blobName = Guid.NewGuid().ToString();
-                        fileNames.Add(blobName);
-                        await containerClient.UploadBlobAsync(blobName, formFile.OpenReadStream());
-                    }
-                }
-            }
-            else
-            {
-                foreach (var formFile in files)
-                {
-                    if (formFile.Length > 0)
-                    {
-                        var filePath = System.IO.Path.GetTempFileName();
-                        fileNames.Add(filePath);
-
-                        using (var stream = System.IO.File.Create(filePath))
-                        {
-                            await formFile.CopyToAsync(stream);
-                        }
-                    }
-                }
+                var message = "File " + file.Name + " successfully uploaded";
+                Messenger.addMessage(message);
             }
 
-            return Ok(new
-            {
-                message = "Nr. of files uploaded: " + files.Count.ToString(),
-                filenames = fileNames,
-                toAzure
-            });
+            return RedirectToAction("Upload");
         }
     }
 }

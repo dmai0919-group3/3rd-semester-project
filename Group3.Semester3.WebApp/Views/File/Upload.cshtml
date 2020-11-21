@@ -12,8 +12,8 @@
             <input type="file" name="files" class="form-control-file" multiple />
         </div>
         <div class="form-group">
-            <input type="checkbox" name="toAzure" class="form-check-input" value="1" />
-            <label class="form-check-label" for="toAzure">Upload to Azure?</label>
+            <input type="text" name="parentGuid" class="form-control" value="0" />
+            <label for="parentGuid">Parent GUID</label>
         </div>
         @Html.AntiForgeryToken()
 
