@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Models.FileSystem;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Configuration;
-using System.IO;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +14,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 {
     public interface IFileService
     {
-        public Task<List<FileEntry>> UploadFile(UserModel user, System.Guid parentGUID, List<IFormFile> files);
+        public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
     }
     public class FileService : IFileService
     {
@@ -29,9 +27,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _fileRepository = fileRepository;
         }
 
-        public async Task<List<FileEntry>> UploadFile(UserModel user, System.Guid parentGUID, List<IFormFile> files)
+        public async Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files)
         {
             //long size = files.Sum(f => f.Length);
+
+            var parsedGUID = ParseGuid(parentGUID);
 
             List<FileEntry> fileEntries = new List<FileEntry>();
 
@@ -54,7 +54,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                         {
                             Name = formFile.FileName,
                             UUID = blobName,
-                            Parent = new DirectoryEntry { UUID = parentGUID }
+                            Parent = new DirectoryEntry { UUID = parsedGUID }
                         });
                         
                         var file = new FileEntity()
@@ -77,6 +77,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             // TODO push entries to db
 
             return fileEntries;
+        }
+
+        private Guid ParseGuid(string guid)
+        {
+            Guid parsedGuid = Guid.Empty;
+
+            try
+            {
+                parsedGuid = System.Guid.Parse(guid);
+            }
+            catch { }
+
+            return parsedGuid;
         }
     }
 }
