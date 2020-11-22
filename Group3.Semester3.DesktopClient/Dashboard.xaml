@@ -9,6 +9,6 @@
     <StackPanel>
         <Label Content="Username: " Foreground="Gray" FontSize="18" HorizontalAlignment="Left" Margin="5"/>
         <Label Content="Email: " Foreground="Gray" FontSize="18" HorizontalAlignment="Left" Margin="5"/>
-        <Button Name="btnLogout" Click="btnLogout_Click" Content="Log out" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
+        <Button Name="btnLogout" Content="Log out" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
     </StackPanel>
 </Window>

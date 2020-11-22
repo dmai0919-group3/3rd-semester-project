@@ -36,9 +36,9 @@ namespace Group3.Semester3.DesktopClient.Services
         private const string CurrentUserUrl = "https://localhost:44306/api/User/current";
 
 
-        public UserModel CurrentUser(LoginResultModel model)
+        public UserModel CurrentUser()
         {
-            var result = this.GetRequest(CurrentUserUrl, model.Token);
+            var result = this.GetRequest(CurrentUserUrl, BearerToken.Token);
 
             var resultModel = JsonConvert.DeserializeObject<UserModel>(result);
 
@@ -53,6 +53,8 @@ namespace Group3.Semester3.DesktopClient.Services
             var result = this.PostRequest(LoginUrl, model);
 
             var resultModel = JsonConvert.DeserializeObject<LoginResultModel>(result);
+
+            BearerToken.Token = resultModel.Token;
 
             return resultModel;
         }
@@ -125,38 +127,11 @@ namespace Group3.Semester3.DesktopClient.Services
             
             var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
 
-            var response = httpClient.PostAsync(url, content)
-            .ContinueWith(t =>
-             {
-                 try
-                 {
-                     return t.Result;
-                 }
-                 catch (AggregateException ex)
-                 {
-                     ex.Handle(inner =>
-                     {
-                         if (inner is HttpRequestException)
-                         {
-                             // Log the exception
-
-                             return true;
-                         }
-
-                         return false;
-                     });
-                 }
-                 catch (Exception ex)
-                 {
-                     throw ex;
-                 }
-
-                 return null;
-             });
-
+            var response = httpClient.PostAsync(url, content);
             response.Wait();
 
-            var result = response.Result.ToString();
+            var result = response.Result.Content.ReadAsStringAsync();
+            result.Wait();
 
             if (!response.Result.IsSuccessStatusCode)
             {
@@ -164,7 +139,7 @@ namespace Group3.Semester3.DesktopClient.Services
             }
 
 
-            return result;
+            return result.Result;
         }
 
         protected string GetRequest(string url, string token = "", string parameter = "key=value,key=value")
@@ -173,20 +148,24 @@ namespace Group3.Semester3.DesktopClient.Services
 
             string requestUrl = url;
 
-            if (token  != "") httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-            if (parameter != "") requestUrl += "?" + parameter;
+            if (token  != "") 
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            if (parameter != "") 
+                requestUrl += "?" + parameter;
 
             var response = httpClient.GetAsync(url);
             response.Wait();
-
-            var result = response.Result;
 
             if (!response.Result.IsSuccessStatusCode)
             {
                 throw new Exception("Request " + url + " failed with status code " + response.Result.StatusCode);
             }
 
-            return response.Result.ToString();
+            var result = response.Result.Content.ReadAsStringAsync();
+            result.Wait();
+
+            return result.Result;
         }
     }
 }

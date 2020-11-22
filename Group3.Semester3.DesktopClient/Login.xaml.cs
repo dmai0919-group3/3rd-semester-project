@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Group3.Semester3.DesktopClient;
+using Group3.Semester3.DesktopClient.Helpers;
 using Group3.Semester3.DesktopClient.Services;
 using Group3.Semester3.WebApp.Models.Users;
 
@@ -37,7 +38,8 @@ namespace desktop_app
             String password = passwordTextbox.Password;
             LoginResultModel loginResultModel = apiService.Login(email, password);
 
-            MainWindow mainWindow = new MainWindow(loginResultModel);
+
+            MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
             this.Close();
         }

@@ -1,4 +1,5 @@
 ﻿using desktop_app;
+using Group3.Semester3.DesktopClient.Helpers;
 using Group3.Semester3.DesktopClient.Services;
 using Group3.Semester3.WebApp.Models.Users;
 using System;
@@ -23,23 +24,21 @@ namespace Group3.Semester3.DesktopClient
     /// </summary>
     public partial class MainWindow : Window
     {
-        private LoginResultModel loginResultModel;
         private UserModel currentUser;
         private ApiService apiService = new ApiService();
 
-        public MainWindow(LoginResultModel model)
+        public MainWindow()
         {
-            loginResultModel = model;
-            currentUser = apiService.CurrentUser(model);
+            InitializeComponent();
+            currentUser = apiService.CurrentUser();
             userName.Content += currentUser.Name + "!";
             userEmail.Content += currentUser.Email;
             userId.Content += currentUser.Id.ToString();
-            InitializeComponent();
         }
 
         private void btnLogout_Click(object sender, RoutedEventArgs e)
         {
-            loginResultModel = null;
+            BearerToken.Token = "";
             currentUser = null;
             Login login = new Login();
             login.Show();
