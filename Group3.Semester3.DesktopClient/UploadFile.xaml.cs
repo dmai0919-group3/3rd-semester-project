@@ -87,5 +87,10 @@ namespace Group3.Semester3.DesktopClient
                 bw.RunWorkerAsync();
             }
         }
+
+        private void btnUploadFile_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO implement file ctrl logic
+        }
     }
 }

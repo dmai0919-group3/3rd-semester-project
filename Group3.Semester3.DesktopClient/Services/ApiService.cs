@@ -33,14 +33,28 @@ namespace Group3.Semester3.DesktopClient.Services
         private const string LoginUrl = "https://localhost:44306/api/User/login";
         private const string RegisterUrl = "https://localhost:44306/api/User/register";
         private const string FileUploadUrl = "https://localhost:44306/api/file/upload";
+        private const string CurrentUserUrl = "https://localhost:44306/api/User/current";
+
+
+        public UserModel CurrentUser()
+        {
+            var result = this.GetRequest(CurrentUserUrl, BearerToken.Token);
+
+            var resultModel = JsonConvert.DeserializeObject<UserModel>(result);
+
+            return resultModel;
+        }
+        
         
         public LoginResultModel Login(string email, string password)
         {
-            var model = new AuthenticateModel() { Email = email, Password = email };
+            var model = new AuthenticateModel() { Email = email, Password = password };
 
             var result = this.PostRequest(LoginUrl, model);
 
             var resultModel = JsonConvert.DeserializeObject<LoginResultModel>(result);
+
+            BearerToken.Token = resultModel.Token;
 
             return resultModel;
         }
@@ -55,7 +69,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
                 return resultModel;
             } 
-            catch (Exception exception)
+            catch (Exception exception) //TODO Are we sure we just catch a general exception and don't do anything with it?
             {
                 return null;
             }
@@ -111,27 +125,47 @@ namespace Group3.Semester3.DesktopClient.Services
         {
             var httpClient = new HttpClient();
             
-            HttpRequestMessage request = new HttpRequestMessage(
-                HttpMethod.Post, 
-                url
-            );
-            
-            var content = new StringContent(JsonConvert.SerializeObject(parameter));
+            var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
 
-            request.Content = content;
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken.Token);
-            
-            var response = httpClient.SendAsync(request);
+            var response = httpClient.PostAsync(url, content);
             response.Wait();
 
-            var result = response.Result;
+            var result = response.Result.Content.ReadAsStringAsync();
+            result.Wait();
 
             if (!response.Result.IsSuccessStatusCode)
             {
                 throw new Exception("Request "+url+" failed with status code "+ response.Result.StatusCode);
             }
 
-            return response.Result.ToString();
+
+            return result.Result;
+        }
+
+        protected string GetRequest(string url, string token = "", string parameter = "key=value,key=value")
+        {
+            var httpClient = new HttpClient();
+
+            string requestUrl = url;
+
+            if (token  != "") 
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+            if (parameter != "") 
+                requestUrl += "?" + parameter;
+
+            var response = httpClient.GetAsync(url);
+            response.Wait();
+
+            if (!response.Result.IsSuccessStatusCode)
+            {
+                throw new Exception("Request " + url + " failed with status code " + response.Result.StatusCode);
+            }
+
+            var result = response.Result.Content.ReadAsStringAsync();
+            result.Wait();
+
+            return result.Result;
         }
     }
 }
