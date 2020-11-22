@@ -1,0 +1,14 @@
+﻿<Window x:Class="Group3.Semester3.DesktopClient.Dashboard"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Group3.Semester3.DesktopClient"
+        mc:Ignorable="d"
+        Title="Dashboard" Height="450" Width="800">
+    <StackPanel>
+        <Label Content="Username: " Foreground="Gray" FontSize="18" HorizontalAlignment="Left" Margin="5"/>
+        <Label Content="Email: " Foreground="Gray" FontSize="18" HorizontalAlignment="Left" Margin="5"/>
+        <Button Name="btnLogout" Click="btnLogout_Click" Content="Log out" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
+    </StackPanel>
+</Window>

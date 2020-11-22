@@ -76,10 +76,38 @@ namespace Group3.Semester3.DesktopClient.Services
             
             var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
 
-            var response = httpClient.PostAsync(url, content);
+            var response = httpClient.PostAsync(url, content)
+            .ContinueWith(t =>
+             {
+                 try
+                 {
+                     return t.Result;
+                 }
+                 catch (AggregateException ex)
+                 {
+                     ex.Handle(inner =>
+                     {
+                         if (inner is HttpRequestException)
+                         {
+                             // Log the exception
+
+                             return true;
+                         }
+
+                         return false;
+                     });
+                 }
+                 catch (Exception ex)
+                 {
+                     throw ex;
+                 }
+
+                 return null;
+             });
+
             response.Wait();
 
-            var result = response.Result;
+            var result = response.Result.ToString();
 
             if (!response.Result.IsSuccessStatusCode)
             {
