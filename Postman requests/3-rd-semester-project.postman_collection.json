@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f3e8cc13-9938-4631-872f-bac59845b2c2",
+		"_postman_id": "99eb97a8-ed44-4923-9c4c-874e39c2ed23",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -12,7 +12,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Email\": \"erik@erik.sk\",\r\n    \"Name\": \"erik\",\r\n    \"Password\": \"pass\"\r\n}",
+					"raw": "{\r\n    \"Email\": \"erik@erik.sk\",\r\n    \"Password\": \"pass\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -85,6 +85,53 @@
 						"api",
 						"User",
 						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "File upload",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "files",
+							"type": "file",
+							"src": [
+								"/C:/Users/Erik/Downloads/Question-mark-logo.png",
+								"/C:/Users/Erik/Downloads/aspnet-core-3-registration-login-api-master.zip"
+							]
+						},
+						{
+							"key": "parentGuid",
+							"value": "0",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{host}}/api/file/upload",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"upload"
 					]
 				}
 			},
