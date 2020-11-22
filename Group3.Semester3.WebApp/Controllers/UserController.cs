@@ -88,14 +88,14 @@ namespace Group3.Semester3.WebApp.Controllers
             try
             {
                 var result = _userService.Register(model);
-                addMessage("User registered successfully");
-                return View();
+                addMessage("User registered successfully");    
             }
             catch (Exception exception)
             {
                 addMessage(exception.Message);
-                return View();
             }
+
+            return View();
         }
 
         // GET: user/dashboard

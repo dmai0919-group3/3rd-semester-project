@@ -43,7 +43,18 @@ namespace desktop_app
                 registerModel.Password = password1.Password;
                 registerModel.Name = name.Text;
 
-                UserModel userModel = apiService.Register(registerModel);
+                try
+                {
+                    UserModel userModel = apiService.Register(registerModel);
+                }
+                catch (Newtonsoft.Json.JsonReaderException)
+                {
+                    MessageBox.Show("Error communicating with the server", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
 
                 MessageBox.Show("You have successfully registered.\nPlease log in!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 

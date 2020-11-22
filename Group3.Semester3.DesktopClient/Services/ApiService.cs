@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.DesktopClient.Model;
 using System.IO;
@@ -39,8 +40,25 @@ namespace Group3.Semester3.DesktopClient.Services
         public UserModel CurrentUser()
         {
             var result = this.GetRequest(CurrentUserUrl, BearerToken.Token);
+            string resultContent;
 
-            var resultModel = JsonConvert.DeserializeObject<UserModel>(result);
+            { 
+                var t = result.Content.ReadAsStringAsync();
+                t.Wait();
+                resultContent = t.Result;
+            }
+
+            if (result.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                if (result.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new Exception(JObject.Parse(resultContent).SelectToken("message").Value<string>());
+                }
+
+                throw new Exception("Error communicating with the server");
+            }
+
+            var resultModel = JsonConvert.DeserializeObject<UserModel>(resultContent);
 
             return resultModel;
         }
@@ -52,7 +70,15 @@ namespace Group3.Semester3.DesktopClient.Services
 
             var result = this.PostRequest(LoginUrl, model);
 
-            var resultModel = JsonConvert.DeserializeObject<LoginResultModel>(result);
+            string resultContent;
+
+            {
+                var t = result.Content.ReadAsStringAsync();
+                t.Wait();
+                resultContent = t.Result;
+            }
+
+            var resultModel = JsonConvert.DeserializeObject<LoginResultModel>(resultContent);
 
             BearerToken.Token = resultModel.Token;
 
@@ -61,18 +87,26 @@ namespace Group3.Semester3.DesktopClient.Services
 
         public UserModel Register(RegisterModel model)
         {
-            try
-            {
-                var result = this.PostRequest(RegisterUrl, model);
+            var result = this.PostRequest(RegisterUrl, model);
+            string resultContent;
 
-                var resultModel = JsonConvert.DeserializeObject<UserModel>(result);
-
-                return resultModel;
-            } 
-            catch (Exception exception) //TODO Are we sure we just catch a general exception and don't do anything with it?
             {
-                return null;
+                var t = result.Content.ReadAsStringAsync();
+                t.Wait();
+                resultContent = t.Result;
             }
+
+            if (result.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                if (result.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new Exception(JObject.Parse(resultContent).SelectToken("message").Value<string>());
+                }
+
+                throw new Exception("Error communicating with the server");
+            }
+
+            return JsonConvert.DeserializeObject<UserModel>(resultContent);
         }
 
         public bool UploadFiles(List<FileToUpload> files, string parentGuid)
@@ -121,7 +155,7 @@ namespace Group3.Semester3.DesktopClient.Services
         // model object is serialized via json, the request is then posted async-ly
         // if the http response is 200 OK, the response is saved as string and returned
         // if the response is not 200 OK, an exception is thrown with a status code
-        protected string PostRequest(string url, object parameter)
+        protected HttpResponseMessage PostRequest(string url, object parameter)
         {
             var httpClient = new HttpClient();
             
@@ -130,19 +164,10 @@ namespace Group3.Semester3.DesktopClient.Services
             var response = httpClient.PostAsync(url, content);
             response.Wait();
 
-            var result = response.Result.Content.ReadAsStringAsync();
-            result.Wait();
-
-            if (!response.Result.IsSuccessStatusCode)
-            {
-                throw new Exception("Request "+url+" failed with status code "+ response.Result.StatusCode);
-            }
-
-
-            return result.Result;
+            return response.Result;
         }
 
-        protected string GetRequest(string url, string token = "", string parameter = "key=value,key=value")
+        protected HttpResponseMessage GetRequest(string url, string token = "", string parameter = "key=value,key=value")
         {
             var httpClient = new HttpClient();
 
@@ -162,10 +187,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 throw new Exception("Request " + url + " failed with status code " + response.Result.StatusCode);
             }
 
-            var result = response.Result.Content.ReadAsStringAsync();
-            result.Wait();
-
-            return result.Result;
+            return response.Result;
         }
     }
 }
