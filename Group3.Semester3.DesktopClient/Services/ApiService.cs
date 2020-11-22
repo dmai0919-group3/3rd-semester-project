@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Group3.Semester3.WebApp.Models.Users;
+using Group3.Semester3.DesktopClient.Model;
+using System.IO;
+using Group3.Semester3.DesktopClient.Helpers;
+using System.Net.Http.Headers;
 
 namespace Group3.Semester3.DesktopClient.Services
 {
@@ -14,6 +18,8 @@ namespace Group3.Semester3.DesktopClient.Services
         public LoginResultModel Login(string email, string password);
 
         public UserModel Register(RegisterModel model);
+
+        public bool UploadFiles(List<FileToUpload> files, string parentGuid);
     }
 
     /* 
@@ -26,6 +32,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
         private const string LoginUrl = "https://localhost:44306/api/User/login";
         private const string RegisterUrl = "https://localhost:44306/api/User/register";
+        private const string FileUploadUrl = "https://localhost:44306/api/file/upload";
         private const string CurrentUserUrl = "https://localhost:44306/api/User/current";
 
 
@@ -63,6 +70,48 @@ namespace Group3.Semester3.DesktopClient.Services
             catch (Exception exception) //TODO Are we sure we just catch a general exception and don't do anything with it?
             {
                 return null;
+            }
+        }
+
+        public bool UploadFiles(List<FileToUpload> files, string parentGuid)
+        {
+            try
+            {
+                var content = new MultipartFormDataContent();
+                
+                foreach (var file in files)
+                {
+                    content.Add(new StreamContent(File.OpenRead(file.Path)), "files", file.Name);
+                }
+                
+                content.Add(new StringContent(parentGuid),"parentGuid");
+
+                var client = new HttpClient();
+                
+                HttpRequestMessage request = new HttpRequestMessage(
+                    HttpMethod.Post, 
+                    FileUploadUrl
+                    );
+
+                request.Content = content;
+                
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken.Token);
+
+                var response = client.SendAsync(request);
+                response.Wait();
+
+                if (response.Result.IsSuccessStatusCode)
+                {
+                    return true;
+                } 
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception exception)
+            {
+                return false;
             }
         }
         

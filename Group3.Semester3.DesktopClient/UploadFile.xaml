@@ -9,7 +9,7 @@
     <Grid>
         <DockPanel Margin="100">
             <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top">
-                <Button Name="btnUploadFile" Click="btnUploadFile_Click" >Upload files</Button>
+                <Button Name="btnUploadFile" Click="btnOpenFiles_Click">Upload files</Button>
                 <Button Name="btnSubmit" Click="btnSubmit_Click" Margin="20,0,0,0">Upload</Button>
             </WrapPanel>
             <ListBox Name="lbFiles" />
