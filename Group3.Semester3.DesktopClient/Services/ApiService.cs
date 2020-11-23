@@ -31,13 +31,14 @@ namespace Group3.Semester3.DesktopClient.Services
 
     public class ApiService : IApiService
     {
-        // 2 constants, pointing at endpoints for login and registration 
+        const string host = "http://localhost:5000"; // TODO move to settings
 
-        private const string LoginUrl = "https://localhost:44306/api/User/login";
-        private const string RegisterUrl = "https://localhost:44306/api/User/register";
-        private const string FileUploadUrl = "https://localhost:44306/api/file/upload";
-        private const string CurrentUserUrl = "https://localhost:44306/api/User/current";
-        private const string BrowseFilesUrl = "https://localhost:44306/api/User/browse";
+        // TODO actually move everything to settings
+        private string LoginUrl = $"{host}/api/User/login";
+        private string RegisterUrl = $"{host}/api/User/register";
+        private string FileUploadUrl = $"{host}/api/file/upload";
+        private string CurrentUserUrl = $"{host}/api/User/current";
+        private string BrowseFilesUrl = $"{host}/api/User/browse";
 
 
         public UserModel CurrentUser()
@@ -174,7 +175,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
         public List<FileEntity> FileList(UserModel currentUser)
         {
-            
+            throw new NotImplementedException();
         }
     }
 }

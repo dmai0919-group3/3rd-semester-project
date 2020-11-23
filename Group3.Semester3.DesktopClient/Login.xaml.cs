@@ -33,15 +33,14 @@ namespace desktop_app
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
             ApiService apiService = new ApiService();
-            
+
             String email = emailTextbox.Text;
             String password = passwordTextbox.Password;
             LoginResultModel loginResultModel = apiService.Login(email, password);
 
 
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Show();
-            this.Close();
+            new MainWindow().Show();
+            new Dashboard().Show();
         }
 
         private void btnRegister_Click(object sender, RoutedEventArgs e)
