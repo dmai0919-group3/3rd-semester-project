@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.BusinessLayer;
+using Group3.Semester3.WebApp.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,12 +25,15 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             _userService = userService;
         }
 
-        // GET: api/file
+        // GET: api/file/browse
         [HttpGet]
-        public IEnumerable<string> GetFiles()
+        [Route("browse")]
+        public IActionResult GetFiles()
         {
-            // TODO: Return all user files here
-            return new string[] { "value1", "value2" };
+            var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntities = _fileService.BrowseFiles(user);
+                return Ok(fileEntities);
+            
         }
 
         // GET api/file/5

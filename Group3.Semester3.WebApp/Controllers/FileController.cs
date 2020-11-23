@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Group3.Semester3.WebApp.BusinessLayer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Group3.Semester3.WebApp.Helpers;
+using Group3.Semester3.WebApp.Entities;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -51,5 +52,17 @@ namespace Group3.Semester3.WebApp.Controllers
 
             return RedirectToAction("Upload");
         }
+
+        [Route("browse")]
+        [HttpGet]
+        public ActionResult Browse()
+        {
+            var user = _userService.GetFromHttpContext(HttpContext);
+            var fileEntities = _fileService.BrowseFiles(user);
+            ViewBag.Files = fileEntities;
+
+            return View();
+        }
+
     }
 }
