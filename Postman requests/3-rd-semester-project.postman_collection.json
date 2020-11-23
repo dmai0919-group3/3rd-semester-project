@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "99eb97a8-ed44-4923-9c4c-874e39c2ed23",
+		"_postman_id": "c94d1f75-d83e-47b8-93fa-60f5246a89a2",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -132,6 +132,35 @@
 						"api",
 						"file",
 						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Browse Files",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/file/browse",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"browse"
 					]
 				}
 			},

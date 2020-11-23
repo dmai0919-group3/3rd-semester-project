@@ -12,7 +12,7 @@ namespace Group3.Semester3.WebApp.Repositories
     public interface IFileRepository
     {
         public FileEntity GetById(Guid id);
-        public List<FileEntity> GetByUserId(Guid userId);
+        public IEnumerable<FileEntity> GetByUserId(Guid userId);
         public bool Insert(FileEntity fileEntity);
         public bool Delete(Guid id);
     }
@@ -57,7 +57,7 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
-        public List<FileEntity> GetByUserId(Guid userId)
+        public IEnumerable<FileEntity> GetByUserId(Guid userId)
         {
             string query = "SELECT * FROM Files WHERE userId=@UserId";
 
@@ -69,7 +69,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 {
                     connection.Open();
 
-                    var result = connection.QueryFirst<List<FileEntity>>(query, parameters);
+                    var result = connection.Query<FileEntity>(query, parameters);
 
                     return result;
                 }

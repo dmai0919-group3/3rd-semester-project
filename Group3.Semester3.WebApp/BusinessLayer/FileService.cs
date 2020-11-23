@@ -15,6 +15,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     public interface IFileService
     {
         public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
+
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser);
     }
     public class FileService : IFileService
     {
@@ -25,6 +27,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
+        }
+
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser)
+        {
+            var fileList = _fileRepository.GetByUserId(currentUser.Id);
+                        
+            return fileList;
         }
 
         public async Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files)

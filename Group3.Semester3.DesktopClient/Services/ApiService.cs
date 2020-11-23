@@ -7,6 +7,7 @@ using Group3.Semester3.DesktopClient.Model;
 using System.IO;
 using Group3.Semester3.DesktopClient.Helpers;
 using System.Net.Http.Headers;
+using Group3.Semester3.WebApp.Entities;
 
 namespace Group3.Semester3.DesktopClient.Services
 {
@@ -20,6 +21,8 @@ namespace Group3.Semester3.DesktopClient.Services
         public UserModel Register(RegisterModel model);
 
         public bool UploadFiles(List<FileToUpload> files, string parentGuid);
+
+        public List<FileEntity> FileList(UserModel currentUser);
     }
 
     /* 
@@ -34,6 +37,7 @@ namespace Group3.Semester3.DesktopClient.Services
         private const string RegisterUrl = "https://localhost:44306/api/User/register";
         private const string FileUploadUrl = "https://localhost:44306/api/file/upload";
         private const string CurrentUserUrl = "https://localhost:44306/api/User/current";
+        private const string BrowseFilesUrl = "https://localhost:44306/api/User/browse";
 
 
         public UserModel CurrentUser()
@@ -166,6 +170,11 @@ namespace Group3.Semester3.DesktopClient.Services
             result.Wait();
 
             return result.Result;
+        }
+
+        public List<FileEntity> FileList(UserModel currentUser)
+        {
+            
         }
     }
 }
