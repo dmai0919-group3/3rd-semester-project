@@ -1,0 +1,21 @@
+﻿
+@{
+    ViewData["Title"] = "Browse files";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    @foreach(var file in ViewBag.Files)
+    {
+        <div class="col-md-2 file justify-content-center">
+            <div>
+                <img src="~/Images/file-icon.png"/>
+            </div>
+            <p class="file-name">@file.Name</p>
+        </div>
+    }
+</div>
+
+<script>
+
+</script>

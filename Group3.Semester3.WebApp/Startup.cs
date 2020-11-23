@@ -11,6 +11,8 @@ using Microsoft.IdentityModel.Tokens;
 using Group3.Semester3.WebApp.Repositories;
 using Group3.Semester3.WebApp.BusinessLayer;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.IO;
+using Microsoft.Extensions.FileProviders;
 
 namespace Group3.Semester3.WebApp
 {
@@ -91,6 +93,8 @@ namespace Group3.Semester3.WebApp
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseRouting();
 
