@@ -4,9 +4,6 @@
 <a href="https://github.com/dmai0919-group3/3rd-semester-project/issues" target="_blank">
   <img alt=Issues" src="https://img.shields.io/github/issues/dmai0919-group3/3rd-semester-project.svg" />
 </a>
-<a href="https://github.com/dmai0919-group3/3rd-semester-project/issues" target="_blank">
-    <img alt=Issues" src="https://img.shields.io/github/issues/dmai0919-group3/3rd-semester-project.svg" />
-</a>
 <a href="https://github.com/dmai0919-group3/3rd-semester-project/blob/main/LICENSE" target="_blank">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green.svg" />
 </a>
