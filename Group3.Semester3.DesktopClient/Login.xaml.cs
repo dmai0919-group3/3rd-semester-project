@@ -41,6 +41,7 @@ namespace desktop_app
 
             new MainWindow().Show();
             new Dashboard().Show();
+            Close();
         }
 
         private void btnRegister_Click(object sender, RoutedEventArgs e)

@@ -51,14 +51,13 @@
             </Grid.RowDefinitions>
             <Label Content="My Workspace (Root)" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="16" Foreground="#DD2C2C2C" RenderTransformOrigin="0.619,0.001" Margin="10,4,0,0" Height="30" Width="180"/>
             <TreeView Grid.Row="1" Margin="10,6,10,10">
-                <TreeViewItem IsExpanded="True">
+                <TreeViewItem IsExpanded="True" Name="treeBogoRoot">
                     <TreeViewItem.Header>
-                        <StackPanel>
-                            <Image Source="/Resources/Icons/folder-24px.xaml" />
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Root" FontSize="14" />
                         </StackPanel>
                     </TreeViewItem.Header>
-                    <TreeViewItem Header="Bullshit" IsExpanded="True" />
+                    
                 </TreeViewItem>
             </TreeView>
         </Grid>

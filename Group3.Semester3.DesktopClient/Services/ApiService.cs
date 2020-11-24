@@ -14,7 +14,7 @@ namespace Group3.Semester3.DesktopClient.Services
 {
     /* 
      * interface for an API service 
-     */ 
+     */
     public interface IApiService
     {
         public LoginResultModel Login(string email, string password);
@@ -32,14 +32,14 @@ namespace Group3.Semester3.DesktopClient.Services
 
     public class ApiService : IApiService
     {
-        const string host = "http://localhost:5000"; // TODO move to settings
+        const string host = "https://localhost:44306"; // TODO move to settings
 
         // TODO actually move everything to settings
-        private string LoginUrl = $"{host}/api/User/login";
+        private string LoginUrl = $"{host}/api/user/login";
         private string RegisterUrl = $"{host}/api/User/register";
         private string FileUploadUrl = $"{host}/api/file/upload";
-        private string CurrentUserUrl = $"{host}/api/User/current";
-        private string BrowseFilesUrl = $"{host}/api/User/browse";
+        private string CurrentUserUrl = $"{host}/api/user/current";
+        private string BrowseFilesUrl = $"{host}/api/file/browse";
 
 
         public UserModel CurrentUser()
@@ -47,7 +47,7 @@ namespace Group3.Semester3.DesktopClient.Services
             var result = this.GetRequest(CurrentUserUrl, BearerToken.Token);
             string resultContent;
 
-            { 
+            {
                 var t = result.Content.ReadAsStringAsync();
                 t.Wait();
                 resultContent = t.Result;
@@ -67,8 +67,8 @@ namespace Group3.Semester3.DesktopClient.Services
 
             return resultModel;
         }
-        
-        
+
+
         public LoginResultModel Login(string email, string password)
         {
             var model = new AuthenticateModel() { Email = email, Password = password };
@@ -119,23 +119,23 @@ namespace Group3.Semester3.DesktopClient.Services
             try
             {
                 var content = new MultipartFormDataContent();
-                
+
                 foreach (var file in files)
                 {
                     content.Add(new StreamContent(File.OpenRead(file.Path)), "files", file.Name);
                 }
-                
-                content.Add(new StringContent(parentGuid),"parentGuid");
+
+                content.Add(new StringContent(parentGuid), "parentGuid");
 
                 var client = new HttpClient();
-                
+
                 HttpRequestMessage request = new HttpRequestMessage(
-                    HttpMethod.Post, 
+                    HttpMethod.Post,
                     FileUploadUrl
                     );
 
                 request.Content = content;
-                
+
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken.Token);
 
                 var response = client.SendAsync(request);
@@ -144,7 +144,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 if (response.Result.IsSuccessStatusCode)
                 {
                     return true;
-                } 
+                }
                 else
                 {
                     return false;
@@ -155,7 +155,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 return false;
             }
         }
-        
+
         // method for posting a http request, taking url and model as a parameters
         // model object is serialized via json, the request is then posted async-ly
         // if the http response is 200 OK, the response is saved as string and returned
@@ -163,8 +163,11 @@ namespace Group3.Semester3.DesktopClient.Services
         protected HttpResponseMessage PostRequest(string url, object parameter)
         {
             var httpClient = new HttpClient();
-            
+
             var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
+
+            if (BearerToken.Token != string.Empty)
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", BearerToken.Token);
 
             var response = httpClient.PostAsync(url, content);
             response.Wait();
@@ -178,10 +181,10 @@ namespace Group3.Semester3.DesktopClient.Services
 
             string requestUrl = url;
 
-            if (token  != "") 
+            if (token != "")
                 httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-            if (parameter != "") 
+            if (parameter != "")
                 requestUrl += "?" + parameter;
 
             var response = httpClient.GetAsync(url);
@@ -197,7 +200,19 @@ namespace Group3.Semester3.DesktopClient.Services
 
         public List<FileEntity> FileList(UserModel currentUser)
         {
-            throw new NotImplementedException();
+            var result = PostRequest(BrowseFilesUrl, null);
+            string resultContent;
+
+            {
+                var t = result.Content.ReadAsStringAsync();
+                t.Wait();
+                resultContent = t.Result;
+            }
+
+            if (result.StatusCode != System.Net.HttpStatusCode.OK)
+                throw new Exception("Error communicating with the server");
+
+            return JsonConvert.DeserializeObject<List<FileEntity>>(resultContent);
         }
     }
 }

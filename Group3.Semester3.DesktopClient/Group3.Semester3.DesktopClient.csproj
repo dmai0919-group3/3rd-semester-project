@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Remove="folder-24px.xaml" />
     <Page Remove="Resources\Icons\folder-24px.xaml" />
   </ItemGroup>
 
@@ -24,6 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="folder-24px.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
     <Resource Include="Resources\Icons\folder-24px.xaml" />
   </ItemGroup>
 
