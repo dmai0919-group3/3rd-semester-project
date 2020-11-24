@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Entities;
@@ -34,6 +35,16 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var fileEntities = _fileService.BrowseFiles(user);
                 return Ok(fileEntities);
             
+        }
+
+        [HttpPost]
+        [Route("browse")]
+        public IActionResult GetFileList()
+        {
+            var user = _userService.GetFromHttpContext(HttpContext);
+            var fileEntities = _fileService.BrowseFiles(user);
+
+            return Ok(fileEntities.ToList());
         }
 
         // GET api/file/5

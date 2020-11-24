@@ -8,7 +8,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="image.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="folder-24px.xaml" />
+    <Page Remove="Resources\Icons\folder-24px.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Group3.Semester3.WebApp\Group3.Semester3.WebApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="folder-24px.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Resource Include="Resources\Icons\folder-24px.xaml" />
   </ItemGroup>
 
 </Project>
