@@ -19,17 +19,9 @@
 
 ### 🏠 [Homepage: https://ogo-file.space](https://ogo-file.space)
 
-## Install
-
-```
-You can always use the Web version of our app, available at https://ogo-file.space or download the Desktop client (Windows) from the Releases tab on the right.
-```
-
 ## Usage
 
-```sh
-//TODO
-```
+You can always use the Web version of our app, available at https://ogo-file.space or download the Desktop client (Windows) from the Releases tab on the right.
 
 ## Authors
 
