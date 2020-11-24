@@ -1,1 +1,6 @@
 theme: jekyll-theme-cayman
+title: OGO Filesharing System
+description: OGO is a File Sharing and Collaboration tool designed for creative professionals and other individuals who require a reliable and easy to use solution to manage their team's files, share them with internal or external users and start discussions about them.
+github:
+  zip_url: https://github.com/dmai0919-group3/3rd-semester-project/archive/main.zip
+  tar_url: https://github.com/dmai0919-group3/3rd-semester-project/releases/latest
