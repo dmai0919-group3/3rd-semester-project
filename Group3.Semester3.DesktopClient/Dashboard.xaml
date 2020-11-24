@@ -1,14 +1,65 @@
-﻿<Window x:Class="Group3.Semester3.DesktopClient.Dashboard"
+﻿<Window xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"  x:Class="Group3.Semester3.DesktopClient.Dashboard"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Group3.Semester3.DesktopClient"
         mc:Ignorable="d"
-        Title="Dashboard" Height="450" Width="800">
-    <StackPanel>
-        <Label Content="Username: " Foreground="Gray" FontSize="18" HorizontalAlignment="Left" Margin="5"/>
-        <Label Content="Email: " Foreground="Gray" FontSize="18" HorizontalAlignment="Left" Margin="5"/>
-        <Button Name="btnLogout" Content="Log out" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
-    </StackPanel>
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="57*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.ColumnSpan="2" Background="#FF3FB9FF">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
+                <Label Foreground="White" VerticalAlignment="Center" Name="labelUserName">
+
+                </Label>
+                <Button Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Foreground="White" Background="{x:Null}" BorderBrush="{x:Null}" Width="25" Height="25" >
+                    <materialDesign:PackIcon Kind="Account"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1" Background="#FFEEEEEE">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="19*"/>
+                <RowDefinition Height="10*"/>
+                <RowDefinition Height="173*"/>
+            </Grid.RowDefinitions>
+            <Grid VerticalAlignment="Top" Height="0"/>
+            <Label Content="Workspace" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="18" Margin="6,9,0,0" Height="30" Width="97" Foreground="#DD2C2C2C" Grid.RowSpan="2"/>
+            <Label Content="Default" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0,0,0" Height="30" Width="97" Foreground="#DD2C2C2C" FontSize="14" Grid.Row="1"/>
+            <Separator Margin="10,3,10,0" Grid.Row="2" VerticalAlignment="Top" Foreground="#FF818181" Height="1"/>
+            <Button Content="Test Upload" HorizontalAlignment="Center" Margin="0,21,0,0" Grid.Row="2" VerticalAlignment="Top" Width="130" Foreground="White"/>
+        </Grid>
+        <Grid Grid.Column="1" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="33*"/>
+                <RowDefinition Height="371*"/>
+            </Grid.RowDefinitions>
+            <Label Content="My Workspace (Root)" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="16" Foreground="#DD2C2C2C" RenderTransformOrigin="0.619,0.001" Margin="10,4,0,0" Height="30" Width="180"/>
+            <TreeView Grid.Row="1" Margin="10,6,10,10">
+                <TreeViewItem IsExpanded="True" Name="treeBogoRoot">
+                    <TreeViewItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Root" FontSize="14" />
+                        </StackPanel>
+                    </TreeViewItem.Header>
+                    
+                </TreeViewItem>
+            </TreeView>
+        </Grid>
+    </Grid>
 </Window>

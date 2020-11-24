@@ -13,9 +13,13 @@
         <TextBox Name="emailTextbox" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
         <Label Content="Password" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
         <PasswordBox Name="passwordTextbox" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
-        <StackPanel Orientation="Horizontal" Margin="125 25" HorizontalAlignment="Center">
-            <Button Name="btnLogin" Click="btnLogin_Click" Content="Login" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
-            <Button Name="btnRegister" Click="btnRegister_Click" Content="Register" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
-        </StackPanel>
+        <Grid HorizontalAlignment="Center" Margin="25" Width="237">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Name="btnLogin" Click="btnLogin_Click" Content="Login" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Center" Width="85"></Button>
+            <Button Name="btnRegister" Click="btnRegister_Click" Content="Register" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Center" Grid.Column="1" Width="85"/>
+        </Grid>
     </StackPanel>
 </Window>
