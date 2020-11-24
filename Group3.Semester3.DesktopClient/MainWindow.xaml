@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Group3.Semester3.DesktopClient"
         mc:Ignorable="d"
-        Title="FILESHARING" Height="450" Width="800"
+        Title="OGO Filesharing [DEBUG]" Height="450" Width="800"
         WindowState="Maximized" WindowStyle="SingleBorderWindow">
     <StackPanel Margin="25 0">
-        <Label Content="Dashboard" Foreground="Gray" FontSize="24" HorizontalAlignment="left"/>
+        <Label Content="Debug Dashboard" Foreground="Gray" FontSize="24" HorizontalAlignment="left"/>
         <Label Name="userName" Content="Welcome " Foreground="Gray" FontSize="16" HorizontalAlignment="left"/>
         <Label Name="userEmail" Content="Email address: " Foreground="Gray" FontSize="12" HorizontalAlignment="left"/>
         <Label Name="userId" Content="User ID: " Foreground="Gray" FontSize="12" HorizontalAlignment="left"/>
