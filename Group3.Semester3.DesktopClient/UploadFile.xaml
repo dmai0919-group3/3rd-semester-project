@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Group3.Semester3.DesktopClient"
         mc:Ignorable="d"
-        Title="UploadFile" Height="450" Width="800">
+        Title="OGO Filesharing" Height="450" Width="800">
     <Grid>
         <DockPanel Margin="100">
             <WrapPanel HorizontalAlignment="Center" DockPanel.Dock="Top">
