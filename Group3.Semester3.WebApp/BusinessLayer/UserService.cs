@@ -47,7 +47,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             // check if password is correct
             if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                throw new Exception("Incorrect password");
+                throw new Exception("Incorrect password or username");
 
             // authentication successful, return user
 

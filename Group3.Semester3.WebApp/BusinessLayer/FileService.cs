@@ -17,6 +17,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
 
         public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser);
+        public bool RenameFile(Guid id, string name);
+        public FileEntity GetById(Guid id);
+        public bool DeleteFile(Guid id);
     }
     public class FileService : IFileService
     {
@@ -88,6 +91,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return fileEntries;
         }
 
+        public bool DeleteFile(Guid id)
+        {
+            return _fileRepository.Delete(id);
+        }
+
+        public bool RenameFile(Guid id, string name)
+        {
+            return _fileRepository.Rename(id, name);
+        }
+
         private Guid ParseGuid(string guid)
         {
             Guid parsedGuid = Guid.Empty;
@@ -99,6 +112,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             catch { }
 
             return parsedGuid;
+        }
+
+        public FileEntity GetById(Guid id)
+        {
+            return _fileRepository.GetById(id);
         }
     }
 }

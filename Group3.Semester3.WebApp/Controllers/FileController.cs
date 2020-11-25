@@ -7,6 +7,7 @@ using Group3.Semester3.WebApp.BusinessLayer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Entities;
+using System;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -63,6 +64,26 @@ namespace Group3.Semester3.WebApp.Controllers
 
             return View();
         }
+
+        [Route("delete")]
+        [HttpDelete]
+        public ActionResult Delete(Guid guid)
+        {
+            var result = _fileService.DeleteFile(guid);
+
+            return View();
+        }
+
+        [Route("rename")]
+        [HttpPut]
+        public ActionResult Rename(Guid guid, string name)
+        {
+            var result = _fileService.RenameFile(guid, name);
+
+            return View();
+        }
+
+
 
     }
 }
