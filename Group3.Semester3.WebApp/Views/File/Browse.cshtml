@@ -58,7 +58,32 @@
          let fileName = $("#file-name").val();
          let fileId = $("#file-id").val();
          
-         console.log(fileId, fileName);
+         let url = "@Url.Action("Rename","File")";
+         
+         let file = {
+             fileId: "832aaf11-bf3b-423a-9204-11d83a47d82d",
+             fileName: fileName
+         }
+         
+         $.ajax({
+            url: url, 
+            data: file,
+            type: "PUT",
+            success: function(result){
+                let id = result.id;
+                let fileName = result.name;
+                
+                $("#renameFileModal").modal("hide");
+                
+                let $fileNameElement = $('#'+id).find('.file-name');
+                
+                $fileNameElement.text(fileName);
+            },
+            error: function (result) {
+                // TODO: Handle better in the future
+                alert("Failed to rename a file");
+            }
+         });
          
          // TODO: Implement rename logic
     }
