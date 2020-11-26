@@ -80,9 +80,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         public IActionResult UpdateFile(Guid fileId, [FromBody] string name)
         {
             var user = _userService.GetFromHttpContext(HttpContext);
-            _fileService.RenameFile(fileId, user.Id, name);
-            var file = _fileService.GetById(fileId);
-            return Ok(file);
+            var file = _fileService.RenameFile(fileId, user.Id, name);
+            if (file != null)
+            {
+                return Ok(file);
+            }
+            else return NoContent();
         }
 
         // DELETE api/<FileApiController>/5
@@ -90,8 +93,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         public IActionResult DeleteFile(Guid fileId)
         {
             var user = _userService.GetFromHttpContext(HttpContext);
-            _fileService.DeleteFile(fileId, user.Id);
-            return NoContent();
+            var result = _fileService.DeleteFile(fileId, user.Id);
+            if(!result)
+            {
+                return BadRequest();
+            }
+            else return NoContent();
         }
     }
 }

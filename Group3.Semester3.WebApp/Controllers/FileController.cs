@@ -88,7 +88,6 @@ namespace Group3.Semester3.WebApp.Controllers
             {
                 return BadRequest(e.Message);
             }
-            return NoContent();
         }
 
         [Route("rename")]
