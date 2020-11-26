@@ -27,7 +27,7 @@
                 rename: {
                     name: "Rename",
                     callback: function (key, opt) {
-                        renameFile(key, opt);
+                        showRenameFileModal(key, opt);
                     }
                 },
                 delete: {
@@ -40,13 +40,27 @@
         });
     });
 
-    function renameFile(key, opt) {
-
+    function showRenameFileModal(key, opt) {
+        
         let $element = opt.$trigger;
         let fileId = $element.attr("id");
-        console.log("rename", fileId);
+        
+        let fileName = $element.find('.file-name').text();
+        
+        $("#file-name").val(fileName);
+        $("#file-id").val(fileId);
+        
         $("#renameFileModal").modal();
-        // TODO: Implement rename logic
+        
+    }
+    
+    function renameFile() {
+         let fileName = $("#file-name").val();
+         let fileId = $("#file-id").val();
+         
+         console.log(fileId, fileName);
+         
+         // TODO: Implement rename logic
     }
 
     function deleteFile(key, opt) {
@@ -75,12 +89,15 @@
                     <div class="form-group">
                         <label for="file-name" class="col-form-label">File name:</label>
                         <input type="text" class="form-control" id="file-name">
-                    </div>                    
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" id="file-id">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-primary" onclick="renameFile()">Save</button>
             </div>
         </div>
     </div>
