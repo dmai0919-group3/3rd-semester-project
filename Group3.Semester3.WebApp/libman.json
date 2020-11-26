@@ -6,11 +6,18 @@
     {
       "library": "twitter-bootstrap@4.5.3",
       "destination": "wwwroot/lib/twitter-bootstrap/"
+    },
+    {
+      "library": "jquery@3.5.1",
+      "destination": "wwwroot/lib/jquery/"
+    },
+    {
+      "library": "jqueryui@1.12.1",
+      "destination": "wwwroot/lib/jqueryui/"
+    },
+    {
+      "library": "jquery-contextmenu@2.9.2",
+      "destination": "wwwroot/lib/jquery-contextmenu/"
     }
-  ,
-{
-  "library": "jquery@3.5.1",
-  "destination": "wwwroot/lib/jquery/"
-}
-]
+  ]
 }
