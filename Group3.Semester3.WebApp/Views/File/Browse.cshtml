@@ -6,11 +6,11 @@
 }
 
 <div class="row">
-    @foreach(var file in ViewBag.Files)
+    @foreach (var file in ViewBag.Files)
     {
         <div class="col-md-2 file justify-content-center" id="@file.Id">
             <div>
-                <img src="~/Images/file-icon.png"/>
+                <img src="~/Images/file-icon.png" />
             </div>
             <p class="file-name">@file.Name</p>
         </div>
@@ -20,7 +20,7 @@
 
 <script>
 
-    $(function() {
+    $(function () {
         $.contextMenu({
             selector: '.file',
             items: {
@@ -39,23 +39,49 @@
             }
         });
     });
-    
+
     function renameFile(key, opt) {
-        
+
         let $element = opt.$trigger;
         let fileId = $element.attr("id");
         console.log("rename", fileId);
-        
+        $("#renameFileModal").modal();
         // TODO: Implement rename logic
     }
-    
+
     function deleteFile(key, opt) {
-        
+
         let $element = opt.$trigger;
         let fileId = $element.attr("id");
         console.log("delete", fileId);
-        
+
         // TODO: Implement delete logic
     }
 
 </script>
+
+
+<div class="modal fade" id="renameFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Rename file</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="file-name" class="col-form-label">File name:</label>
+                        <input type="text" class="form-control" id="file-name">
+                    </div>                    
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
