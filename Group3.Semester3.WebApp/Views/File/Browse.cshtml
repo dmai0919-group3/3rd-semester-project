@@ -1,4 +1,5 @@
-﻿
+﻿@using Microsoft.CodeAnalysis
+
 @{
     ViewData["Title"] = "OGO Filesharing - Browse files";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -7,7 +8,7 @@
 <div class="row">
     @foreach(var file in ViewBag.Files)
     {
-        <div class="col-md-2 file justify-content-center">
+        <div class="col-md-2 file justify-content-center" id="@file.Id">
             <div>
                 <img src="~/Images/file-icon.png"/>
             </div>
@@ -16,6 +17,45 @@
     }
 </div>
 
+
 <script>
+
+    $(function() {
+        $.contextMenu({
+            selector: '.file',
+            items: {
+                rename: {
+                    name: "Rename",
+                    callback: function (key, opt) {
+                        renameFile(key, opt);
+                    }
+                },
+                delete: {
+                    name: "Delete",
+                    callback: function (key, opt) {
+                        deleteFile(key, opt);
+                    }
+                }
+            }
+        });
+    });
+    
+    function renameFile(key, opt) {
+        
+        let $element = opt.$trigger;
+        let fileId = $element.attr("id");
+        console.log("rename", fileId);
+        
+        // TODO: Implement rename logic
+    }
+    
+    function deleteFile(key, opt) {
+        
+        let $element = opt.$trigger;
+        let fileId = $element.attr("id");
+        console.log("delete", fileId);
+        
+        // TODO: Implement delete logic
+    }
 
 </script>

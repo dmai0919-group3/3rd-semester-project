@@ -6,6 +6,7 @@ using Group3.Semester3.WebApp.Entities;
 using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
 using Dapper;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 
 namespace Group3.Semester3.WebApp.Repositories
 {
@@ -84,7 +85,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return user;
                 } 
-                catch (Exception exception)
+                catch (Exception e)
                 {
 
                 }
@@ -122,7 +123,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return user;
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
                     return null;
                 }
@@ -159,9 +160,8 @@ namespace Group3.Semester3.WebApp.Repositories
                         return true;
                     }
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
-                    throw exception;
                 }
             }
 

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
@@ -17,6 +18,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
 
         public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser);
+        public bool RenameFile(Guid id, string name);
+        public FileEntity GetById(Guid id);
+        public bool DeleteFile(Guid id);
     }
     public class FileService : IFileService
     {
@@ -65,7 +69,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             UUID = blobName,
                             Parent = new DirectoryEntry { UUID = parsedGUID }
                         });
-                        
+
                         var file = new FileEntity()
                         {
                             Id = Guid.NewGuid(),
@@ -73,19 +77,42 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             Name = formFile.FileName,
                             UserId = user.Id,
                         };
-                        
+
                         _fileRepository.Insert(file);
                     }
-                    catch
+                    catch (Exception e)
                     {
                         // TODO generate error
                     }
                 }
+                else throw new ValidationException("No files chosen.");
             }
 
             // TODO push entries to db
 
             return fileEntries;
+        }
+
+        public bool DeleteFile(Guid id)
+        {
+            bool result = _fileRepository.Delete(id);
+            if (!result)
+            {
+                throw new ValidationException("File non-existent or not deleted.");
+            }
+            else return result;
+        }
+
+        public bool RenameFile(Guid id, string name)
+        {
+            try
+            {
+                return _fileRepository.Rename(id,name);
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
 
         private Guid ParseGuid(string guid)
@@ -99,6 +126,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             catch { }
 
             return parsedGuid;
+        }
+
+        public FileEntity GetById(Guid id)
+        {
+            var file = _fileRepository.GetById(id);
+            if (file == null)
+            {
+                throw new ValidationException("No file found.");
+            }
+            else return file;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -37,17 +38,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var password = model.Password;
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-                throw new Exception("Email or password can't be empty");
+                throw new ValidationException("Email or password cannot be empty.");
 
             var user = _userRepository.GetByEmail(email);
 
             // check if username exists
-            if (user == null)
-                throw new Exception("User with this email does not exist");
-
-            // check if password is correct
-            if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                throw new Exception("Incorrect password");
+            if (user == null || !VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+                throw new ValidationException("Incorrect email or password.");
 
             // authentication successful, return user
 
@@ -61,11 +58,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public UserModel GetById(Guid id)
         {
             var user = _userRepository.Get(id);
+            if(user != null) {
             return new UserModel() {
                 Id = user.Id,
                 Email = user.Email,
                 Name = user.Name
             };
+            }else throw new ValidationException("No user found.");
         }
         // getting the user from the db by extracting the user information from a http response
 
@@ -74,8 +73,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var userId = new Guid(httpContext.User.Identity.Name);
 
             var user = GetById(userId);
-
-            return user;
+            if(user == null)
+            {
+                throw new ValidationException("User not found");
+            }
+            else return user;
         }
 
         // logic of a registration function with all the necessary validation, creating a pw hash and inserting
@@ -85,12 +87,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             // validation
             if (string.IsNullOrWhiteSpace(model.Password))
-                throw new Exception("Password is required");
+                throw new ValidationException("Password is required");
 
             var dbUser = _userRepository.GetByEmail(model.Email);
 
+            // TODO: how to validate this so that we prevent hacker from knowing this 
+            // email is in db and bruteforcing? *Mogens said this in sprint 1*
             if (dbUser != null)
-                throw new Exception("User with email " + model.Email + " is already registered");
+                throw new ValidationException("User with email " + model.Email + " is already registered");
 
             byte[] passwordHash, passwordSalt;
             CreatePasswordHash(model.Password, out passwordHash, out passwordSalt);
@@ -103,7 +107,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             bool success = _userRepository.Insert(user);
 
             if (!success)
-                throw new Exception("User not created");
+                throw new ValidationException("User not created");
 
             return new UserModel() { 
                 Id = user.Id,
@@ -155,7 +159,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         // method to completely delete a registered user from the database
         public bool Delete(Guid id)
         {
-            return _userRepository.Delete(id);
+
+            bool result =_userRepository.Delete(id);
+            if (!result)
+            {
+                throw new ValidationException("User non-existent or not deleted.");
+            }
+            else return result;
+            
         }
 
         // private helper methods
@@ -193,13 +204,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public UserModel GetByEmail(string email)
         {
-            var user = _userRepository.GetByEmail(email);
-            return new UserModel()
+            try
             {
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.Name
-            };
+                var user = _userRepository.GetByEmail(email);
+                return new UserModel()
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name
+                };
+            } catch(Exception e)
+            {
+                return null;
+            }
         }
     }
 }

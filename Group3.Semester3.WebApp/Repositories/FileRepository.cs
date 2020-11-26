@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public IEnumerable<FileEntity> GetByUserId(Guid userId);
         public bool Insert(FileEntity fileEntity);
         public bool Delete(Guid id);
+        public bool Rename(Guid id, string name);
     }
     public class FileRepository : IFileRepository
     {
@@ -48,7 +50,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return fileEntity;
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
 
                 }
@@ -73,7 +75,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return result;
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
 
                 }
@@ -99,9 +101,8 @@ namespace Group3.Semester3.WebApp.Repositories
                         return true;
                     }
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
-                    throw exception;
                 }
             }
 
@@ -110,7 +111,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Delete(Guid id)
         {
-            string query = "DELETE FROM Files WHERE id=@Id";
+            string query = "DELETE FROM Files WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -128,9 +129,38 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-                    throw e;
                 }
                 return false;
+            }
+        }
+
+        public bool Rename(Guid id, string name)
+        {
+            string query = "UPDATE Files SET Name=@Name WHERE Id=@Id";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    Name = name,
+                    Id = id
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    int rowsChanged = connection.Execute(query, parameters);
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                }
+                return false;
+
             }
         }
     }
