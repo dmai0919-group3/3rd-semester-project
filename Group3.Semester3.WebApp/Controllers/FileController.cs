@@ -78,7 +78,11 @@ namespace Group3.Semester3.WebApp.Controllers
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
                 var result = _fileService.DeleteFile(fileId, user.Id);
-                // TODO: if
+                if (!result)
+                {
+                    return BadRequest();
+                }
+                else return NoContent();
             }
             catch (Exception e)
             {
