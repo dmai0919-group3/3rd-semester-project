@@ -18,9 +18,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
 
         public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser);
-        public bool RenameFile(Guid id, string name);
+        public FileEntity RenameFile(Guid id, Guid userId, string name);
         public FileEntity GetById(Guid id);
-        public bool DeleteFile(Guid id);
+        public bool DeleteFile(Guid fileId, Guid userId);
     }
     public class FileService : IFileService
     {
@@ -93,26 +93,34 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return fileEntries;
         }
 
-        public bool DeleteFile(Guid id)
+        public bool DeleteFile(Guid fileId, Guid userId)
         {
-            bool result = _fileRepository.Delete(id);
-            if (!result)
+            var file = _fileRepository.GetById(fileId);
+            if (userId == file.UserId)
             {
-                throw new ValidationException("File non-existent or not deleted.");
+                var result = _fileRepository.Delete(fileId);
+                if (!result)
+                {
+                    throw new ValidationException("File non-existent or not deleted.");
+                }
+                else return result;
             }
-            else return result;
+            else throw new ValidationException("Operation forbidden.");
         }
 
-        public bool RenameFile(Guid id, string name)
+        public FileEntity RenameFile(Guid fileId, Guid userId, string name)
         {
-            try
+            var file = _fileRepository.GetById(fileId);
+            if (userId == file.UserId)
             {
-                return _fileRepository.Rename(id,name);
+                var result = _fileRepository.Rename(fileId, name);
+                if (!result)
+                {
+                    throw new ValidationException("File non-existent or not deleted.");
+                }
+                else return _fileRepository.GetById(fileId);
             }
-            catch (Exception e)
-            {
-                return false;
-            }
+            else throw new ValidationException("Operation forbidden.");
         }
 
         private Guid ParseGuid(string guid)
