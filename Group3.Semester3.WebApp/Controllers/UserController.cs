@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Group3.Semester3.WebApp.Helpers;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -63,9 +64,9 @@ namespace Group3.Semester3.WebApp.Controllers
                 addMessage("User logged in successfully");
                 return RedirectToAction("Dashboard");
             }
-            catch (Exception exception)
+            catch (ValidationException e)
             {
-                addMessage(exception.Message);
+                addMessage(e.Message);
                 return View();
             }
         }
@@ -90,9 +91,9 @@ namespace Group3.Semester3.WebApp.Controllers
                 var result = _userService.Register(model);
                 addMessage("User registered successfully");    
             }
-            catch (Exception exception)
+            catch (ValidationException e)
             {
-                addMessage(exception.Message);
+                addMessage(e.Message);
             }
 
             return View();
@@ -102,10 +103,14 @@ namespace Group3.Semester3.WebApp.Controllers
         [Route("dashboard")]
         public ActionResult Dashboard()
         {
+            try {
             var user = _userService.GetFromHttpContext(HttpContext);
-
             ViewBag.User = user;
-
+            }
+            catch(ValidationException e)
+            {
+                addMessage(e.Message);
+            }
             return View();
         }
 

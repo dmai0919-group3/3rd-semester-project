@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return fileEntity;
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
 
                 }
@@ -74,7 +75,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return result;
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
 
                 }
@@ -100,9 +101,8 @@ namespace Group3.Semester3.WebApp.Repositories
                         return true;
                     }
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
-                    throw exception;
                 }
             }
 
@@ -129,7 +129,6 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-                    throw e;
                 }
                 return false;
             }
@@ -159,7 +158,6 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-                    throw e;
                 }
                 return false;
 

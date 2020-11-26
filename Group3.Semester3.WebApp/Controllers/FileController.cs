@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Entities;
 using System;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -58,10 +59,14 @@ namespace Group3.Semester3.WebApp.Controllers
         [HttpGet]
         public ActionResult Browse()
         {
+            try {
             var user = _userService.GetFromHttpContext(HttpContext);
             var fileEntities = _fileService.BrowseFiles(user);
             ViewBag.Files = fileEntities;
-
+            }
+            catch(Exception e)
+            { 
+            }
             return View();
         }
 
@@ -69,8 +74,13 @@ namespace Group3.Semester3.WebApp.Controllers
         [HttpDelete]
         public ActionResult Delete(Guid guid)
         {
+            try {
             var result = _fileService.DeleteFile(guid);
-
+            }
+            catch(Exception e)
+            {
+                Messenger.addMessage(e.Message);
+            }
             return View();
         }
 
@@ -78,8 +88,12 @@ namespace Group3.Semester3.WebApp.Controllers
         [HttpPut]
         public ActionResult Rename(Guid guid, string name)
         {
+            try {
             var result = _fileService.RenameFile(guid, name);
-
+            }
+            catch(Exception e)
+            {
+            }
             return View();
         }
 
