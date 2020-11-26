@@ -72,29 +72,35 @@ namespace Group3.Semester3.WebApp.Controllers
 
         [Route("delete")]
         [HttpDelete]
-        public ActionResult Delete(Guid guid)
+        public ActionResult Delete(Guid fileId)
         {
-            try {
-            var result = _fileService.DeleteFile(guid);
-            }
-            catch(Exception e)
+            try
             {
-                Messenger.addMessage(e.Message);
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.DeleteFile(fileId, user.Id);
+                // TODO: if
             }
-            return View();
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+            return NoContent();
         }
 
         [Route("rename")]
         [HttpPut]
-        public ActionResult Rename(Guid guid, string name)
+        public ActionResult Rename(Guid fileId, string fileName)
         {
             try {
-            var result = _fileService.RenameFile(guid, name);
+                var user = _userService.GetFromHttpContext(HttpContext);
+                
+                var result = _fileService.RenameFile(fileId, user.Id, fileName);
+                return Ok(result);
             }
             catch(Exception e)
             {
+                return BadRequest(e.Message);
             }
-            return View();
         }
 
 

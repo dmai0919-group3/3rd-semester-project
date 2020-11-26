@@ -77,18 +77,20 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         // PUT api/<FileApiController>/5
 
         [HttpPut("{id}")]
-        public IActionResult UpdateFile(Guid id, [FromBody] string name)
+        public IActionResult UpdateFile(Guid fileId, [FromBody] string name)
         {
-            _fileService.RenameFile(id, name);
-            var file = _fileService.GetById(id);
+            var user = _userService.GetFromHttpContext(HttpContext);
+            _fileService.RenameFile(fileId, user.Id, name);
+            var file = _fileService.GetById(fileId);
             return Ok(file);
         }
 
         // DELETE api/<FileApiController>/5
         [HttpDelete("{id}")]
-        public IActionResult DeleteFile(Guid id)
+        public IActionResult DeleteFile(Guid fileId)
         {
-            _fileService.DeleteFile(id);
+            var user = _userService.GetFromHttpContext(HttpContext);
+            _fileService.DeleteFile(fileId, user.Id);
             return NoContent();
         }
     }
