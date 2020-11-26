@@ -33,6 +33,7 @@
                 delete: {
                     name: "Delete",
                     callback: function (key, opt) {
+                        // TODO: Show confirm modal first in the future
                         deleteFile(key, opt);
                     }
                 }
@@ -61,7 +62,7 @@
          let url = "@Url.Action("Rename","File")";
          
          let file = {
-             fileId: "832aaf11-bf3b-423a-9204-11d83a47d82d",
+             fileId: fileId,
              fileName: fileName
          }
          
