@@ -27,6 +27,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         private IConfiguration _configuration;
         private IFileRepository _fileRepository;
 
+        public FileService(IFileRepository fileRepository)
+        {
+            _fileRepository = fileRepository;
+        }
+
         public FileService(IConfiguration configuration, IFileRepository fileRepository)
         {
             _configuration = configuration;
