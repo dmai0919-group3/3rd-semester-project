@@ -34,7 +34,7 @@
                     name: "Delete",
                     callback: function (key, opt) {
                         // TODO: Show confirm modal first in the future
-                        deleteFile(key, opt);
+                        showDeleteFileModal(key, opt);
                     }
                 }
             }
@@ -42,42 +42,42 @@
     });
 
     function showRenameFileModal(key, opt) {
-        
+
         let $element = opt.$trigger;
         let fileId = $element.attr("id");
-        
+
         let fileName = $element.find('.file-name').text();
-        
+
         $("#file-name").val(fileName);
         $("#file-id").val(fileId);
-        
+
         $("#renameFileModal").modal();
-        
+
     }
-    
+
     function renameFile() {
          let fileName = $("#file-name").val();
          let fileId = $("#file-id").val();
-         
+
          let url = "@Url.Action("Rename","File")";
-         
+
          let file = {
              fileId: fileId,
              fileName: fileName
          }
-         
+
          $.ajax({
-            url: url, 
+            url: url,
             data: file,
             type: "PUT",
             success: function(result){
                 let id = result.id;
                 let fileName = result.name;
-                
+
                 $("#renameFileModal").modal("hide");
-                
+
                 let $fileNameElement = $('#'+id).find('.file-name');
-                
+
                 $fileNameElement.text(fileName);
             },
             error: function (result) {
@@ -85,15 +85,44 @@
                 alert("Failed to rename a file");
             }
          });
-         
-         // TODO: Implement rename logic
+
     }
 
-    function deleteFile(key, opt) {
+    function showDeleteFileModal(key, opt) {
 
         let $element = opt.$trigger;
         let fileId = $element.attr("id");
-        console.log("delete", fileId);
+
+        $("#delete-file-id").val(fileId);
+
+        $("#deleteFileModal").modal();
+
+    }
+
+    function deleteFile() {
+
+        let fileId = $("#delete-file-id").val();
+
+        let url = "@Url.Action("Delete","File")";
+               
+        let file = {
+            fileId: fileId,
+        }
+
+         $.ajax({
+            url: url,
+            data: file,
+            type: "DELETE",
+            success: function(result){
+
+                $("#deleteFileModal").modal("hide");
+                $('#' + fileId).remove();
+            },
+            error: function (result) {
+                // TODO: Handle better in the future
+                alert("Failed to delete a file");
+            }
+         });
 
         // TODO: Implement delete logic
     }
@@ -124,6 +153,32 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" onclick="renameFile()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete file</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <label for="question" class="col-form-label">Are you sure you want to delete the selected file?</label>
+                    <div class="form-group">
+                        <input type="hidden" id="delete-file-id">
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="deleteFile()">Delete</button>
             </div>
         </div>
     </div>
