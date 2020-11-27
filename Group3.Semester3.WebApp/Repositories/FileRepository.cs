@@ -14,6 +14,8 @@ namespace Group3.Semester3.WebApp.Repositories
     {
         public FileEntity GetById(Guid id);
         public IEnumerable<FileEntity> GetByUserId(Guid userId);
+        public IEnumerable<FileEntity> GetByParentId(Guid parentId);
+        public IEnumerable<FileEntity> GetByUserIdAndParentId(Guid userId, Guid parentId);
         public bool Insert(FileEntity fileEntity);
         public bool Delete(Guid id);
         public bool Rename(Guid id, string name);
@@ -86,8 +88,8 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Insert(FileEntity fileEntity)
         {
-            string query = "INSERT INTO Files (Id, UserId, AzureId, Name)" +
-                   " VALUES (@Id, @UserId, @AzureId, @Name)";
+            string query = "INSERT INTO Files (Id, UserId, AzureId, Name, ParentId, IsFolder)" +
+                   " VALUES (@Id, @UserId, @AzureId, @Name, @ParentId, @IsFolder)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -103,6 +105,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
+
                 }
             }
 
@@ -162,6 +165,59 @@ namespace Group3.Semester3.WebApp.Repositories
                 return false;
 
             }
+        }
+
+        public IEnumerable<FileEntity> GetByParentId(Guid parentId)
+        {
+            string query = "SELECT * FROM Files WHERE ParentId=@ParentId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { ParentId = parentId };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<FileEntity>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return null;
+        }
+
+        public IEnumerable<FileEntity> GetByUserIdAndParentId(Guid userId, Guid parentId)
+        {
+            string query = "SELECT * FROM Files WHERE UserId=@UserId AND ParentId=@ParentId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { 
+                    UserId = userId,
+                    ParentId = parentId
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<FileEntity>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return null;
         }
     }
 }

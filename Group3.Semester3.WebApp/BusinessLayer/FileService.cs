@@ -16,11 +16,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     public interface IFileService
     {
         public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
-
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser);
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId);
         public FileEntity RenameFile(Guid id, Guid userId, string name);
         public FileEntity GetById(Guid id);
         public bool DeleteFile(Guid fileId, Guid userId);
+        public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
     }
     public class FileService : IFileService
     {
@@ -33,9 +33,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _fileRepository = fileRepository;
         }
 
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser)
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId)
         {
-            var fileList = _fileRepository.GetByUserId(currentUser.Id);
+            var parentGuid = ParseGuid(parentId);
+
+            var fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
                         
             return fileList;
         }
@@ -76,6 +78,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             AzureId = blobName,
                             Name = formFile.FileName,
                             UserId = user.Id,
+                            ParentId = parsedGUID,
+                            IsFolder = false
                         };
 
                         _fileRepository.Insert(file);
@@ -144,6 +148,44 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("No file found.");
             }
             else return file;
+        }
+
+        public FileEntity CreateFolder(UserModel user, CreateFolderModel model)
+        {
+            
+            var parentGuid = ParseGuid(model.ParentId);
+
+            // Check if user owns parent folder
+            if (!parentGuid.Equals(Guid.Empty))
+            {
+                var parent = GetById(parentGuid);
+                
+                // TODO: Check for other permissions in the future
+                if (parent.UserId != user.Id)
+                {
+                    throw new ValidationException("Operation fobidden");
+                }
+            }
+
+            var folder = new FileEntity()
+            {
+                Id = Guid.NewGuid(),
+                Name = model.Name,
+                AzureId = Guid.Empty,
+                UserId = user.Id,
+                ParentId = parentGuid,
+                IsFolder = true
+            };
+
+            var created = _fileRepository.Insert(folder);
+
+            if (!created)
+            {
+                throw new Exception("Failed to create folder");
+            }            
+            
+
+            return folder;
         }
     }
 }
