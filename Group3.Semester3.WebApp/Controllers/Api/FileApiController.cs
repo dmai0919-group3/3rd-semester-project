@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
+using Group3.Semester3.WebApp.Models.FileSystem;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,19 +34,18 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         public IActionResult GetFiles()
         {
             var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.BrowseFiles(user);
-                return Ok(fileEntities);
-            
+            var fileEntities = _fileService.BrowseFiles(user, "0");
+            return Ok(fileEntities);
         }
 
-        [HttpPost]
-        [Route("browse")]
-        public IActionResult GetFileList()
+        // GET: api/file/browse/{guid}
+        [HttpGet]
+        [Route("browse/{parentId}")]
+        public IActionResult GetFiles(string parentId)
         {
             var user = _userService.GetFromHttpContext(HttpContext);
-            var fileEntities = _fileService.BrowseFiles(user);
-
-            return Ok(fileEntities.ToList());
+            var fileEntities = _fileService.BrowseFiles(user, parentId);
+            return Ok(fileEntities);
         }
 
         // GET api/file/5
@@ -99,6 +100,27 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest();
             }
             else return NoContent();
+        }
+
+        [Route("create-folder")]
+        [HttpPost]
+        public ActionResult CreateFolder(CreateFolderModel model)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.CreateFolder(user, model);
+
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
         }
     }
 }

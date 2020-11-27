@@ -9,6 +9,7 @@ using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Entities;
 using System;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
+using Group3.Semester3.WebApp.Models.FileSystem;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -60,12 +61,28 @@ namespace Group3.Semester3.WebApp.Controllers
         public ActionResult Browse()
         {
             try {
-            var user = _userService.GetFromHttpContext(HttpContext);
-            var fileEntities = _fileService.BrowseFiles(user);
-            ViewBag.Files = fileEntities;
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntities = _fileService.BrowseFiles(user, "0");
+                ViewBag.Files = fileEntities;
             }
             catch(Exception e)
             { 
+            }
+            return View();
+        }
+
+        [Route("browse/{parentId}")]
+        [HttpGet]
+        public ActionResult BrowseDirectory(string parentId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntities = _fileService.BrowseFiles(user, parentId);
+                ViewBag.Files = fileEntities;
+            }
+            catch (Exception e)
+            {
             }
             return View();
         }
@@ -106,7 +123,26 @@ namespace Group3.Semester3.WebApp.Controllers
             }
         }
 
+        [Route("create-folder")]
+        [HttpPost]
+        public ActionResult CreateFolder(CreateFolderModel model)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.CreateFolder(user, model);
 
+                return Ok(result);
+            } 
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
 
     }
 }
