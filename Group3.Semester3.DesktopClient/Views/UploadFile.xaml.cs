@@ -1,17 +1,27 @@
 ﻿using Group3.Semester3.DesktopClient.Model;
 using Group3.Semester3.DesktopClient.Services;
+using Group3.Semester3.DesktopClient.ViewHelpers;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
 
-namespace Group3.Semester3.DesktopClient
+namespace Group3.Semester3.DesktopClient.Views
 {
     /// <summary>
-    /// Interaction logic for UploadFile.xaml
+    /// Interaction logic for _1UploadFile.xaml
     /// </summary>
-    public partial class UploadFile : Window
+    public partial class UploadFile : UserControl, ISwitchable
     {
         private IApiService apiService;
         private bool submitted;
@@ -31,11 +41,13 @@ namespace Group3.Semester3.DesktopClient
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             if (openFileDialog.ShowDialog() == true)
             {
-                foreach (string filepath in openFileDialog.FileNames) {
+                foreach (string filepath in openFileDialog.FileNames)
+                {
 
                     var filename = System.IO.Path.GetFileName(filepath);
-                    var file = new FileToUpload() { 
-                        Name = filename , 
+                    var file = new FileToUpload()
+                    {
+                        Name = filename,
                         Path = filepath
                     };
 
@@ -91,6 +103,11 @@ namespace Group3.Semester3.DesktopClient
         private void btnUploadFile_Click(object sender, RoutedEventArgs e)
         {
             // TODO implement file ctrl logic
+        }
+
+        public void UtilizeState(object state)
+        {
+            throw new NotImplementedException();
         }
     }
 }

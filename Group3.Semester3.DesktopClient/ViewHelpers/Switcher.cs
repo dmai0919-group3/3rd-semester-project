@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Windows;
 using System.Windows.Controls;
 
-namespace Group3.Semester3.DesktopClient
+namespace Group3.Semester3.DesktopClient.ViewHelpers
 {
     public static class Switcher
     {
-        public static PageSwitcher pageSwitcher;
+        public static INavigatable ActiveWindow;
 
         public static void Switch(UserControl newPage)
         {
-            pageSwitcher.Navigate(newPage);
+            ActiveWindow.Navigate(newPage);
         }
 
         public static void Switch(UserControl newPage, object state)
         {
-            pageSwitcher.Navigate(newPage, state);
+            ActiveWindow.Navigate(newPage, state);
         }
     }
 }

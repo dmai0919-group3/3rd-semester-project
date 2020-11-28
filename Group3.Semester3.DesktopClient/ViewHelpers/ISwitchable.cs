@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Group3.Semester3.DesktopClient
+namespace Group3.Semester3.DesktopClient.ViewHelpers
 {
     public interface ISwitchable
     {

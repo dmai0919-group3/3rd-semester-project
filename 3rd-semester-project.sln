@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Group3.Semester3.WebApp", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Group3.Semester3.DesktopClient", "Group3.Semester3.DesktopClient\Group3.Semester3.DesktopClient.csproj", "{964E42E0-38B9-4F5A-9E53-463F2A7505D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Group3.Semester3.Tests", "Group3.Semester3.Tests\Group3.Semester3.Tests.csproj", "{64DAEBCC-CF84-44C6-A89A-8496DCBB556A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Group3.Semester3.Tests", "Group3.Semester3.Tests\Group3.Semester3.Tests.csproj", "{64DAEBCC-CF84-44C6-A89A-8496DCBB556A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
