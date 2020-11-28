@@ -200,7 +200,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
         public List<FileEntity> FileList(UserModel currentUser)
         {
-            var result = PostRequest(BrowseFilesUrl, null);
+            var result = GetRequest(BrowseFilesUrl, BearerToken.Token);
             string resultContent;
 
             {
