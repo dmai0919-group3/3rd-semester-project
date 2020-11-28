@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Group3.Semester3.WebApp.Migrations;
 
 namespace Group3.Semester3.WebApp
@@ -32,6 +28,11 @@ namespace Group3.Semester3.WebApp
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseKestrel(options =>
+                    {
+                        options.Limits.MaxRequestBodySize = null;
+                    });
+
                     webBuilder.UseStartup<Startup>();
                 });
 

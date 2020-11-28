@@ -72,9 +72,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         // POST api/<FileApiController>
         [HttpPost]
         [Route("upload")]
+        [DisableRequestSizeLimit]
         public async Task<IActionResult> UploadFiles(List<IFormFile> files, string parentGuid)
         {
-           
             try
             {
                 List<Models.FileSystem.FileEntry> generatedEntries = await _fileService.UploadFile(
