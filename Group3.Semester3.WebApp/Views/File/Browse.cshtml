@@ -14,7 +14,7 @@
 
     $(function () {
         browseDirectoryFiles("0");
-        
+
         $.contextMenu({
             selector: '.file',
             items: {
@@ -39,13 +39,13 @@
                 createFolder: {
                     name: "Create folder",
                     callback: function (key, opt) {
-                        // TODO: implement
+                        showCreateFolderModal();
                     }
                 },
                 uploadFile: {
                     name: "Upload file",
                     callback: function (key, opt) {
-                        // TODO: implement
+                        showUploadFileModal();
                     }
                 }
             }
@@ -71,7 +71,7 @@
          let fileId = $("#file-id").val();
 
          let url = "@Url.Action("Rename", "FileApi")";
-         
+
          let file = {
              Id: fileId,
              Name: fileName
@@ -116,7 +116,7 @@
         let fileId = $("#delete-file-id").val();
 
         let url = "@Url.Action("Delete", "FileApi")";
-        
+
         let data = {
             Id: fileId
         }
@@ -141,9 +141,9 @@
     }
 
     function browseDirectoryFiles(parentId) {
-        
+
         let url = "/api/file/browse/" + parentId;
-        
+
         $.ajax({
             url: url,
             type: "GET",
@@ -156,7 +156,7 @@
             }
         })
     }
-    
+
     const fileMarkup = `
                 <div class="col-md-2 {{classes}} justify-content-center" id="{{fileId}}">
                     <div>
@@ -165,18 +165,18 @@
                     <p class="file-name">{{fileName}}</p>
                 </div>
             `;
-    
+
     function changeFiles(result) {
         let $fileContainer = $('#file-container');
-        
+
         $fileContainer.empty();
-        
+
         result.forEach(file => {
             let markup = fileMarkup;
-            
+
             markup = markup.replaceAll("{{fileId}}", file.id);
             markup = markup.replaceAll("{{fileName}}", file.name);
-            
+
             if (file.isfolder) {
                 markup = markup.replaceAll("{{classes}}", "file folder");
                 markup = markup.replaceAll("{{icon}}", "/@Url.Content("Images/folder-icon.png")");
@@ -184,11 +184,25 @@
                 markup = markup.replaceAll("{{classes}}", "file");
                 markup = markup.replaceAll("{{icon}}", "/@Url.Content("Images/file-icon.png")");
             }
-            
+
             $fileContainer.append(markup);
         });
     }
 
+    function showCreateFolderModal() {
+        $("#createFolderModal").modal();
+
+    }
+
+    function createFolder() {
+        console.log("create-folder");
+        // TODO: Implement delete logic
+    }
+
+    function showUploadFileModal() {
+        $("#uploadFileModal").modal();
+
+    }
 </script>
 
 
@@ -243,5 +257,74 @@
                 <button type="button" class="btn btn-primary" onclick="deleteFile()">Delete</button>
             </div>
         </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Upload file</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @Html.Raw(ViewBag.Result)
+                <form enctype="multipart/form-data" method="post">
+                    <div class="form-group">
+                        <input type="file" name="files" class="form-control-file" multiple />
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="parentGuid" class="form-control" value="0" />
+                        <label for="parentGuid">Parent GUID</label>
+                    </div>
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-info"> Upload </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Create folder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="folder-name" class="col-form-label">Folder name:</label>
+                        <input type="text" class="form-control" id="folder-name">
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" id="folder-id">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createFolder()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dropdown" x-placement="bottom-start" style="position: absolute; top: 20px; right: 400px; will-change: transform;">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        New
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
+        <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
     </div>
 </div>
