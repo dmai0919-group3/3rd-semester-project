@@ -61,5 +61,15 @@ namespace Group3.Semester3.DesktopClient.Views
                   + nextPage.Name.ToString());
         }
 
+        private void btnShow_Click(object sender, RoutedEventArgs e)
+        {
+            Switcher.Switch(new MyFiles(currentUser));
+        }
+
+        private void btnUpload_Click(object sender, RoutedEventArgs e)
+        {
+            Switcher.Switch(new UploadFile());
+        }
+
     }
 }
