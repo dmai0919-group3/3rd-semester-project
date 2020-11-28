@@ -68,8 +68,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                         fileEntries.Add(new FileEntry
                         {
                             Name = formFile.FileName,
-                            UUID = blobName,
-                            Parent = new DirectoryEntry { UUID = parsedGUID }
+                            Id = blobName,
+                            Parent = new DirectoryEntry { Id = parsedGUID }
                         });
 
                         var file = new FileEntity()

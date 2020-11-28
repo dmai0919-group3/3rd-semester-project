@@ -63,62 +63,6 @@ namespace Group3.Semester3.WebApp.Controllers
             return View();
         }
 
-        [Route("browse/{parentId}")]
-        [HttpGet]
-        public ActionResult BrowseDirectory(string parentId)
-        {
-            try
-            {
-                var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.BrowseFiles(user, parentId);
-                return Ok(fileEntities);
-            }
-            catch (ValidationException exception)
-            {
-                return BadRequest(exception.Message);
-            }
-            catch (Exception e)
-            {
-                return BadRequest();
-            }
-        }
-
-        [Route("delete")]
-        [HttpDelete]
-        public ActionResult Delete(Guid fileId)
-        {
-            try
-            {
-                var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _fileService.DeleteFile(fileId, user.Id);
-                if (!result)
-                {
-                    return BadRequest();
-                }
-                else return NoContent();
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
-
-        [Route("rename")]
-        [HttpPut]
-        public ActionResult Rename(Guid fileId, string fileName)
-        {
-            try {
-                var user = _userService.GetFromHttpContext(HttpContext);
-                
-                var result = _fileService.RenameFile(fileId, user.Id, fileName);
-                return Ok(result);
-            }
-            catch(Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
-
         [Route("create-folder")]
         [HttpPost]
         public ActionResult CreateFolder(CreateFolderModel model)

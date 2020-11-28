@@ -70,17 +70,18 @@
          let fileName = $("#file-name").val();
          let fileId = $("#file-id").val();
 
-         let url = "@Url.Action("Rename","File")";
-
+         let url = "@Url.Action("Rename", "FileApi")";
+         
          let file = {
-             fileId: fileId,
-             fileName: fileName
+             Id: fileId,
+             Name: fileName
          }
 
          $.ajax({
             url: url,
-            data: file,
+            data: JSON.stringify(file),
             type: "PUT",
+            contentType: "application/json",
             success: function(result){
                 let id = result.id;
                 let fileName = result.name;
@@ -114,16 +115,17 @@
 
         let fileId = $("#delete-file-id").val();
 
-        let url = "@Url.Action("Delete","File")";
-               
-        let file = {
-            fileId: fileId,
+        let url = "@Url.Action("Delete", "FileApi")";
+        
+        let data = {
+            Id: fileId
         }
 
          $.ajax({
             url: url,
-            data: file,
+            data: JSON.stringify(data),
             type: "DELETE",
+            contentType: "application/json",
             success: function(result){
 
                 $("#deleteFileModal").modal("hide");
@@ -140,7 +142,7 @@
 
     function browseDirectoryFiles(parentId) {
         
-        let url = "browse/" + parentId;
+        let url = "/api/file/browse/" + parentId;
         
         $.ajax({
             url: url,
