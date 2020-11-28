@@ -5,22 +5,16 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row">
-    @foreach (var file in ViewBag.Files)
-    {
-        <div class="col-md-2 file justify-content-center" id="@file.Id">
-            <div>
-                <img src="~/Images/file-icon.png" />
-            </div>
-            <p class="file-name">@file.Name</p>
-        </div>
-    }
+<div class="row" id="file-container">
+    
 </div>
 
 
 <script>
 
     $(function () {
+        browseDirectoryFiles("0");
+        
         $.contextMenu({
             selector: '.file',
             items: {
@@ -35,6 +29,23 @@
                     callback: function (key, opt) {
                         // TODO: Show confirm modal first in the future
                         showDeleteFileModal(key, opt);
+                    }
+                }
+            }
+        });
+        $.contextMenu({
+            selector: '#file-container',
+            items: {
+                createFolder: {
+                    name: "Create folder",
+                    callback: function (key, opt) {
+                        // TODO: implement
+                    }
+                },
+                uploadFile: {
+                    name: "Upload file",
+                    callback: function (key, opt) {
+                        // TODO: implement
                     }
                 }
             }
@@ -127,44 +138,54 @@
         // TODO: Implement delete logic
     }
 
-    $(function ()
-    {
-
-        var newHash = "",
-            $mainContent = $("#main-content"),
-            baseHeight = 0,
-            $el;
-
-        $("nav").delegate("a", "click", function ()
-        {
-            window.location.hash = $(this).attr("href");
-            return false;
+    function browseDirectoryFiles(parentId) {
+        
+        let url = "browse/" + parentId;
+        
+        $.ajax({
+            url: url,
+            type: "GET",
+            success: function (result) {
+                changeFiles(result);
+            },
+            error: function (result) {
+                // TODO: Handle better in the future
+                alert("Failed to load files");
+            }
+        })
+    }
+    
+    const fileMarkup = `
+                <div class="col-md-2 {{classes}} justify-content-center" id="{{fileId}}">
+                    <div>
+                        <img src="{{icon}}" />
+                    </div>
+                    <p class="file-name">{{fileName}}</p>
+                </div>
+            `;
+    
+    function changeFiles(result) {
+        let $fileContainer = $('#file-container');
+        
+        $fileContainer.empty();
+        
+        result.forEach(file => {
+            let markup = fileMarkup;
+            
+            markup = markup.replaceAll("{{fileId}}", file.id);
+            markup = markup.replaceAll("{{fileName}}", file.name);
+            
+            if (file.isfolder) {
+                markup = markup.replaceAll("{{classes}}", "file folder");
+                markup = markup.replaceAll("{{icon}}", "/@Url.Content("Images/folder-icon.png")");
+            } else {
+                markup = markup.replaceAll("{{classes}}", "file");
+                markup = markup.replaceAll("{{icon}}", "/@Url.Content("Images/file-icon.png")");
+            }
+            
+            $fileContainer.append(markup);
         });
-
-        $(window).bind('hashchange', function ()
-        {
-
-            newHash = window.location.hash.substring(1);
-
-            if (newHash)
-            {
-                $mainContent
-                    .find("#guts")
-                    .fadeOut(200, function ()
-                    {
-                        $mainContent.hide().load(newHash + " #guts", function ()
-                        {
-                            $("nav a").removeClass("current");
-                            $("nav a[href='" + newHash + "']").addClass("current");
-                        });
-                    });
-            };
-
-        });
-
-        $(window).trigger('hashchange');
-
-    });
+    }
 
 </script>
 

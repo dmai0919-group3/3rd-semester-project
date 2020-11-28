@@ -60,14 +60,6 @@ namespace Group3.Semester3.WebApp.Controllers
         [HttpGet]
         public ActionResult Browse()
         {
-            try {
-                var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.BrowseFiles(user, "0");
-                ViewBag.Files = fileEntities;
-            }
-            catch(Exception e)
-            { 
-            }
             return View();
         }
 
@@ -79,12 +71,16 @@ namespace Group3.Semester3.WebApp.Controllers
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
                 var fileEntities = _fileService.BrowseFiles(user, parentId);
-                ViewBag.Files = fileEntities;
+                return Ok(fileEntities);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
             }
             catch (Exception e)
             {
+                return BadRequest();
             }
-            return View();
         }
 
         [Route("delete")]
