@@ -9,7 +9,9 @@ namespace Group3.Semester3.WebAppTests
     {
 
         private static IUserService _userService;
+        private static IFileService _fileService;
         private static IUserRepository _userRepository;
+        private static IFileRepository _fileRepository;
         private static IConfiguration _configuration;
         
         public static IUserService GetUserService()
@@ -30,6 +32,26 @@ namespace Group3.Semester3.WebAppTests
             }
 
             return _userRepository;
+        }
+
+        public static IFileService GetFileService()
+        {
+            if (_fileService == null)
+            {
+                _fileService = new FileService(GetFileRepository());
+            }
+
+            return _fileService;
+        }
+
+        public static IFileRepository GetFileRepository()
+        {
+            if (_fileRepository == null)
+            {
+                _fileRepository = new FileRepository(ConfigurationRoot());
+            }
+
+            return _fileRepository;
         }
 
         public static IConfiguration ConfigurationRoot()
