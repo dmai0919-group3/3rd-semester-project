@@ -6,13 +6,21 @@
 }
 
 
-<div class="dropdown" x-placement="bottom-start">
-    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        New
-    </button>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
-        <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+<div class="row">
+    <div class="dropdown" x-placement="bottom-start">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            New
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
+            <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+        </div>
+    </div>
+    
+    <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
+    
+    <div class="directory-path-container">
+        <h2>Path: <span id="directory-path">/</span></h2>
     </div>
 </div>
 
@@ -25,6 +33,7 @@
     const deleteUrl = "@Url.Action("Delete", "FileApi")";
     const createFolderUrl = "@Url.Action("CreateFolder", "FileApi")";
     const uploadFilesUrl = "@Url.Action("UploadFiles", "FileApi")";
+    const moveFileUrl = "@Url.Action("MoveIntoFolder", "FileApi")";
     const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
     const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
 </script>
@@ -102,10 +111,10 @@
             <div class="modal-body">
                 <form id="file-upload-form" enctype="multipart/form-data">
                     <div class="form-group">
-                        <input id="upload-files" type="file" name="files" class="form-control-file" multiple />
+                        <input id="upload-files" type="file" name="Files" class="form-control-file" multiple />
                     </div>
                     <div class="form-group">
-                        <input id="upload-file-parentId" type="hidden" value="0" />
+                        <input id="upload-file-parentId" type="hidden" name="ParentId" value="0" />
                     </div>
                 </form>
                 <div class="progress">
@@ -138,7 +147,7 @@
             <div class="modal-body">
                 <form>
                     <div class="form-group">
-                        <label for="folder-name" class="col-form-label">Folder name:</label>
+                        <label for="create-folder-name" class="col-form-label">Folder name:</label>
                         <input type="text" class="form-control" id="create-folder-name">
                     </div>
                     <div class="form-group">
@@ -149,6 +158,30 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" onclick="createFolder()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="moveFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Move to:</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <ul class="list-group" id="move-folder-list">
+                        
+                    </ul>
+                    <input type="hidden" id="move-file-id">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

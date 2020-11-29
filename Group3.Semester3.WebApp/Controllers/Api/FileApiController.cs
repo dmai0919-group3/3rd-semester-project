@@ -73,14 +73,14 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [HttpPost]
         [Route("upload")]
         [DisableRequestSizeLimit]
-        public async Task<IActionResult> UploadFiles(List<IFormFile> files, string parentGuid)
+        public async Task<IActionResult> UploadFiles([FromForm] UploadFilesModel model)
         {
             try
             {
                 List<Models.FileSystem.FileEntry> generatedEntries = await _fileService.UploadFile(
                     _userService.GetFromHttpContext(HttpContext),
-                    parentGuid,
-                    files);
+                    model.ParentId,
+                    model.Files);
                 return Ok(generatedEntries);
             } catch (Exception exception)
             {
