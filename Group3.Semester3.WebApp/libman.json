@@ -2,7 +2,6 @@
   "version": "1.0",
   "defaultProvider": "cdnjs",
   "libraries": [
-
     {
       "library": "twitter-bootstrap@4.5.3",
       "destination": "wwwroot/lib/twitter-bootstrap/"
@@ -18,6 +17,10 @@
     {
       "library": "jquery-contextmenu@2.9.2",
       "destination": "wwwroot/lib/jquery-contextmenu/"
+    },
+    {
+      "library": "popper.js@1.9.9",
+      "destination": "wwwroot/lib/popper.js/"
     }
   ]
 }

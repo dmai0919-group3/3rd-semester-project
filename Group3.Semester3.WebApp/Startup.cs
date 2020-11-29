@@ -13,6 +13,7 @@ using Group3.Semester3.WebApp.BusinessLayer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Group3.Semester3.WebApp
 {
@@ -33,6 +34,10 @@ namespace Group3.Semester3.WebApp
             // configure strongly typed settings objects
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
+
+
+            // Configure no file size limit
+            services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = long.MaxValue);
 
             // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
