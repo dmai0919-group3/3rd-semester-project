@@ -122,10 +122,10 @@ namespace Group3.Semester3.DesktopClient.Services
 
                 foreach (var file in files)
                 {
-                    content.Add(new StreamContent(File.OpenRead(file.Path)), "files", file.Name);
+                    content.Add(new StreamContent(File.OpenRead(file.Path)), "Files", file.Name);
                 }
 
-                content.Add(new StringContent(parentGuid), "parentGuid");
+                content.Add(new StringContent(parentGuid), "ParentId");
 
                 var client = new HttpClient();
 

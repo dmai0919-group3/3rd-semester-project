@@ -1,13 +1,13 @@
 ﻿body {
 }
 
-/*.file-name {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    background-color: inherit;
+.folder:hover {
+    background-color: #c4b8ff;
+    border: #9e8aff 1px solid;
+    border-radius: 10px;
 }
 
-.file-name:hover {
-    overflow: visible;
-}*/
+#go-back-button {
+    margin-left: 20px;
+    margin-right: 20px;
+}

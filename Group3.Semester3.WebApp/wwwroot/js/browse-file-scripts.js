@@ -1,9 +1,22 @@
-﻿$(function () {
-    browseDirectoryFiles("0");
+﻿let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+
+let currentDir = "00000000-0000-0000-0000-000000000000";
+
+$(function () {
+    browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
 
     $.contextMenu({
         selector: '.file',
         items: {
+            move: {
+                name: "Move to folder",
+                callback: function (key, opt) {
+                    let $element = opt.$trigger;
+                    let id = $element.attr('id');
+                    
+                    showMoveFileModal(id);
+                }
+            },
             rename: {
                 name: "Rename",
                 callback: function (key, opt) {
@@ -36,6 +49,11 @@
             }
         }
     });
+    
+    $("#file-container").on("dblclick", '.folder', function () {
+        let id = this.id;
+        browseDirectoryFiles(id);
+    })
 });
 
 function showRenameFileModal(key, opt) {
@@ -132,6 +150,27 @@ function browseDirectoryFiles(parentId) {
         url: url,
         type: "GET",
         success: function (result) {
+            
+            if (parentId in dirArray) {
+                let found = false;
+                Object.keys(dirArray).reverse()
+                    .forEach(function(index) {
+                        if (index !== parentId && !found) {
+                            console.log(index);
+                            delete dirArray[index];
+                        } else {
+                            found = true;
+                        }
+                    });
+            } else {
+                let name = $("#"+parentId).find(".file-name").text();
+                dirArray[parentId] = name;
+            }
+
+            currentDir = parentId;
+            
+            updateDirectoryPath();
+            
             changeFiles(result);
         },
         error: function (result) {
@@ -172,7 +211,7 @@ function createFolder() {
 
     let data = {
         Name: folderName,
-        ParentId: "0",
+        ParentId: currentDir,
     }
 
     $.ajax({
@@ -194,6 +233,8 @@ function showUploadFileModal() {
     clearProgressBar();
 
     $('#file-upload-form').trigger("reset");
+    
+    $("#upload-file-parentId").val(currentDir);
 
     $("#uploadFileModal").modal();
 }
@@ -246,6 +287,24 @@ function startFileUpload() {
     xhr.send(formData);
 }
 
+function oneDirUp() {
+    let keys = Object.keys(dirArray).reverse();
+    
+    if (keys.length >= 2) {
+        browseDirectoryFiles(keys[1]);
+    }
+}
+
+function updateDirectoryPath() {
+    let dirPathElement = $("#directory-path");
+    dirPathElement.empty();
+    
+    Object.values(dirArray)
+        .forEach(function(index) {
+            dirPathElement.append(index + " / ");
+        });
+}
+
 function addFileToFileList(file) {
     let $fileContainer = $('#file-container');
 
@@ -263,4 +322,89 @@ function addFileToFileList(file) {
     }
 
     $fileContainer.append(markup);
+}
+
+function showMoveFileModal(fileId) {
+    $("#move-file-id").val(fileId);
+    
+    let $list = $("#move-folder-list");
+    
+    $list.empty();
+
+    let keys = Object.keys(dirArray);
+    
+    if (keys.length >= 2) {
+        keys.forEach(parentId => {
+            if (parentId !== currentDir) {
+                let name = dirArray[parentId];
+
+                let link = '<a href="#" ' +
+                    'data-id="' + fileId + '" data-parent-id="' + parentId + '" ' +
+                    'class="list-group-item list-group-item-action list-group-item-info move-file-folder-choice">' + name + '</a>';
+
+                $list.append(link);
+            }
+        });
+    }
+    
+    $("#file-container div").each(function () {
+        let classes = this.className;
+        
+        if (classes.includes("folder")) {
+            let name = $(this).find(".file-name").text();
+            let parentId = this.id;
+            
+            let link = '<a href="#" ' +
+                'data-id="' + fileId + '" data-parent-id="' + parentId + '" ' +
+                'class="list-group-item list-group-item-action move-file-folder-choice">' + name + '</a>';
+            
+            $list.append(link);
+        }
+    });
+    
+    $("#moveFileModal").modal();
+}
+
+$(document).ready(function() {
+    $('#move-folder-list').on('click', '.move-file-folder-choice', function (e) {
+        e.preventDefault();
+        let $this = $(this);
+        
+        let id = $this.data("id");
+        let parentId = $this.data("parent-id");
+        
+        moveFile(id, parentId);
+    });
+});
+
+function moveFile(id, parentId) {
+    console.log(id, parentId);
+
+    let url = moveFileUrl;
+
+    let data = {
+        Id: id,
+        ParentId: parentId,
+    }
+
+    $.ajax({
+        url: url,
+        data: JSON.stringify(data),
+        type: "POST",
+        contentType: "application/json",
+        success: function (result) {
+            if (result === true) {
+                $("#"+id).remove();
+
+                $("#moveFileModal").modal("hide");
+            } else {
+                // TODO: Handle better in the future
+                alert("Failed to move a file");
+            }
+        },
+        error: function (result) {
+            // TODO: Handle better in the future
+            alert("Failed to move a file");
+        }
+    });
 }
