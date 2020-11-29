@@ -144,5 +144,22 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest("System error, please contact Administrator");
             }
         }
+
+        [Route("move")]
+        [HttpPost]
+        public ActionResult MoveIntoFolder(FileEntity model)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var result = _fileService.MoveIntoFolder(model, user.Id);
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }
