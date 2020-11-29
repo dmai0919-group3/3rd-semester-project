@@ -1,4 +1,5 @@
 ﻿using Group3.Semester3.DesktopClient.Services;
+using Group3.Semester3.DesktopClient.ViewHelpers;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Models.Users;
 using System;
@@ -13,20 +14,19 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace Group3.Semester3.DesktopClient
+namespace Group3.Semester3.DesktopClient.Views
 {
     /// <summary>
-    /// Interaction logic for Dashboard.xaml
+    /// Interaction logic for MyFiles.xaml
     /// </summary>
-    public partial class Dashboard : Window
+    public partial class MyFiles : UserControl
     {
-        private UserModel currentUser;
         private ApiService apiService = new ApiService();
-        public Dashboard()
+        public MyFiles(UserModel currentUser)
         {
+
             InitializeComponent();
 
-            currentUser = apiService.CurrentUser();
             labelUserName.Content += currentUser.Name.ToUpper();
 
             List<FileEntity> files = apiService.FileList(currentUser);
@@ -70,6 +70,10 @@ namespace Group3.Semester3.DesktopClient
                 treeBogoRoot.Items.Add(grid);
             }
             //< TreeViewItem Header = "Bullshit" IsExpanded = "True" />
+        }
+        private void btnUpload_Click(object sender, RoutedEventArgs e)
+        {
+            Switcher.Switch(new UploadFile());
         }
     }
 }

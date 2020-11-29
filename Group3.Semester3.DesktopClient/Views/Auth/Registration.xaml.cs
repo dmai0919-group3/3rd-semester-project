@@ -1,11 +1,9 @@
 ﻿using Group3.Semester3.DesktopClient.Services;
+using Group3.Semester3.DesktopClient.ViewHelpers;
 using Group3.Semester3.WebApp.Models.Users;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,12 +14,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace desktop_app
+namespace Group3.Semester3.DesktopClient.Views.Auth
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for UserControl2.xaml
     /// </summary>
-    public partial class Registration : Window
+    public partial class Registration : UserControl, ISwitchable
     {
         public Registration()
         {
@@ -58,18 +56,19 @@ namespace desktop_app
 
                 MessageBox.Show("You have successfully registered.\nPlease log in!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                Login login = new Login();
-                login.Show();
-                this.Close();
+                Switcher.Switch(new Login());
             }
-            
+
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            Login login = new Login();
-            login.Show();
-            this.Close();
+            Switcher.Switch(new Login());
+        }
+
+        public void UtilizeState(object state)
+        {
+            throw new NotImplementedException();
         }
     }
 }
