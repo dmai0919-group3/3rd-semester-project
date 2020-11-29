@@ -346,3 +346,6 @@ ASALocalRun/
 healthchecksdb
 appsettings.Development.json
 web-app/appsettings.Development.json
+
+# WebApp client-side libraries
+/Group3.Semester3.WebApp/wwwroot/lib/
