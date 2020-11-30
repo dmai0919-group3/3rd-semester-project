@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Group3.Semester3.DesktopClient.Views.Auth"
         mc:Ignorable="d"
-        Title="AuthWindow" Height="450" Width="800">
+        Title="OGO Filesharing" Height="450" Width="800">
         
         <StackPanel Name="Grid">
                 

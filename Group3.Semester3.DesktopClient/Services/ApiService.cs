@@ -65,7 +65,6 @@ namespace Group3.Semester3.DesktopClient.Services
     /// <summary>
     /// Implementation of Api Service
     /// </summary>
-
     public class ApiService : IApiService
     {
         protected string BearerToken { get; set; }
@@ -126,6 +125,11 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
         public void Authorize(string email, string password)
         {
 
@@ -148,6 +152,11 @@ namespace Group3.Semester3.DesktopClient.Services
             _currentUserModel = CurrentUser();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         public UserModel Register(RegisterModel model)
         {
             var result = this.PostRequest(RegisterUrl, model);
@@ -172,6 +181,11 @@ namespace Group3.Semester3.DesktopClient.Services
             return JsonConvert.DeserializeObject<UserModel>(resultContent);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="parentGuid"></param>
         public void UploadFiles(List<FileToUpload> files, System.Guid? parentGuid)
         {
             var content = new MultipartFormDataContent();
@@ -199,7 +213,12 @@ namespace Group3.Semester3.DesktopClient.Services
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="requestUrl"></param>
         /// <param name="parameter">Object to be serialized into a json string and sent as the content of the request</param>
+        /// <returns></returns>
         protected HttpResponseMessage PostRequest(string requestUrl, object parameter = null)
         {
             using var httpClient = new HttpClient();
@@ -215,6 +234,12 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="requestUrl"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
         {
             using var httpClient = new HttpClient();
@@ -231,6 +256,10 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public List<FileEntity> FileList()
         {
             var result = GetRequest(BrowseFilesUrl, BearerToken);
