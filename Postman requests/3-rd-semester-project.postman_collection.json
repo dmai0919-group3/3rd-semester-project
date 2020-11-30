@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c94d1f75-d83e-47b8-93fa-60f5246a89a2",
+		"_postman_id": "b2e39217-e867-4aa3-b722-24b0d128414a",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -161,6 +161,158 @@
 						"api",
 						"file",
 						"browse"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete file",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"60cfe896-234c-413b-9155-14b383505248\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/file/delete",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Rename file",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"3a7be9e5-f2cd-45d7-8379-222fa1702f34\",\r\n    \"name\": \"Que-mark-logo.png\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/file/rename",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"rename"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create folder",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"folder1\",\r\n    \"parentId\": \"00000000-0000-0000-0000-000000000000\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/file/create-folder",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"create-folder"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Move file into folder",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"3a7be9e5-f2cd-45d7-8379-222fa1702f34\",\r\n    \"parentId\": \"00000000-0000-0000-0000-000000000000\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/file/move",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"move"
 					]
 				}
 			},
