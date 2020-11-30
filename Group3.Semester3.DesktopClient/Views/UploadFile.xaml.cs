@@ -23,12 +23,16 @@ namespace Group3.Semester3.DesktopClient.Views
     /// </summary>
     public partial class UploadFile : UserControl, ISwitchable
     {
-        private IApiService apiService;
+        private ApiService apiService;
+        private Switcher switcher;
+        
         private bool submitted;
 
-        public UploadFile()
+        public UploadFile(ApiService apiService, Switcher switcher)
         {
-            apiService = new ApiService();
+            this.switcher = switcher;
+            this.apiService = apiService;
+
             submitted = false;
             InitializeComponent();
         }
@@ -59,6 +63,7 @@ namespace Group3.Semester3.DesktopClient.Views
         private void btnSubmit_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Do in new thread, so app won't wait
+            // TODO use exceptions instead of conditional branching
 
             // Prevent multiple submits
             if (!submitted)
@@ -77,18 +82,13 @@ namespace Group3.Semester3.DesktopClient.Views
                         newList.Add((FileToUpload)item);
                     }
 
-                    if (apiService.UploadFiles(newList, "0"))
+                    apiService.UploadFiles(newList, null);
+
+                    // On upload success
+                    this.Dispatcher.Invoke(() =>
                     {
-                        // On upload success
-                        this.Dispatcher.Invoke(() =>
-                        {
-                            lbFiles.Items.Clear();
-                        });
-                    }
-                    else
-                    {
-                        // Upload failure
-                    }
+                        lbFiles.Items.Clear();
+                    });
 
                     this.Dispatcher.Invoke(() =>
                     {

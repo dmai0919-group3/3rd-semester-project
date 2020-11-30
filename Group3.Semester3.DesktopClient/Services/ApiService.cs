@@ -6,33 +6,79 @@ using Newtonsoft.Json.Linq;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.DesktopClient.Model;
 using System.IO;
-using Group3.Semester3.DesktopClient.Helpers;
 using System.Net.Http.Headers;
 using Group3.Semester3.WebApp.Entities;
 
 namespace Group3.Semester3.DesktopClient.Services
 {
-    /* 
-     * interface for an API service 
-     */
+    /// <summary>
+    /// Api Service
+    /// </summary>
     public interface IApiService
     {
-        public LoginResultModel Login(string email, string password);
+        /// <summary>
+        /// The UserModel corresponding to the active session containing information of the current user 
+        /// </summary>
+        public UserModel User { get; }
 
-        public UserModel Register(RegisterModel model);
+        /// <summary>
+        /// The LoginResultModel corresponding to the active session containing session information
+        /// </summary>
+        public LoginResultModel Login { get; }
 
-        public bool UploadFiles(List<FileToUpload> files, string parentGuid);
+        /// <summary>
+        /// Requests a valid bearer token from the server and sets the Login and User fields
+        /// if matching credentials are found
+        /// </summary>
+        /// <param name="email">Email of the registered user</param>
+        /// <param name="password">Password of the registered user</param>
+        public void Authorize(string email, string password);
 
-        public List<FileEntity> FileList(UserModel currentUser);
+        /// <summary>
+        /// Registers a user and generates a corresponding UserModel if the fields set in the model are valid
+        /// and the value of the email field is unique
+        /// </summary>
+        /// <param name="registerModel">The RegisterModel containing the request parameters</param>
+        /// <returns>The generated UserModel</returns>
+        public UserModel Register(RegisterModel registerModel);
+
+        /// <summary>
+        /// Pushes a set of files to the database
+        /// </summary>
+        /// <param name="files">List of files to upload</param>
+        /// <param name="parentGuid">The GUID of the parent DirectoryEntry</param>
+        /// <returns>What the actual hecc does it return</returns>
+
+        // TODO It shouldn't return bool. Make it return a list of generated FileEntities instead.
+        // TODO Make it asynchronous and use callbacks to not make everything hang when there's an upload.
+        public void UploadFiles(List<FileToUpload> files, System.Guid? parentGuid);
+
+        // TODO should take a parent GUID, page, limits (with a server hard-limit), etc. Returning all the files in bulk is dangerous
+
+        /// <summary>
+        /// Retrieves all files as a list of FileEntites owned by the current user.
+        /// </summary>
+        /// <returns>The list of FileEntities owned by the current user</returns>
+        public List<FileEntity> FileList();
     }
 
-    /* 
-     * implementation of API service
-     */
+    /// <summary>
+    /// Implementation of Api Service
+    /// </summary>
 
     public class ApiService : IApiService
     {
-        const string host = "https://localhost:44306"; // TODO move to settings
+        protected string BearerToken { get; set; }
+
+        public class ApiAuthorizationException : Exception
+        {
+            public ApiAuthorizationException() { }
+            public ApiAuthorizationException(string message) : base(message) { }
+            public ApiAuthorizationException(string message, Exception inner) : base(message, inner) { }
+        }
+
+        #region Constants
+        const string host = "https://localhost:5001"; // TODO move to settings
 
         // TODO actually move everything to settings
         private string LoginUrl = $"{host}/api/user/login";
@@ -40,11 +86,28 @@ namespace Group3.Semester3.DesktopClient.Services
         private string FileUploadUrl = $"{host}/api/file/upload";
         private string CurrentUserUrl = $"{host}/api/user/current";
         private string BrowseFilesUrl = $"{host}/api/file/browse";
+        #endregion
 
+        protected UserModel _currentUserModel;
+        protected LoginResultModel _currentLogin;
 
-        public UserModel CurrentUser()
+        public UserModel User
         {
-            var result = this.GetRequest(CurrentUserUrl, BearerToken.Token);
+            get => _currentUserModel;
+        }
+
+        LoginResultModel IApiService.Login
+        {
+            get => _currentLogin;
+        }
+
+
+        /// <summary>
+        /// Get current user from http context (bearer auth)
+        /// </summary>
+        private UserModel CurrentUser()
+        {
+            var result = this.GetRequest(CurrentUserUrl);
             string resultContent;
 
             {
@@ -53,26 +116,20 @@ namespace Group3.Semester3.DesktopClient.Services
                 resultContent = t.Result;
             }
 
+            if (result.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                throw new ApiAuthorizationException(JObject.Parse(resultContent).SelectToken("message").Value<string>());
+
             if (result.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                if (result.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                {
-                    throw new Exception(JObject.Parse(resultContent).SelectToken("message").Value<string>());
-                }
+                throw new ApiAuthorizationException("Error communicating with the server");
 
-                throw new Exception("Error communicating with the server");
-            }
-
-            var resultModel = JsonConvert.DeserializeObject<UserModel>(resultContent);
-
-            return resultModel;
+            return JsonConvert.DeserializeObject<UserModel>(resultContent);
         }
 
 
-        public LoginResultModel Login(string email, string password)
+        public void Authorize(string email, string password)
         {
-            var model = new AuthenticateModel() { Email = email, Password = password };
 
+            var model = new AuthenticateModel() { Email = email, Password = password };
             var result = this.PostRequest(LoginUrl, model);
 
             string resultContent;
@@ -85,9 +142,10 @@ namespace Group3.Semester3.DesktopClient.Services
 
             var resultModel = JsonConvert.DeserializeObject<LoginResultModel>(resultContent);
 
-            BearerToken.Token = resultModel.Token;
+            BearerToken = resultModel.Token;
 
-            return resultModel;
+            _currentLogin = resultModel;
+            _currentUserModel = CurrentUser();
         }
 
         public UserModel Register(RegisterModel model)
@@ -105,102 +163,77 @@ namespace Group3.Semester3.DesktopClient.Services
             {
                 if (result.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    throw new Exception(JObject.Parse(resultContent).SelectToken("message").Value<string>());
+                    throw new ApiAuthorizationException(JObject.Parse(resultContent).SelectToken("message").Value<string>());
                 }
 
-                throw new Exception("Error communicating with the server");
+                throw new ApiAuthorizationException("Error communicating with the server");
             }
 
             return JsonConvert.DeserializeObject<UserModel>(resultContent);
         }
 
-        public bool UploadFiles(List<FileToUpload> files, string parentGuid)
+        public void UploadFiles(List<FileToUpload> files, System.Guid? parentGuid)
         {
-            try
+            var content = new MultipartFormDataContent();
+
+            foreach (var file in files)
             {
-                var content = new MultipartFormDataContent();
-
-                foreach (var file in files)
-                {
-                    content.Add(new StreamContent(File.OpenRead(file.Path)), "Files", file.Name);
-                }
-
-                content.Add(new StringContent(parentGuid), "ParentId");
-
-                var client = new HttpClient();
-
-                HttpRequestMessage request = new HttpRequestMessage(
-                    HttpMethod.Post,
-                    FileUploadUrl
-                    );
-
-                request.Content = content;
-
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken.Token);
-
-                var response = client.SendAsync(request);
-                response.Wait();
-
-                if (response.Result.IsSuccessStatusCode)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                content.Add(new StreamContent(File.OpenRead(file.Path)), "files", file.Name);
             }
-            catch (Exception exception)
-            {
-                return false;
-            }
+
+            if (parentGuid.HasValue) content.Add(new StringContent(parentGuid?.ToString()), "parentGuid");
+
+            using var client = new HttpClient();
+
+            HttpRequestMessage request = new HttpRequestMessage(
+                HttpMethod.Post,
+                FileUploadUrl
+                );
+
+            request.Content = content;
+
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+
+            var response = client.SendAsync(request);
+            response.Wait();
+
         }
 
-        // method for posting a http request, taking url and model as a parameters
-        // model object is serialized via json, the request is then posted async-ly
-        // if the http response is 200 OK, the response is saved as string and returned
-        // if the response is not 200 OK, an exception is thrown with a status code
-        protected HttpResponseMessage PostRequest(string url, object parameter)
+        /// <param name="parameter">Object to be serialized into a json string and sent as the content of the request</param>
+        protected HttpResponseMessage PostRequest(string requestUrl, object parameter = null)
         {
-            var httpClient = new HttpClient();
+            using var httpClient = new HttpClient();
 
             var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
 
-            if (BearerToken.Token != string.Empty)
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", BearerToken.Token);
+            if (!string.IsNullOrEmpty(BearerToken))
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
 
-            var response = httpClient.PostAsync(url, content);
+            var response = httpClient.PostAsync(requestUrl, content);
             response.Wait();
 
             return response.Result;
         }
 
-        protected HttpResponseMessage GetRequest(string url, string token = "", string parameter = "key=value,key=value")
+        protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
         {
-            var httpClient = new HttpClient();
+            using var httpClient = new HttpClient();
 
-            string requestUrl = url;
+            if (!string.IsNullOrEmpty(BearerToken))
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
 
-            if (token != "")
-                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            if (!string.IsNullOrEmpty(parameters))
+                requestUrl += "?" + parameters;
 
-            if (parameter != "")
-                requestUrl += "?" + parameter;
-
-            var response = httpClient.GetAsync(url);
+            var response = httpClient.GetAsync(requestUrl);
             response.Wait();
-
-            if (!response.Result.IsSuccessStatusCode)
-            {
-                throw new Exception("Request " + url + " failed with status code " + response.Result.StatusCode);
-            }
 
             return response.Result;
         }
 
-        public List<FileEntity> FileList(UserModel currentUser)
+        public List<FileEntity> FileList()
         {
-            var result = GetRequest(BrowseFilesUrl, BearerToken.Token);
+            var result = GetRequest(BrowseFilesUrl, BearerToken);
             string resultContent;
 
             {

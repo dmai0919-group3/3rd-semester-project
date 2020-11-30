@@ -21,8 +21,14 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     /// </summary>
     public partial class Registration : UserControl, ISwitchable
     {
-        public Registration()
+        private ApiService apiService;
+        private Switcher switcher;
+
+        public Registration(ApiService apiService, Switcher switcher)
         {
+            this.switcher = switcher;
+            this.apiService = apiService;
+
             InitializeComponent();
         }
 
@@ -56,14 +62,14 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
 
                 MessageBox.Show("You have successfully registered.\nPlease log in!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                Switcher.Switch(new Login());
+                switcher.Switch(new Login(apiService, switcher));
             }
 
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            Switcher.Switch(new Login());
+            switcher.Switch(new Login(apiService, switcher));
         }
 
         public void UtilizeState(object state)

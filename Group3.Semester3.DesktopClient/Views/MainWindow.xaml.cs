@@ -20,25 +20,26 @@ namespace Group3.Semester3.DesktopClient.Views
     /// </summary>
     public partial class MainWindow : Window, INavigatable
     {
-        private UserModel currentUser;
-        private ApiService apiService = new ApiService();
-        
-        public MainWindow()
+        private ApiService apiService;
+        private Switcher switcher;
+
+        public MainWindow(ApiService apiService, Switcher switcher)
         {
+            this.switcher = switcher;
+            this.apiService = apiService;
+
             InitializeComponent();
 
-            currentUser = apiService.CurrentUser();
+            this.labelUserName.Content = apiService.User.Name;
 
-            this.labelUserName.Content = currentUser.Name;
-
-            if (Switcher.ActiveWindow != null)
+            if (switcher.ActiveWindow != null)
             {
-                var currentWindow = (Window) Switcher.ActiveWindow;
+                var currentWindow = (Window) switcher.ActiveWindow;
                 currentWindow.Hide();
             }
 
-            Switcher.ActiveWindow = this;
-            Switcher.Switch(new UserProfile(currentUser));
+            switcher.ActiveWindow = this;
+            switcher.Switch(new UserProfile(apiService, switcher));
         }
 
         public void Navigate(UserControl nextPage)
@@ -63,12 +64,12 @@ namespace Group3.Semester3.DesktopClient.Views
 
         private void btnShow_Click(object sender, RoutedEventArgs e)
         {
-            Switcher.Switch(new MyFiles(currentUser));
+            switcher.Switch(new MyFiles(apiService, switcher));
         }
 
         private void btnUpload_Click(object sender, RoutedEventArgs e)
         {
-            Switcher.Switch(new UploadFile());
+            switcher.Switch(new UploadFile(apiService, switcher));
         }
 
     }

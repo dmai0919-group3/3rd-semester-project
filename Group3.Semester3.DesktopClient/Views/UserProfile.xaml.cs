@@ -1,5 +1,6 @@
 using System.Windows.Controls;
 using Group3.Semester3.DesktopClient.Services;
+using Group3.Semester3.DesktopClient.ViewHelpers;
 using Group3.Semester3.WebApp.Models.Users;
 
 namespace Group3.Semester3.DesktopClient.Views
@@ -8,13 +9,13 @@ namespace Group3.Semester3.DesktopClient.Views
     {
         
         
-        public UserProfile(UserModel currentUser)
+        public UserProfile(ApiService apiService, Switcher switcher)
         {
             InitializeComponent();
             
-            userName.Content += currentUser.Name + "!";
-            userEmail.Content += currentUser.Email;
-            userId.Content += currentUser.Id.ToString();
+            userName.Content += apiService.User.Name + "!";
+            userEmail.Content += apiService.User.Email;
+            userId.Content += apiService.User.Id.ToString();
         }
     }
 }
