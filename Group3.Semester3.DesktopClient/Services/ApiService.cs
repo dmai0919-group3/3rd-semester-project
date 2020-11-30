@@ -47,7 +47,7 @@ namespace Group3.Semester3.DesktopClient.Services
         /// </summary>
         /// <param name="files">List of files to upload</param>
         /// <param name="parentGuid">The GUID of the parent DirectoryEntry</param>
-        /// <returns>What the actual hecc does it return</returns>
+        /// <returns>What the actual hecc does it return</returns> //TODO
 
         // TODO It shouldn't return bool. Make it return a list of generated FileEntities instead.
         // TODO Make it asynchronous and use callbacks to not make everything hang when there's an upload.
@@ -60,6 +60,20 @@ namespace Group3.Semester3.DesktopClient.Services
         /// </summary>
         /// <returns>The list of FileEntities owned by the current user</returns>
         public List<FileEntity> FileList();
+
+        /// <summary>
+        /// Deletes a file
+        /// </summary>
+        /// <param name="file">The FileEntity object that needs to be deleted from the DB and Azure</param>
+        public void DeleteFile(FileEntity file);
+
+        /// <summary>
+        /// Renames a file and returns a new FileEntity object with the correct name
+        /// </summary>
+        /// <param name="file">The FileEntity containing the file with the old name</param>
+        /// <param name="name">The String containing the new name of the file</param>
+        /// <returns>The new FileEntity object with the new name</returns>
+        public FileEntity RenameFile(FileEntity file, String name);
     }
 
     /// <summary>
@@ -85,6 +99,8 @@ namespace Group3.Semester3.DesktopClient.Services
         private string FileUploadUrl = $"{host}/api/file/upload";
         private string CurrentUserUrl = $"{host}/api/user/current";
         private string BrowseFilesUrl = $"{host}/api/file/browse";
+        private string DeleteFileUrl = $"{host}/api/file/delete";
+        private string RenameFileUrl = $"{host}/api/file/rename";
         #endregion
 
         protected UserModel _currentUserModel;
@@ -100,6 +116,85 @@ namespace Group3.Semester3.DesktopClient.Services
             get => _currentLogin;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="requestUrl"></param>
+        /// <param name="parameter">Object to be serialized into a json string and sent as the content of the request</param>
+        /// <returns></returns>
+        protected HttpResponseMessage PostRequest(string requestUrl, object parameter = null)
+        {
+            using var httpClient = new HttpClient();
+
+            var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
+
+            if (!string.IsNullOrEmpty(BearerToken))
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+
+            var response = httpClient.PostAsync(requestUrl, content);
+            response.Wait();
+
+            return response.Result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="requestUrl"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
+        {
+            using var httpClient = new HttpClient();
+
+            if (!string.IsNullOrEmpty(BearerToken))
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+
+            if (!string.IsNullOrEmpty(parameters))
+                requestUrl += "?" + parameters;
+
+            var response = httpClient.GetAsync(requestUrl);
+            response.Wait();
+
+            return response.Result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="requestUrl"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        protected HttpResponseMessage DeleteRequest(string requestUrl, Guid? id)
+        {
+            using var httpClient = new HttpClient();
+
+            if (!string.IsNullOrEmpty(BearerToken))
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+
+            if (id != Guid.Empty)
+                requestUrl += "?id=" + id;
+
+            var response = httpClient.DeleteAsync(requestUrl);
+            response.Wait();
+
+            return response.Result;
+        }
+
+        protected HttpResponseMessage PutRequest(string requestUrl, object parameter)
+        {
+            using var httpClient = new HttpClient();
+
+            var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
+
+            if (!string.IsNullOrEmpty(BearerToken))
+                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+
+            var response = httpClient.PutAsync(requestUrl, content);
+            response.Wait();
+
+            return response.Result;
+        }
 
         /// <summary>
         /// Get current user from http context (bearer auth)
@@ -118,7 +213,7 @@ namespace Group3.Semester3.DesktopClient.Services
             if (result.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 throw new ApiAuthorizationException(JObject.Parse(resultContent).SelectToken("message").Value<string>());
 
-            if (result.StatusCode != System.Net.HttpStatusCode.OK)
+            if (!result.IsSuccessStatusCode)
                 throw new ApiAuthorizationException("Error communicating with the server");
 
             return JsonConvert.DeserializeObject<UserModel>(resultContent);
@@ -168,7 +263,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 resultContent = t.Result;
             }
 
-            if (result.StatusCode != System.Net.HttpStatusCode.OK)
+            if (!result.IsSuccessStatusCode)
             {
                 if (result.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
@@ -182,10 +277,10 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         /// <summary>
-        /// 
+        /// Upload a file / multiple files through the API
         /// </summary>
-        /// <param name="files"></param>
-        /// <param name="parentGuid"></param>
+        /// <param name="files">A list of FileToUpload objects</param>
+        /// <param name="parentGuid">The Guid of the parent folder of null if the files to be uploaded are in the root directory</param>
         public void UploadFiles(List<FileToUpload> files, System.Guid? parentGuid)
         {
             var content = new MultipartFormDataContent();
@@ -214,52 +309,9 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         /// <summary>
-        /// 
+        /// Gets a list of all files accessible by the user
         /// </summary>
-        /// <param name="requestUrl"></param>
-        /// <param name="parameter">Object to be serialized into a json string and sent as the content of the request</param>
-        /// <returns></returns>
-        protected HttpResponseMessage PostRequest(string requestUrl, object parameter = null)
-        {
-            using var httpClient = new HttpClient();
-
-            var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
-
-            if (!string.IsNullOrEmpty(BearerToken))
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
-
-            var response = httpClient.PostAsync(requestUrl, content);
-            response.Wait();
-
-            return response.Result;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="requestUrl"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
-        protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
-        {
-            using var httpClient = new HttpClient();
-
-            if (!string.IsNullOrEmpty(BearerToken))
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
-
-            if (!string.IsNullOrEmpty(parameters))
-                requestUrl += "?" + parameters;
-
-            var response = httpClient.GetAsync(requestUrl);
-            response.Wait();
-
-            return response.Result;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
+        /// <returns>A List containing FileEntity's which can be accessed by the user</returns>
         public List<FileEntity> FileList()
         {
             var result = GetRequest(BrowseFilesUrl, BearerToken);
@@ -271,10 +323,49 @@ namespace Group3.Semester3.DesktopClient.Services
                 resultContent = t.Result;
             }
 
-            if (result.StatusCode != System.Net.HttpStatusCode.OK)
+            if (!result.IsSuccessStatusCode)
                 throw new Exception("Error communicating with the server");
 
             return JsonConvert.DeserializeObject<List<FileEntity>>(resultContent);
+        }
+
+        /// <summary>
+        /// Deletes a file
+        /// </summary>
+        /// <param name="file">A FileEntity object to be deleted</param>
+        public void DeleteFile(FileEntity file)
+        {
+            var result = DeleteRequest(DeleteFileUrl, file.Id);
+
+            if (result.IsSuccessStatusCode)
+                throw new Exception("Error communicating with the server");
+        }
+
+        /// <summary>
+        /// Renames a file to a given new name
+        /// </summary>
+        /// <param name="file">A FileEntity object to be renamed</param>
+        /// <param name="name">The new name of the file</param>
+        /// <returns>A FileEntity object with the new name</returns>
+        public FileEntity RenameFile(FileEntity file, string name)
+        {
+            FileEntity renamedFile = new FileEntity();
+            renamedFile.Id = file.Id;
+            renamedFile.Name = name;
+
+            var result = PutRequest(RenameFileUrl, renamedFile);
+            string resultContent;
+
+            {
+                var t = result.Content.ReadAsStringAsync();
+                t.Wait();
+                resultContent = t.Result;
+            }
+
+            if (!result.IsSuccessStatusCode)
+                throw new Exception("Error communicating with the server");
+
+            return JsonConvert.DeserializeObject<FileEntity>(resultContent);
         }
     }
 }

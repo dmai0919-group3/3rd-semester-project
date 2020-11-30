@@ -13,6 +13,14 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Height="450" Width="800">
+    <UserControl.Resources>
+        <ContextMenu x:Key="fileRightClickMenu">
+            <MenuItem Header="Delete" 
+                      Click="MenuDelete_Click"
+                      CommandParameter=""/>
+            <MenuItem Header="Rename" />
+        </ContextMenu>
+    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
@@ -62,4 +70,4 @@
             </TreeView>
         </Grid>
     </Grid>
-    </UserControl>
+</UserControl>

@@ -138,5 +138,10 @@ namespace Group3.Semester3.DesktopClient.Views
         {
             switcher.Switch(new UploadFile(apiService, switcher));
         }
+
+        private void MenuDelete_Click(object sender, RoutedEventArgs e)
+        {
+            //TODO
+        }
     }
 }
