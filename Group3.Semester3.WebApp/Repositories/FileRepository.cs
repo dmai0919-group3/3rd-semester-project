@@ -19,6 +19,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Insert(FileEntity fileEntity);
         public bool Delete(Guid id);
         public bool Rename(Guid id, string name);
+        public bool MoveIntofolder(Guid fileId, Guid parentId);
     }
     public class FileRepository : IFileRepository
     {
@@ -218,6 +219,36 @@ namespace Group3.Semester3.WebApp.Repositories
             }
 
             return null;
+        }
+
+        public bool MoveIntofolder(Guid fileId, Guid parentId)
+        {
+            string query = "UPDATE Files SET ParentId=@ParentId WHERE Id=@Id";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    ParentId = parentId,
+                    Id = fileId
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    int rowsChanged = connection.Execute(query, parameters);
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                }
+                return false;
+
+            }
         }
     }
 }

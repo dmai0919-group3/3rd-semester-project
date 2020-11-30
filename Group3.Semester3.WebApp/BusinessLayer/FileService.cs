@@ -21,11 +21,17 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity GetById(Guid id);
         public bool DeleteFile(Guid fileId, Guid userId);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
+        public bool MoveIntoFolder(FileEntity model, Guid userId);
     }
     public class FileService : IFileService
     {
         private IConfiguration _configuration;
         private IFileRepository _fileRepository;
+
+        public FileService(IFileRepository fileRepository)
+        {
+            _fileRepository = fileRepository;
+        }
 
         public FileService(IConfiguration configuration, IFileRepository fileRepository)
         {
@@ -68,8 +74,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                         fileEntries.Add(new FileEntry
                         {
                             Name = formFile.FileName,
-                            UUID = blobName,
-                            Parent = new DirectoryEntry { UUID = parsedGUID }
+                            Id = blobName,
+                            Parent = new DirectoryEntry { Id = parsedGUID }
                         });
 
                         var file = new FileEntity()
@@ -186,6 +192,20 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
 
             return folder;
+        }
+
+        public bool MoveIntoFolder(FileEntity model, Guid userId) {
+            var file = _fileRepository.GetById(model.Id);
+            if (userId == file.UserId)
+            {
+                var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);
+                if (!result)
+                {
+                    throw new ValidationException("File has not been moved, try again.");
+                }
+                else return true;
+            }
+            else throw new ValidationException("Operation forbidden.");
         }
     }
 }

@@ -1,133 +1,47 @@
-﻿@using Microsoft.CodeAnalysis
-
+﻿
 @{
     ViewData["Title"] = "OGO Filesharing - Browse files";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+
 <div class="row">
-    @foreach (var file in ViewBag.Files)
-    {
-        <div class="col-md-2 file justify-content-center" id="@file.Id">
-            <div>
-                <img src="~/Images/file-icon.png" />
-            </div>
-            <p class="file-name">@file.Name</p>
+    <div class="dropdown" x-placement="bottom-start">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            New
+        </button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
+            <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
         </div>
-    }
+    </div>
+    
+    <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
+    
+    <div class="directory-path-container">
+        <h2>Path: <span id="directory-path">/</span></h2>
+    </div>
 </div>
 
 
+<div class="row" id="file-container"></div>
+
+
 <script>
-
-    $(function () {
-        $.contextMenu({
-            selector: '.file',
-            items: {
-                rename: {
-                    name: "Rename",
-                    callback: function (key, opt) {
-                        showRenameFileModal(key, opt);
-                    }
-                },
-                delete: {
-                    name: "Delete",
-                    callback: function (key, opt) {
-                        // TODO: Show confirm modal first in the future
-                        showDeleteFileModal(key, opt);
-                    }
-                }
-            }
-        });
-    });
-
-    function showRenameFileModal(key, opt) {
-
-        let $element = opt.$trigger;
-        let fileId = $element.attr("id");
-
-        let fileName = $element.find('.file-name').text();
-
-        $("#file-name").val(fileName);
-        $("#file-id").val(fileId);
-
-        $("#renameFileModal").modal();
-
-    }
-
-    function renameFile() {
-         let fileName = $("#file-name").val();
-         let fileId = $("#file-id").val();
-
-         let url = "@Url.Action("Rename","File")";
-
-         let file = {
-             fileId: fileId,
-             fileName: fileName
-         }
-
-         $.ajax({
-            url: url,
-            data: file,
-            type: "PUT",
-            success: function(result){
-                let id = result.id;
-                let fileName = result.name;
-
-                $("#renameFileModal").modal("hide");
-
-                let $fileNameElement = $('#'+id).find('.file-name');
-
-                $fileNameElement.text(fileName);
-            },
-            error: function (result) {
-                // TODO: Handle better in the future
-                alert("Failed to rename a file");
-            }
-         });
-
-    }
-
-    function showDeleteFileModal(key, opt) {
-
-        let $element = opt.$trigger;
-        let fileId = $element.attr("id");
-
-        $("#delete-file-id").val(fileId);
-
-        $("#deleteFileModal").modal();
-
-    }
-
-    function deleteFile() {
-
-        let fileId = $("#delete-file-id").val();
-
-        let url = "@Url.Action("Delete","File")";
-               
-        let file = {
-            fileId: fileId,
-        }
-
-         $.ajax({
-            url: url,
-            data: file,
-            type: "DELETE",
-            success: function(result){
-
-                $("#deleteFileModal").modal("hide");
-                $('#' + fileId).remove();
-            },
-            error: function (result) {
-                // TODO: Handle better in the future
-                alert("Failed to delete a file");
-            }
-         });
-
-        // TODO: Implement delete logic
-    }
-
+    const renameUrl = "@Url.Action("Rename", "FileApi")";
+    const deleteUrl = "@Url.Action("Delete", "FileApi")";
+    const createFolderUrl = "@Url.Action("CreateFolder", "FileApi")";
+    const uploadFilesUrl = "@Url.Action("UploadFiles", "FileApi")";
+    const moveFileUrl = "@Url.Action("MoveIntoFolder", "FileApi")";
+    const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
+    const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
 </script>
+
+<script src="~/js/browse-file-scripts.js"></script>
+
+@*
+    Modals section
+*@
 
 
 <div class="modal fade" id="renameFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -179,6 +93,94 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" onclick="deleteFile()">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Upload file</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="file-upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input id="upload-files" type="file" name="Files" class="form-control-file" multiple />
+                    </div>
+                    <div class="form-group">
+                        <input id="upload-file-parentId" type="hidden" name="ParentId" value="0" />
+                    </div>
+                </form>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                         id="upload-progress-bar"
+                         role="progressbar"
+                         aria-valuenow="0"
+                         aria-valuemin="0"
+                         aria-valuemax="100"
+                         style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info" onclick="startFileUpload()"> Upload </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Create folder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="create-folder-name" class="col-form-label">Folder name:</label>
+                        <input type="text" class="form-control" id="create-folder-name">
+                    </div>
+                    <div class="form-group">
+                        <input type="hidden" id="folder-id">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createFolder()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="moveFileModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Move to:</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <ul class="list-group" id="move-folder-list">
+                        
+                    </ul>
+                    <input type="hidden" id="move-file-id">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

@@ -20,7 +20,7 @@
     "web_app": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "user/login",
+      "launchUrl": "file/browse",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

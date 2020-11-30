@@ -6,6 +6,8 @@ using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.FileSystem;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +18,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 {
     [Route("api/file")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = (CookieAuthenticationDefaults.AuthenticationScheme + "," + JwtBearerDefaults.AuthenticationScheme))]
     public class FileApiController : ControllerBase
     {
         private IFileService _fileService;
@@ -43,9 +45,20 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [Route("browse/{parentId}")]
         public IActionResult GetFiles(string parentId)
         {
-            var user = _userService.GetFromHttpContext(HttpContext);
-            var fileEntities = _fileService.BrowseFiles(user, parentId);
-            return Ok(fileEntities);
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntities = _fileService.BrowseFiles(user, parentId);
+                return Ok(fileEntities);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
         }
 
         // GET api/file/5
@@ -59,15 +72,15 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         // POST api/<FileApiController>
         [HttpPost]
         [Route("upload")]
-        public async Task<IActionResult> UploadFiles(List<IFormFile> files, string parentGuid)
+        [DisableRequestSizeLimit]
+        public async Task<IActionResult> UploadFiles([FromForm] UploadFilesModel model)
         {
-           
             try
             {
                 List<Models.FileSystem.FileEntry> generatedEntries = await _fileService.UploadFile(
                     _userService.GetFromHttpContext(HttpContext),
-                    parentGuid,
-                    files);
+                    model.ParentId,
+                    model.Files);
                 return Ok(generatedEntries);
             } catch (Exception exception)
             {
@@ -75,31 +88,40 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
         }
 
-        // PUT api/<FileApiController>/5
-
-        [HttpPut("{id}")]
-        public IActionResult UpdateFile(Guid fileId, [FromBody] string name)
+        [Route("delete")]
+        [HttpDelete]
+        public ActionResult Delete(FileEntity model)
         {
-            var user = _userService.GetFromHttpContext(HttpContext);
-            var file = _fileService.RenameFile(fileId, user.Id, name);
-            if (file != null)
+            try
             {
-                return Ok(file);
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.DeleteFile(model.Id, user.Id);
+                if (!result)
+                {
+                    return BadRequest();
+                }
+                else return NoContent();
             }
-            else return NoContent();
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
-        // DELETE api/<FileApiController>/5
-        [HttpDelete("{id}")]
-        public IActionResult DeleteFile(Guid fileId)
+        [Route("rename")]
+        [HttpPut]
+        public ActionResult Rename(FileEntity model)
         {
-            var user = _userService.GetFromHttpContext(HttpContext);
-            var result = _fileService.DeleteFile(fileId, user.Id);
-            if(!result)
-            {
-                return BadRequest();
+            try {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                
+                var result = _fileService.RenameFile(model.Id, user.Id, model.Name);
+                return Ok(result);
             }
-            else return NoContent();
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [Route("create-folder")]
@@ -120,6 +142,23 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             catch
             {
                 return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("move")]
+        [HttpPost]
+        public ActionResult MoveIntoFolder(FileEntity model)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var result = _fileService.MoveIntoFolder(model, user.Id);
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
             }
         }
     }

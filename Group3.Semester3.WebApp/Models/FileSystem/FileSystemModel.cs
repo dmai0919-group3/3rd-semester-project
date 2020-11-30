@@ -9,7 +9,7 @@ namespace Group3.Semester3.WebApp.Models.FileSystem
     public interface IFileSystemEntry
     {
         public string Name { get; set; }
-        public Guid UUID { get; set; }
+        public Guid Id { get; set; }
         DirectoryEntry Parent { get; set; }
 
     }
@@ -19,7 +19,7 @@ namespace Group3.Semester3.WebApp.Models.FileSystem
         [Required]
         [Display(Name = "File name")]
         public string Name { get ; set; }
-        public Guid UUID { get; set; }
+        public Guid Id { get; set; }
         public DirectoryEntry Parent { get; set; }
     }
 
@@ -28,7 +28,7 @@ namespace Group3.Semester3.WebApp.Models.FileSystem
         [Required]
         [Display(Name = "File name")]
         public string Name { get; set; }
-        public Guid UUID { get; set; }
+        public Guid Id { get; set; }
         public DirectoryEntry Parent { get; set; }
     }
 }
