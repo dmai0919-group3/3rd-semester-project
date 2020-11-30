@@ -21,15 +21,17 @@ namespace Group3.Semester3.DesktopClient.Views
     /// </summary>
     public partial class MyFiles : UserControl
     {
-        private ApiService apiService = new ApiService();
-        public MyFiles(UserModel currentUser)
+        private ApiService apiService;
+        private Switcher switcher;
+        public MyFiles(ApiService apiService, Switcher switcher)
         {
-
+            this.switcher = switcher;
+            this.apiService = apiService;
             InitializeComponent();
 
-            labelUserName.Content += currentUser.Name.ToUpper();
+            labelUserName.Content += apiService.User.Name.ToUpper();
 
-            List<FileEntity> files = apiService.FileList(currentUser);
+            List<FileEntity> files = apiService.FileList();
 
             foreach (var f in files)
             {
@@ -73,7 +75,7 @@ namespace Group3.Semester3.DesktopClient.Views
         }
         private void btnUpload_Click(object sender, RoutedEventArgs e)
         {
-            Switcher.Switch(new UploadFile());
+            switcher.Switch(new UploadFile(apiService, switcher));
         }
     }
 }

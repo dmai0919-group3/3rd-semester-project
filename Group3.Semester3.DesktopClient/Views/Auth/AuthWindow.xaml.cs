@@ -1,4 +1,5 @@
-﻿using Group3.Semester3.DesktopClient.ViewHelpers;
+﻿using Group3.Semester3.DesktopClient.Services;
+using Group3.Semester3.DesktopClient.ViewHelpers;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,24 +19,29 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     /// </summary>
     public partial class AuthWindow : Window, INavigatable
     {
-        public AuthWindow()
+        private ApiService apiService;
+        private Switcher switcher;
+        public AuthWindow(ApiService apiService, Switcher switcher)
         {
+            this.switcher = switcher;
+            this.apiService = apiService;
+
             InitializeComponent();
 
-            if (Switcher.ActiveWindow != null)
+            if (switcher.ActiveWindow != null)
             {
-                var currentWindow = (Window) Switcher.ActiveWindow;
+                var currentWindow = (Window)switcher.ActiveWindow;
                 currentWindow.Hide();
             }
 
-            Switcher.ActiveWindow = this;
-            Switcher.Switch(new Login());
+            switcher.ActiveWindow = this;
+            switcher.Switch(new Login(apiService, switcher));
         }
 
         public void Navigate(UserControl nextPage)
         {
-            this.Grid.Children.Clear();
-            this.Grid.Children.Add(nextPage);
+            Grid.Children.Clear();
+            Grid.Children.Add(nextPage);
         }
 
         public void Navigate(UserControl nextPage, object state)
