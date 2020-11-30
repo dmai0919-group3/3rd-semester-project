@@ -11,3 +11,7 @@
     margin-left: 20px;
     margin-right: 20px;
 }
+
+#directory-path span, .folder {
+    cursor: pointer;
+}

@@ -299,9 +299,11 @@ function updateDirectoryPath() {
     let dirPathElement = $("#directory-path");
     dirPathElement.empty();
     
-    Object.values(dirArray)
+    Object.keys(dirArray)
         .forEach(function(index) {
-            dirPathElement.append(index + " / ");
+            let append = "<span data-id='" + index + "'>" + dirArray[index] + "</span>";
+            dirPathElement.append(append);
+            dirPathElement.append(" / ");
         });
 }
 
@@ -369,17 +371,25 @@ $(document).ready(function() {
     $('#move-folder-list').on('click', '.move-file-folder-choice', function (e) {
         e.preventDefault();
         let $this = $(this);
-        
+
         let id = $this.data("id");
         let parentId = $this.data("parent-id");
-        
+
         moveFile(id, parentId);
     });
+    
+    $('#directory-path').on('click', 'span', function () {
+        let $this = $(this);
+        let id = $this.data('id');
+        
+        if (currentDir !== id) {
+            browseDirectoryFiles(id);
+        }
+    });
+    
 });
 
 function moveFile(id, parentId) {
-    console.log(id, parentId);
-
     let url = moveFileUrl;
 
     let data = {
