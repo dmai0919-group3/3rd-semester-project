@@ -67,10 +67,5 @@ namespace Group3.Semester3.DesktopClient.Views
             switcher.Switch(new MyFiles(apiService, switcher));
         }
 
-        private void btnUpload_Click(object sender, RoutedEventArgs e)
-        {
-            switcher.Switch(new UploadFile(apiService, switcher));
-        }
-
     }
 }

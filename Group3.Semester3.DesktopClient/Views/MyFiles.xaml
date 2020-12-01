@@ -13,14 +13,6 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Height="450" Width="800">
-    <UserControl.Resources>
-        <ContextMenu x:Key="fileRightClickMenu">
-            <MenuItem Header="Delete" 
-                      Click="MenuDelete_Click"
-                      CommandParameter=""/>
-            <MenuItem Header="Rename" />
-        </ContextMenu>
-    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="150"/>
@@ -33,6 +25,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="19*"/>
                 <RowDefinition Height="10*"/>
+                <RowDefinition Height="50*"/>
                 <RowDefinition Height="173*"/>
             </Grid.RowDefinitions>
             <Grid VerticalAlignment="Top" Height="0"/>
@@ -40,6 +33,7 @@
             <Label Content="Default" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0,0,0" Height="30" Width="97" Foreground="#DD2C2C2C" FontSize="14" Grid.Row="1"/>
             <Separator Margin="10,3,10,0" Grid.Row="2" VerticalAlignment="Top" Foreground="#FF818181" Height="1"/>
             <Button Content="Upload files" Click="btnUpload_Click" HorizontalAlignment="Center" Margin="0,21,0,0" Grid.Row="2" VerticalAlignment="Top" Width="130" Foreground="White"/>
+            <Button Grid.Row="3" Content="Create folder" Click="CreateFolder_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Width="130" Foreground="White" />
         </Grid>
         <Grid Grid.Column="1" Grid.Row="0">
             <Grid.RowDefinitions>

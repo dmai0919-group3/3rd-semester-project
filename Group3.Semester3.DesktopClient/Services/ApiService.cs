@@ -51,7 +51,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
         // TODO It shouldn't return bool. Make it return a list of generated FileEntities instead.
         // TODO Make it asynchronous and use callbacks to not make everything hang when there's an upload.
-        public void UploadFiles(List<FileToUpload> files, System.Guid? parentGuid);
+        public void UploadFiles(List<FileToUpload> files, System.Guid parentGuid);
 
         // TODO should take a parent GUID, page, limits (with a server hard-limit), etc. Returning all the files in bulk is dangerous
 
@@ -75,6 +75,14 @@ namespace Group3.Semester3.DesktopClient.Services
         /// <param name="name">The String containing the new name of the file</param>
         /// <returns>The new FileEntity object with the new name</returns>
         public FileEntity RenameFile(FileEntity file, String name);
+
+        /// <summary>
+        /// Creates a new folder
+        /// </summary>
+        /// <param name="parentId">Parent id of a folder</param>
+        /// <param name="name">Name of the folder</param>
+        /// <returns></returns>
+        public FileEntity CreateFolder(Guid parentId, string name);
     }
 
     /// <summary>
@@ -102,6 +110,7 @@ namespace Group3.Semester3.DesktopClient.Services
         private string BrowseFilesUrl = $"{host}/api/file/browse";
         private string DeleteFileUrl = $"{host}/api/file/delete";
         private string RenameFileUrl = $"{host}/api/file/rename";
+        private string CreateFolderUrl = $"{host}/api/file/create-folder";
         #endregion
 
         protected UserModel _currentUserModel;
@@ -288,7 +297,7 @@ namespace Group3.Semester3.DesktopClient.Services
         /// </summary>
         /// <param name="files">A list of FileToUpload objects</param>
         /// <param name="parentGuid">The Guid of the parent folder of null if the files to be uploaded are in the root directory</param>
-        public void UploadFiles(List<FileToUpload> files, System.Guid? parentGuid)
+        public void UploadFiles(List<FileToUpload> files, System.Guid parentGuid)
         {
             var content = new MultipartFormDataContent();
 
@@ -297,7 +306,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 content.Add(new StreamContent(File.OpenRead(file.Path)), "files", file.Name);
             }
 
-            if (parentGuid.HasValue) content.Add(new StringContent(parentGuid?.ToString()), "parentGuid");
+            content.Add(new StringContent(parentGuid.ToString()), "parentGuid");
 
             using var client = new HttpClient();
 
@@ -367,6 +376,26 @@ namespace Group3.Semester3.DesktopClient.Services
             renamedFile.Name = name;
 
             var result = PutRequest(RenameFileUrl, renamedFile);
+            string resultContent;
+
+            {
+                var t = result.Content.ReadAsStringAsync();
+                t.Wait();
+                resultContent = t.Result;
+            }
+
+            if (!result.IsSuccessStatusCode)
+                throw new Exception("Error communicating with the server");
+
+            return JsonConvert.DeserializeObject<FileEntity>(resultContent);
+        }
+
+        public FileEntity CreateFolder(Guid parentId, string name)
+        {
+            var content = new FileEntity() { Name = name, ParentId = parentId};
+
+            var result = PostRequest(CreateFolderUrl, content);
+
             string resultContent;
 
             {

@@ -32,21 +32,18 @@ namespace Group3.Semester3.DesktopClient.Views
         {
             this.switcher = switcher;
             this.apiService = apiService;
+            this.CurrentFolder = null;
+            
             InitializeComponent();
 
             ShowDirectoryFiles(Guid.Empty);
         }
         private void btnUpload_Click(object sender, RoutedEventArgs e)
         {
-            switcher.Switch(new UploadFile(apiService, switcher));
+            switcher.Switch(new UploadFile(apiService, switcher, currentFolderGuid()));
         }
 
-        private void MenuDelete_Click(object sender, RoutedEventArgs e)
-        {
-            //TODO
-        }
-        
-        private void ShowDirectoryFiles(Guid parentId)
+        public void ShowDirectoryFiles(Guid parentId)
         {
             List<FileEntity> files = apiService.FileList(parentId);
 
@@ -87,6 +84,12 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
+        private void CreateFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var modal = new CreateFolderModal(apiService, this, currentFolderGuid());
+            modal.Show();
+        }
+        
         public void Folder_OnMouseClick(object sender, MouseButtonEventArgs e)
         {
             var partial = (FileEntryPartial) sender;
@@ -94,6 +97,8 @@ namespace Group3.Semester3.DesktopClient.Views
             var file = partial.File;
 
             FolderName.Text = file.Name;
+
+            this.CurrentFolder = file;
             
             ShowDirectoryFiles(file.Id);
         }
@@ -144,6 +149,18 @@ namespace Group3.Semester3.DesktopClient.Views
                     }
                     break;
             }
+        }
+
+        private Guid currentFolderGuid()
+        {
+            var id = Guid.Empty;
+
+            if (CurrentFolder != null)
+            {
+                id = CurrentFolder.Id;
+            }
+
+            return id;
         }
     }
 }
