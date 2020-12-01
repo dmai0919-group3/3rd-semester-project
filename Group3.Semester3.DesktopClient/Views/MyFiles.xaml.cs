@@ -25,6 +25,8 @@ namespace Group3.Semester3.DesktopClient.Views
     {
         private ApiService apiService;
         private Switcher switcher;
+        
+        public FileEntity CurrentFolder;
 
         public MyFiles(ApiService apiService, Switcher switcher)
         {
