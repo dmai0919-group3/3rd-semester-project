@@ -10,11 +10,12 @@ namespace Group3.Semester3.DesktopClient.Views.Partials
 {
     public class FileEntryPartial : Grid
     {
-        public FileEntity file { get; set; }
+        public FileEntity File { get; set; }
+        public TextBlock FileNameTextBlock { get; set; }
 
         public FileEntryPartial(FileEntity file) : base()
         {
-            this.file = file;
+            this.File = file;
 
             this.Init();
         }
@@ -29,17 +30,17 @@ namespace Group3.Semester3.DesktopClient.Views.Partials
             this.VerticalAlignment = VerticalAlignment.Center;
             this.HorizontalAlignment = HorizontalAlignment.Stretch;
 
-            TextBlock fileNameTextBlock = new TextBlock();
-            fileNameTextBlock.Text = file.Name;
+            FileNameTextBlock = new TextBlock();
+            FileNameTextBlock.Text = File.Name;
             {
-                Thickness margin = fileNameTextBlock.Margin;
+                Thickness margin = FileNameTextBlock.Margin;
                 margin.Right = 12;
-                fileNameTextBlock.Margin = margin;
+                FileNameTextBlock.Margin = margin;
             }
-            fileNameTextBlock.FontWeight = FontWeights.Bold;
-            Grid.SetColumn(fileNameTextBlock, 0);
+            FileNameTextBlock.FontWeight = FontWeights.Bold;
+            Grid.SetColumn(FileNameTextBlock, 0);
 
-            this.Children.Add(fileNameTextBlock);
+            this.Children.Add(FileNameTextBlock);
         }
     }
 }

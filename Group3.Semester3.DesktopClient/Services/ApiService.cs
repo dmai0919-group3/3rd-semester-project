@@ -166,17 +166,23 @@ namespace Group3.Semester3.DesktopClient.Services
         /// <param name="requestUrl"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        protected HttpResponseMessage DeleteRequest(string requestUrl, Guid? id)
+        protected HttpResponseMessage DeleteRequest(string requestUrl, Guid id)
         {
             using var httpClient = new HttpClient();
 
             if (!string.IsNullOrEmpty(BearerToken))
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
 
-            if (id != Guid.Empty)
-                requestUrl += "?id=" + id;
+            var content = new StringContent(JsonConvert.SerializeObject(new {id}), System.Text.Encoding.UTF8, "application/json");
+            
+            HttpRequestMessage request = new HttpRequestMessage(
+                HttpMethod.Delete,
+                requestUrl
+            );
 
-            var response = httpClient.DeleteAsync(requestUrl);
+            request.Content = content;
+
+            var response = httpClient.SendAsync(request);
             response.Wait();
 
             return response.Result;
@@ -344,7 +350,7 @@ namespace Group3.Semester3.DesktopClient.Services
         {
             var result = DeleteRequest(DeleteFileUrl, file.Id);
 
-            if (result.IsSuccessStatusCode)
+            if (!result.IsSuccessStatusCode)
                 throw new Exception("Error communicating with the server");
         }
 
