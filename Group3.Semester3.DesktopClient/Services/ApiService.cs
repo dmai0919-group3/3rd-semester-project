@@ -56,10 +56,11 @@ namespace Group3.Semester3.DesktopClient.Services
         // TODO should take a parent GUID, page, limits (with a server hard-limit), etc. Returning all the files in bulk is dangerous
 
         /// <summary>
-        /// Retrieves all files as a list of FileEntites owned by the current user.
+        /// Retrieves all files as a list of FileEntites owned by the current user
         /// </summary>
+        /// <param name="parentId">Guid of parent folder. Use Guid.Empty for root folder</param>
         /// <returns>The list of FileEntities owned by the current user</returns>
-        public List<FileEntity> FileList();
+        public List<FileEntity> FileList(Guid parentId);
 
         /// <summary>
         /// Deletes a file
@@ -312,9 +313,15 @@ namespace Group3.Semester3.DesktopClient.Services
         /// Gets a list of all files accessible by the user
         /// </summary>
         /// <returns>A List containing FileEntity's which can be accessed by the user</returns>
-        public List<FileEntity> FileList()
+        public List<FileEntity> FileList(Guid parentId)
         {
-            var result = GetRequest(BrowseFilesUrl, BearerToken);
+            var url = BrowseFilesUrl;
+            if (parentId != Guid.Empty)
+            {
+                url += "/" + parentId;
+            }
+
+            var result = GetRequest(url, BearerToken);
             string resultContent;
 
             {
