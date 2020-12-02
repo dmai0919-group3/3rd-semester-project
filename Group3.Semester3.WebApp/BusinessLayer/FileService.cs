@@ -25,7 +25,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteFile(Guid fileId, Guid userId);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, Guid userId);
-        public string DownloadFile(Guid fileId);
+        public string DownloadFile(Guid fileId, Guid userId);
     }
     public class FileService : IFileService
     {
@@ -107,33 +107,39 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return fileEntries;
         }
 
-        public string DownloadFile(Guid fileId)
+        public string DownloadFile(Guid fileId, Guid userId)
         {
-            BlobContainerClient containerClient =
+            var file = _fileRepository.GetById(fileId);
+
+            if (userId == file.UserId)
+            {
+                BlobContainerClient containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
-            containerClient.CreateIfNotExists();
+                containerClient.CreateIfNotExists();
 
-            BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
-            {
-                StartsOn = DateTime.UtcNow,
-                ExpiresOn = DateTime.UtcNow.AddHours(24),
-                BlobContainerName = containerClient.Name,
-                BlobName = fileId.ToString(),
-                Resource = "b"
-            };
+                BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
+                {
+                    StartsOn = DateTime.UtcNow,
+                    ExpiresOn = DateTime.UtcNow.AddHours(24),
+                    BlobContainerName = containerClient.Name,
+                    BlobName = fileId.ToString(),
+                    Resource = "b"
+                };
 
-            blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+                blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
 
-            StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
-                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
-                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
+                StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
 
-            string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
+                string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
 
-            return $"{containerClient.GetBlockBlobClient(fileId.ToString()).Uri}?{sasToken}";
+                return $"{containerClient.GetBlockBlobClient(fileId.ToString()).Uri}?{sasToken}";
+            }
+            else throw new ValidationException("Operation forbidden.");
         }
 
         public bool DeleteFile(Guid fileId, Guid userId)

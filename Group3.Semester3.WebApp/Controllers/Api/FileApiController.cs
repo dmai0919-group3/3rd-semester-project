@@ -76,7 +76,8 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         {
             try
             {
-                var downloadLink = _fileService.DownloadFile(fileId);
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var downloadLink = _fileService.DownloadFile(fileId, user.Id);
                 return Ok(downloadLink);
             }
             catch (ValidationException exception)
