@@ -454,13 +454,47 @@ function showEditFileModal(key, opt)
     let $element = opt.$trigger;
     let fileId = $element.attr("id");
     let fileName = $element.find('.file-name').text();
+
+    $.ajax({
+        url: "/api/file/content/" + fileId,
+        type: "GET",
+        success: function (result) {
+            $('#edit-file-name').text(fileName);
+
+            $('#editFileId').val(fileId);
+            $('#editFileContent').val(result);
+            
+            $('#editFileModal').modal();
+        },
+        error: function (result) {
+            // TODO: Handle better in the future
+            alert("Failed to move a file");
+        }
+    });
     
-    // TODO: Get file contents
-    
-    $('#edit-file-name').text(fileName);
-    $('#editFileModal').modal();
 }
 
 function editFileSave() {
-    // TODO: Handle file save
+    let contents = $('#editFileContent').val();
+    let id = $('#editFileId').val();
+
+    let data = {
+        id: id,
+        contents: contents,
+    }
+    
+    $.ajax({
+        url: updateFileUrl,
+        data: JSON.stringify(data),
+        type: "POST",
+        contentType: "application/json",
+        success: function (result) {
+            alert("File updated!")
+            $("#editFileModal").modal("hide");
+        },
+        error: function (result) {
+            // TODO: Handle better in the future
+            alert("Failed to edit a file");
+        }
+    });
 }

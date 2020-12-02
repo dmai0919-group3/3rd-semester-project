@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -165,7 +166,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         
         [Route("content/{id}")]
         [HttpGet]
-        public ActionResult GetFileContentsForEdit(string id)
+        public ActionResult GetFileContents(string id)
         {
             try
             {
@@ -183,6 +184,28 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest(exception.Message);
             }
             catch
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("content")]
+        [HttpPost]
+        public IActionResult SetFileContents([FromBody] UpdateFileModel model)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var file = _fileService.UpdateFileContents(model.Contents, model.Id, user);
+                
+                return Ok(file);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
             {
                 return BadRequest("System error, please contact Administrator");
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
@@ -24,6 +25,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, Guid userId);
         public Stream GetFileContents(string id, UserModel user);
+        public FileEntity UpdateFileContents(string contents, Guid id, UserModel user);
     }
     public class FileService : IFileService
     {
@@ -228,16 +230,34 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             containerClient.CreateIfNotExists();
 
-            var stream = new MemoryStream();
-            
-            var response = containerClient.GetBlobClient(file.AzureId.ToString()).DownloadTo(stream);
-
-            if (response.Status < 200 && response.Status > 299)
-            {
-                throw new ValidationException("Can not retrieve the file " + response.Status);
-            }
+            var response = containerClient.GetBlobClient(file.AzureId.ToString()).Download();
+            var stream = response.Value.Content;
 
             return stream;
+        }
+
+        public FileEntity UpdateFileContents(string contents, Guid id, UserModel user)
+        {
+            var file = _fileRepository.GetById(id);
+            
+            if (file.UserId != user.Id)
+            {
+                throw new ValidationException("Unauthorized");
+            }
+            
+            byte[] byteArray = Encoding.ASCII.GetBytes( contents );
+            var contentStream = new MemoryStream( byteArray );
+
+            var containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
+            containerClient.CreateIfNotExists();
+
+            containerClient.GetBlobClient(file.AzureId.ToString()).Upload(contentStream, true);
+
+            return file;
         }
     }
 }

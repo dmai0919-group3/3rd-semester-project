@@ -33,6 +33,7 @@
     const createFolderUrl = "@Url.Action("CreateFolder", "FileApi")";
     const uploadFilesUrl = "@Url.Action("UploadFiles", "FileApi")";
     const moveFileUrl = "@Url.Action("MoveIntoFolder", "FileApi")";
+    const updateFileUrl = "@Url.Action("SetFileContents", "FileApi")";
     const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
     const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
 </script>
@@ -200,6 +201,7 @@
                     <div class="form-group">
                         <textarea id="editFileContent" class="form-control" rows="10"></textarea>
                     </div>
+                    <input type="hidden" id="editFileId">
                 </form>
             </div>
             <div class="modal-footer">
