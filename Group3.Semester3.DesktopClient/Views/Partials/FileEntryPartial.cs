@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
+using System.Windows.Interop;
 
 namespace Group3.Semester3.DesktopClient.Views.Partials
 {
@@ -51,7 +52,8 @@ namespace Group3.Semester3.DesktopClient.Views.Partials
             Image dynamicImage = new Image();
             dynamicImage.Source = bitmap;
             Grid.SetColumn(dynamicImage, 0);
-            
+
+
             // TODO: Images are not working (fix please)
 
             FileNameTextBlock = new TextBlock();

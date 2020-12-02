@@ -83,7 +83,7 @@ namespace Group3.Semester3.DesktopClient.Views
                     {
                         newList.Add((FileToUpload)item);
                     }
-
+                    var id = parentId;
                     apiService.UploadFiles(newList, parentId);
 
                     // On upload success

@@ -52,6 +52,7 @@
 
                 </TreeViewItem>
             </TreeView>
+            <Button Content="Back" Name="BackButton" HorizontalAlignment="Left" Margin="215,5,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Click="BackButton_Click"/>
         </Grid>
     </Grid>
 </UserControl>

@@ -40,11 +40,13 @@ namespace Group3.Semester3.DesktopClient.Views
         }
         private void btnUpload_Click(object sender, RoutedEventArgs e)
         {
+            Guid id = currentFolderGuid();
             switcher.Switch(new UploadFile(apiService, switcher, currentFolderGuid()));
         }
 
         public void ShowDirectoryFiles(Guid parentId)
         {
+
             List<FileEntity> files = apiService.FileList(parentId);
 
             if (parentId == Guid.Empty)
@@ -161,6 +163,16 @@ namespace Group3.Semester3.DesktopClient.Views
             }
 
             return id;
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(CurrentFolder.ParentId != null) {
+            ShowDirectoryFiles(CurrentFolder.ParentId);
+            }
+            else { BackButton.IsEnabled = false; }
+            // TODO: hide when at root folder with BackButton.IsEnabled = false;
+            // TODO: works 2nd>1st folder, also 3rd>2nd, but when 3rd>2nd then 2nd>1st doesnt work, inspect and fix
         }
     }
 }

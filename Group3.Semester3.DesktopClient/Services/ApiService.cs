@@ -296,8 +296,8 @@ namespace Group3.Semester3.DesktopClient.Services
         /// Upload a file / multiple files through the API
         /// </summary>
         /// <param name="files">A list of FileToUpload objects</param>
-        /// <param name="parentGuid">The Guid of the parent folder of null if the files to be uploaded are in the root directory</param>
-        public void UploadFiles(List<FileToUpload> files, System.Guid parentGuid)
+        /// <param name="parentId">The Guid of the parent folder of null if the files to be uploaded are in the root directory</param>
+        public void UploadFiles(List<FileToUpload> files, System.Guid parentId)
         {
             var content = new MultipartFormDataContent();
 
@@ -306,7 +306,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 content.Add(new StreamContent(File.OpenRead(file.Path)), "files", file.Name);
             }
 
-            content.Add(new StringContent(parentGuid.ToString()), "parentGuid");
+            content.Add(new StringContent(parentId.ToString()), "parentId");
 
             using var client = new HttpClient();
 
