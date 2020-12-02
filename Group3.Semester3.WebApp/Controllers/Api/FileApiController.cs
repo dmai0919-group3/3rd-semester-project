@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.BusinessLayer;
@@ -159,6 +160,31 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             catch (Exception e)
             {
                 return BadRequest(e.Message);
+            }
+        }
+        
+        [Route("content/{id}")]
+        [HttpGet]
+        public ActionResult GetFileContentsForEdit(string id)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var fileContents = _fileService.GetFileContents(id, user);
+
+                StreamReader reader = new StreamReader(fileContents);
+                string text = reader.ReadToEnd();
+                
+                return Ok(text);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest("System error, please contact Administrator");
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
@@ -22,6 +23,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteFile(Guid fileId, Guid userId);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, Guid userId);
+        public Stream GetFileContents(string id, UserModel user);
     }
     public class FileService : IFileService
     {
@@ -206,6 +208,36 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 else return true;
             }
             else throw new ValidationException("Operation forbidden.");
+        }
+
+        public Stream GetFileContents(string id, UserModel user)
+        {
+            var fileId = ParseGuid(id);
+            
+            var file = _fileRepository.GetById(fileId);
+            
+            if (file.UserId != user.Id)
+            {
+                throw new ValidationException("Unauthorized");
+            }
+            
+            var containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
+            containerClient.CreateIfNotExists();
+
+            var stream = new MemoryStream();
+            
+            var response = containerClient.GetBlobClient(file.AzureId.ToString()).DownloadTo(stream);
+
+            if (response.Status < 200 && response.Status > 299)
+            {
+                throw new ValidationException("Can not retrieve the file " + response.Status);
+            }
+
+            return stream;
         }
     }
 }
