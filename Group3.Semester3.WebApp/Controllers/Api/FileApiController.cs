@@ -69,6 +69,26 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             return "value";
         }
 
+        // GET: api/browse
+        [HttpGet]
+        [Route("download/{fileId}")]
+        public IActionResult downloadFile(Guid fileId)
+        {
+            try
+            {
+                var downloadLink = _fileService.DownloadFile(fileId);
+                return Ok(downloadLink);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+        }
+
         // POST api/<FileApiController>
         [HttpPost]
         [Route("upload")]
