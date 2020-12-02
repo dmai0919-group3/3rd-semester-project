@@ -7,29 +7,49 @@ $(function () {
 
     $.contextMenu({
         selector: '.file',
-        items: {
-            move: {
-                name: "Move to folder",
-                callback: function (key, opt) {
-                    let $element = opt.$trigger;
-                    let id = $element.attr('id');
-                    
-                    showMoveFileModal(id);
-                }
-            },
-            rename: {
-                name: "Rename",
-                callback: function (key, opt) {
-                    showRenameFileModal(key, opt);
-                }
-            },
-            delete: {
-                name: "Delete",
-                callback: function (key, opt) {
-                    // TODO: Show confirm modal first in the future
-                    showDeleteFileModal(key, opt);
+        build: function($trigger, e) {
+            let items = {};
+            
+            let classes = $trigger.attr('class');
+            if (classes.includes('txt-file')) {
+                let edit = {
+                    edit: {
+                        name: "Edit",
+                        callback: function (key, opt) {
+                            showEditFileModal(key, opt);
+                        }
+                    }
+                };
+                Object.assign(items, edit);
+            }
+            
+            let standardItems = {
+                move: {
+                    name: "Move to folder",
+                    callback: function (key, opt) {
+                        let $element = opt.$trigger;
+                        let id = $element.attr('id');
+
+                        showMoveFileModal(id);
+                    }
+                },
+                rename: {
+                    name: "Rename",
+                    callback: function (key, opt) {
+                        showRenameFileModal(key, opt);
+                    }
+                },
+                delete: {
+                    name: "Delete",
+                    callback: function (key, opt) {
+                        showDeleteFileModal(key, opt);
+                    }
                 }
             }
+            
+            Object.assign(items, standardItems);
+            
+            return {items: items};
         }
     });
     $.contextMenu({
@@ -319,7 +339,11 @@ function addFileToFileList(file) {
         markup = markup.replaceAll("{{classes}}", "file folder");
         markup = markup.replaceAll("{{icon}}", folderIconUrl);
     } else {
-        markup = markup.replaceAll("{{classes}}", "file");
+        if (file.name.endsWith('.txt')) {
+            markup = markup.replaceAll("{{classes}}", "file txt-file");
+        } else {
+            markup = markup.replaceAll("{{classes}}", "file");
+        }
         markup = markup.replaceAll("{{icon}}", fileIconUrl);
     }
 
@@ -417,4 +441,26 @@ function moveFile(id, parentId) {
             alert("Failed to move a file");
         }
     });
+}
+
+$(document).ready(function () {
+    $('#editModalSave').click(function () {
+       editFileSave();
+    });
+});
+
+function showEditFileModal(key, opt) 
+{
+    let $element = opt.$trigger;
+    let fileId = $element.attr("id");
+    let fileName = $element.find('.file-name').text();
+    
+    // TODO: Get file contents
+    
+    $('#edit-file-name').text(fileName);
+    $('#editFileModal').modal();
+}
+
+function editFileSave() {
+    // TODO: Handle file save
 }
