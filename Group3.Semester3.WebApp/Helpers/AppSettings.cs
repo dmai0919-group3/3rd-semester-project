@@ -9,5 +9,7 @@ namespace Group3.Semester3.WebApp.Helpers
     {
         public string Secret { get; set; }
         public string AzureDefaultContainer { get; set; }
+        public string AzureStorageAccount { get; set; }
+        public string AzureAccountKey { get; set; }
     }
 }

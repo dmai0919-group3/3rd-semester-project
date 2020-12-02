@@ -10,6 +10,9 @@ using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
+using Azure.Storage.Sas;
+using Azure.Storage;
+using Azure.Storage.Blobs.Specialized;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
@@ -22,6 +25,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteFile(Guid fileId, Guid userId);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, Guid userId);
+        public string DownloadFile(Guid fileId);
     }
     public class FileService : IFileService
     {
@@ -101,6 +105,35 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             // TODO push entries to db
 
             return fileEntries;
+        }
+
+        public string DownloadFile(Guid fileId)
+        {
+            BlobContainerClient containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
+            containerClient.CreateIfNotExists();
+
+            BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
+            {
+                StartsOn = DateTime.UtcNow,
+                ExpiresOn = DateTime.UtcNow.AddHours(24),
+                BlobContainerName = containerClient.Name,
+                BlobName = fileId.ToString(),
+                Resource = "b"
+            };
+
+            blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
+            StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
+                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
+                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
+
+            string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
+
+            return $"{containerClient.GetBlockBlobClient(fileId.ToString()).Uri}?{sasToken}";
         }
 
         public bool DeleteFile(Guid fileId, Guid userId)
