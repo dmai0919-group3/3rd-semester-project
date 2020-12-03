@@ -89,7 +89,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 FileEntity file = result.Item1;
                 string downloadLink = result.Item2; 
 
-                return Ok((file, downloadLink));
+                return Ok(new {file, downloadLink});
             }
             catch (ValidationException exception)
             {

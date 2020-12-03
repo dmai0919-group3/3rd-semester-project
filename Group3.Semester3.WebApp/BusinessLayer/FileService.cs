@@ -134,7 +134,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     StartsOn = DateTime.UtcNow,
                     ExpiresOn = DateTime.UtcNow.AddHours(24),
                     BlobContainerName = containerClient.Name,
-                    BlobName = fileId.ToString(),
+                    BlobName = file.AzureName,
                     Resource = "b"
                 };
 
@@ -146,7 +146,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
 
-                return (file, $"{containerClient.GetBlockBlobClient(fileId.ToString()).Uri}?{sasToken}");
+                return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
             }
             else throw new ValidationException("Operation forbidden.");
         }

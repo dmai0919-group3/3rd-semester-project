@@ -31,7 +31,7 @@ namespace Group3.Semester3.WebApp.Repositories
         }
         public FileEntity GetById(Guid id)
         {
-            string query = "SELECT TOP 1 * FROM Files WHERE id=@Id";
+            string query = "SELECT TOP 1 * FROM Files WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
