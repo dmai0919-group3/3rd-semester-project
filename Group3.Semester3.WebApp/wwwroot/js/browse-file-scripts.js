@@ -438,7 +438,7 @@ function moveFile(id, parentId) {
         },
         error: function (result) {
             // TODO: Handle better in the future
-            alert("Failed to move a file");
+            alert(result);
         }
     });
 }
@@ -463,14 +463,13 @@ function showEditFileModal(key, opt)
 
             $('#editFileId').val(fileId);
             $('#editFileContent').val(result.contents);
-            $('#editFileTimestamp').val(result.form?.timestamp);
-            $('#editFileToken').val(result.form?.token);
+            $('#editFileTimestamp').val(result.timestamp);
+            $('#editFileOverwrite').val(0);
             
             $('#editFileModal').modal();
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to move a file");
+            alert(result);
         }
     });
     
@@ -479,16 +478,14 @@ function showEditFileModal(key, opt)
 function editFileSave() {
     let contents = $('#editFileContent').val();
     let id = $('#editFileId').val();
-    let timestamp = parseInt($('#editFileTimestamp').val());
-    let token = $('#editFileToken').val();
+    let timestamp = $('#editFileTimestamp').val();
+    let overwrite =$('#editFileOverwrite').val();
 
     let data = {
         id: id,
         contents: contents,
-        form: {
-            timestamp: timestamp,
-            token: token
-        }
+        timestamp: timestamp,
+        overwrite: (overwrite === 'true'),
     }
     
     $.ajax({
@@ -496,13 +493,23 @@ function editFileSave() {
         data: JSON.stringify(data),
         type: "POST",
         contentType: "application/json",
-        success: function (result) {
-            alert("File updated!")
-            $("#editFileModal").modal("hide");
-        },
-        error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to edit a file");
+        statusCode: {
+            200: function (result) {
+
+                alert("File updated!");
+                $("#editFileModal").modal("hide");
+            },
+            400: function (result) {
+                alert(result);
+            },
+            409: function (result) {
+                $('#overwriteEditModal').modal();
+                $('#overwriteEditModalOverwrite').click(function () {
+                    $('#editFileOverwrite').val('true');
+                    $('#overwriteEditModal').modal('hide');
+                    editFileSave();
+                });
+            },
         }
     });
 }
