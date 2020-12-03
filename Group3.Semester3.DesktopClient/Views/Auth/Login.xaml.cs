@@ -19,7 +19,7 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     /// <summary>
     /// Interaction logic for UserControl1.xaml
     /// </summary>
-    public partial class Login : UserControl, ISwitchable
+    public partial class Login : Window
     {
         private ApiService apiService;
         private Switcher switcher;
@@ -37,11 +37,12 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             apiService.Authorize(email, password);
             
             new MainWindow(apiService, switcher).Show();
+            Close();
         }
 
         private void btnRegister_Click(object sender, RoutedEventArgs e)
         {
-            switcher.Switch(new Registration(apiService, switcher));
+            //switcher.Switch(new Registration(apiService, switcher));
         }
 
         public void UtilizeState(object state)

@@ -19,7 +19,7 @@ namespace Group3.Semester3.DesktopClient
             _apiService = new ApiService();
             _switcher = new Switcher();
 
-            new AuthWindow(_apiService, _switcher).Show();
+            new Login(_apiService, _switcher).Show();
         }
     }
 }

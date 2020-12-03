@@ -62,14 +62,14 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
 
                 MessageBox.Show("You have successfully registered.\nPlease log in!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                switcher.Switch(new Login(apiService, switcher));
+                //switcher.Switch(new Login(apiService, switcher));
             }
 
         }
 
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            switcher.Switch(new Login(apiService, switcher));
+            //switcher.Switch(new Login(apiService, switcher));
         }
 
         public void UtilizeState(object state)

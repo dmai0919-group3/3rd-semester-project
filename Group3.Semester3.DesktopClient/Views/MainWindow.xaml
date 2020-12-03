@@ -64,10 +64,11 @@
             </TreeView>
 
         </Grid>
-        <Grid Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2" Background="#FFD1D1D1" Margin="0,376,0,0"/>
-        <Grid Grid.Column="2" Grid.Row="1" Background="#FFF0F0F0" x:Name="panelFileDetails"/>
+        <Grid Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="1" Background="#FFD1D1D1"/>
+        <StackPanel Grid.Column="2" Grid.Row="1" Background="#FFF0F0F0" x:Name="panelFileDetails"/>
         <Button Content="Manage Groups" Click="btnUpload_Click" HorizontalAlignment="Center" Margin="0,339,0,0" Grid.Row="1" VerticalAlignment="Top" Width="178" Foreground="White" FontSize="12" Height="27"/>
         <Label Content="Workspace Name" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="18" Margin="5,7,0,0" Height="30" Width="193" Foreground="#DDFFFFFF" Grid.Row="1" Style="{DynamicResource MaterialDesignLabel}"/>
         <Label Content="Groups" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,33,0,0" Height="30" Width="97" Foreground="#DDFFFFFF" FontSize="14" Grid.Row="1" Style="{DynamicResource MaterialDesignLabel}"/>
+        <Grid Grid.Column="1" Grid.Row="1" x:Name="panelFileView"/>
     </Grid>
 </Window>

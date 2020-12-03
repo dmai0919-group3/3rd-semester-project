@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Group3.Semester3.DesktopClient.Services;
+using Group3.Semester3.DesktopClient.ViewHelpers;
+using Group3.Semester3.WebApp.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -15,11 +18,21 @@ namespace Group3.Semester3.DesktopClient.Views.ViewPanels
     /// <summary>
     /// Interaction logic for FileDetailsPanel.xaml
     /// </summary>
-    public partial class FileDetailsPanel : Window
+    public partial class FileDetailsPanel : UserControl
     {
-        public FileDetailsPanel()
+        private FileEntity fileEntity;
+        private Switcher switcher;
+        private ApiService apiService;
+
+        public FileDetailsPanel(ApiService apiService, Switcher switcher, FileEntity fileEntity)
         {
+            this.fileEntity = fileEntity;
+            this.switcher = switcher;
+            this.apiService = apiService;
+
             InitializeComponent();
+
+            labelFileName.Content = fileEntity.Name;
         }
     }
 }
