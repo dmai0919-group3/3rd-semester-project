@@ -1,5 +1,6 @@
 ﻿using Group3.Semester3.DesktopClient.Services;
 using Group3.Semester3.DesktopClient.ViewHelpers;
+using Group3.Semester3.DesktopClient.Views.Partials;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Models.Users;
 using System;
@@ -13,6 +14,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 
 namespace Group3.Semester3.DesktopClient.Views
 {
@@ -23,59 +25,154 @@ namespace Group3.Semester3.DesktopClient.Views
     {
         private ApiService apiService;
         private Switcher switcher;
+        
+        public FileEntity CurrentFolder;
+
         public MyFiles(ApiService apiService, Switcher switcher)
         {
             this.switcher = switcher;
             this.apiService = apiService;
+            this.CurrentFolder = null;
+            
             InitializeComponent();
 
-            labelUserName.Content += apiService.User.Name.ToUpper();
-
-            List<FileEntity> files = apiService.FileList();
-
-            foreach (var f in files)
-            {
-                var item = new TreeViewItem();
-                var grid = new Grid();
-
-                ColumnDefinition colDef1 = new ColumnDefinition();
-                ColumnDefinition colDef2 = new ColumnDefinition();
-                colDef1.Width = GridLength.Auto;
-                colDef2.Width = GridLength.Auto;
-
-                grid.ColumnDefinitions.Add(colDef1);
-                grid.ColumnDefinitions.Add(colDef2);
-
-                grid.VerticalAlignment = VerticalAlignment.Center;
-                grid.HorizontalAlignment = HorizontalAlignment.Stretch;
-
-                TextBlock txt1 = new TextBlock();
-                txt1.Text = f.Name;
-                {
-                    Thickness margin = txt1.Margin;
-                    margin.Right = 12;
-                    txt1.Margin = margin;
-                }
-                txt1.FontWeight = FontWeights.Bold;
-                Grid.SetColumn(txt1, 0);
-
-                // Add the second text cell to the Grid
-                TextBlock txt2 = new TextBlock();
-                txt2.Text = f.Id.ToString();
-                txt2.Foreground = Brushes.DarkGray;
-                txt2.HorizontalAlignment = HorizontalAlignment.Center;
-                Grid.SetColumn(txt2, 1);
-
-                grid.Children.Add(txt1);
-                grid.Children.Add(txt2);
-
-                treeBogoRoot.Items.Add(grid);
-            }
-            //< TreeViewItem Header = "Bullshit" IsExpanded = "True" />
+            ShowDirectoryFiles(Guid.Empty);
         }
         private void btnUpload_Click(object sender, RoutedEventArgs e)
         {
-            switcher.Switch(new UploadFile(apiService, switcher));
+            Guid id = currentFolderGuid();
+            switcher.Switch(new UploadFile(apiService, switcher, currentFolderGuid()));
+        }
+
+        public void ShowDirectoryFiles(Guid parentId)
+        {
+
+            List<FileEntity> files = apiService.FileList(parentId);
+
+            if (parentId == Guid.Empty)
+            {
+                FolderName.Text = "Home";
+            }
+            
+            TreeBogoRoot.Items.Clear();
+            
+            foreach (var file in files)
+            {
+                var item = new FileEntryPartial(file);
+
+                if (file.IsFolder)
+                {
+                    item.MouseLeftButtonUp += new MouseButtonEventHandler((Folder_OnMouseClick));
+                }
+                
+                var contextMenu = new ContextMenu();
+                
+                var renameMenuItem = new MenuItem();
+                renameMenuItem.Header = "Rename";
+                renameMenuItem.Click += new RoutedEventHandler(File_RenameAction);
+                
+                var deleteMenuItem = new MenuItem();
+                deleteMenuItem.Header = "Delete";
+                deleteMenuItem.Click += new RoutedEventHandler(File_DeleteAction);
+
+                contextMenu.Items.Add(renameMenuItem);
+                contextMenu.Items.Add(new Separator());
+                contextMenu.Items.Add(deleteMenuItem);
+
+                item.ContextMenu = contextMenu;
+                
+
+                TreeBogoRoot.Items.Add(item);
+            }
+        }
+
+        private void CreateFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var modal = new CreateFolderModal(apiService, this, currentFolderGuid());
+            modal.Show();
+        }
+        
+        public void Folder_OnMouseClick(object sender, MouseButtonEventArgs e)
+        {
+            var partial = (FileEntryPartial) sender;
+
+            var file = partial.File;
+
+            FolderName.Text = file.Name;
+
+            this.CurrentFolder = file;
+            
+            ShowDirectoryFiles(file.Id);
+        }
+
+        public void File_RenameAction(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem) sender;
+
+            var contextMenu = (ContextMenu) menuItem.Parent;
+
+            var fileEntryPartial = (FileEntryPartial) contextMenu.PlacementTarget;
+
+            var file = fileEntryPartial.File;
+            
+            var modal = new FileRenameModal(apiService, file, fileEntryPartial);
+            modal.Show();
+        }
+
+        public void File_DeleteAction(object sender, RoutedEventArgs e)
+        {
+            var menuItem = (MenuItem) sender;
+
+            var contextMenu = (ContextMenu) menuItem.Parent;
+
+            var fileEntryPartial = (FileEntryPartial) contextMenu.PlacementTarget;
+
+            var file = fileEntryPartial.File;
+            
+            string messageBoxText = "Are you sure you want to delete file " + file.Name + "?";
+            string caption = "Delete a file";
+            MessageBoxButton button = MessageBoxButton.YesNo;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+            
+            MessageBoxResult result = MessageBox.Show(messageBoxText, caption, button, icon);
+            
+            switch (result)
+            {
+                case MessageBoxResult.Yes:
+                    try
+                    {
+                        apiService.DeleteFile(file);
+                        
+                        TreeBogoRoot.Items.Remove(fileEntryPartial);
+                    }
+                    catch (Exception exception)
+                    {
+                        MessageBox.Show("Error: file could not be deleted");
+                    }
+                    break;
+            }
+        }
+
+        private Guid currentFolderGuid()
+        {
+            var id = Guid.Empty;
+
+            if (CurrentFolder != null)
+            {
+                id = CurrentFolder.Id;
+            }
+
+            return id;
+        }
+
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(CurrentFolder.ParentId != null) {
+            ShowDirectoryFiles(CurrentFolder.ParentId);
+            }
+            else { BackButton.IsEnabled = false; }
+            // TODO: hide when at root folder with BackButton.IsEnabled = false;
+            // TODO: works 2nd>1st folder, also 3rd>2nd, but when 3rd>2nd then 2nd>1st doesnt work, inspect and fix
         }
     }
 }

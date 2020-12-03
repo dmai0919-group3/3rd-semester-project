@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Group3.Semester3.WebApp</RootNamespace>
+    <StartupObject>Group3.Semester3.WebApp.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
