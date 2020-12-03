@@ -21,26 +21,27 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     /// </summary>
     public partial class Login : UserControl, ISwitchable
     {
-        public Login()
+        private ApiService apiService;
+        private Switcher switcher;
+        public Login(ApiService apiService, Switcher switcher)
         {
+            this.switcher = switcher;
+            this.apiService = apiService;
             InitializeComponent();
         }
 
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
-            ApiService apiService = new ApiService();
-
-            String email = emailTextbox.Text;
-            String password = passwordTextbox.Password;
-            LoginResultModel loginResultModel = apiService.Login(email, password);
+            string email = emailTextbox.Text;
+            string password = passwordTextbox.Password;
+            apiService.Authorize(email, password);
             
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
+            new MainWindow(apiService, switcher).Show();
         }
 
         private void btnRegister_Click(object sender, RoutedEventArgs e)
         {
-            Switcher.Switch(new Registration());
+            switcher.Switch(new Registration(apiService, switcher));
         }
 
         public void UtilizeState(object state)

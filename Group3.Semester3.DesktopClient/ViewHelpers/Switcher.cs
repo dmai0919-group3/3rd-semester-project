@@ -6,16 +6,16 @@ using System.Windows.Controls;
 
 namespace Group3.Semester3.DesktopClient.ViewHelpers
 {
-    public static class Switcher
+    public class Switcher
     {
-        public static INavigatable ActiveWindow;
+        public INavigatable ActiveWindow;
 
-        public static void Switch(UserControl newPage)
+        public void Switch(UserControl newPage)
         {
             ActiveWindow.Navigate(newPage);
         }
 
-        public static void Switch(UserControl newPage, object state)
+        public void Switch(UserControl newPage, object state)
         {
             ActiveWindow.Navigate(newPage, state);
         }
