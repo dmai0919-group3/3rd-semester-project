@@ -462,7 +462,9 @@ function showEditFileModal(key, opt)
             $('#edit-file-name').text(fileName);
 
             $('#editFileId').val(fileId);
-            $('#editFileContent').val(result);
+            $('#editFileContent').val(result.contents);
+            $('#editFileTimestamp').val(result.form?.timestamp);
+            $('#editFileToken').val(result.form?.token);
             
             $('#editFileModal').modal();
         },
@@ -477,10 +479,16 @@ function showEditFileModal(key, opt)
 function editFileSave() {
     let contents = $('#editFileContent').val();
     let id = $('#editFileId').val();
+    let timestamp = parseInt($('#editFileTimestamp').val());
+    let token = $('#editFileToken').val();
 
     let data = {
         id: id,
         contents: contents,
+        form: {
+            timestamp: timestamp,
+            token: token
+        }
     }
     
     $.ajax({

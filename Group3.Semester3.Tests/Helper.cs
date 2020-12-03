@@ -38,7 +38,7 @@ namespace Group3.Semester3.WebAppTests
         {
             if (_fileService == null)
             {
-                _fileService = new FileService(GetFileRepository());
+                //_fileService = new FileService(ConfigurationRoot(), GetFileRepository());
             }
 
             return _fileService;

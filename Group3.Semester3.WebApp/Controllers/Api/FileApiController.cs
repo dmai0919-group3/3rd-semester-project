@@ -172,12 +172,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
 
-                var fileContents = _fileService.GetFileContents(id, user);
-
-                StreamReader reader = new StreamReader(fileContents);
-                string text = reader.ReadToEnd();
+                var updateFileModel = _fileService.GetFileContents(id, user);
                 
-                return Ok(text);
+                return Ok(updateFileModel);
             }
             catch (ValidationException exception)
             {
@@ -197,7 +194,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
 
-                var file = _fileService.UpdateFileContents(model.Contents, model.Id, user);
+                var file = _fileService.UpdateFileContents(model, user);
                 
                 return Ok(file);
             }

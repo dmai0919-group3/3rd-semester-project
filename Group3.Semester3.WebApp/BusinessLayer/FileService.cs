@@ -24,23 +24,21 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteFile(Guid fileId, Guid userId);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, Guid userId);
-        public Stream GetFileContents(string id, UserModel user);
-        public FileEntity UpdateFileContents(string contents, Guid id, UserModel user);
+        public UpdateFileModel GetFileContents(string id, UserModel user);
+        public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user);
     }
+    
     public class FileService : IFileService
     {
         private IConfiguration _configuration;
         private IFileRepository _fileRepository;
+        private IFormVerificationService _formVerification;
 
-        public FileService(IFileRepository fileRepository)
-        {
-            _fileRepository = fileRepository;
-        }
-
-        public FileService(IConfiguration configuration, IFileRepository fileRepository)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IFormVerificationService formVerification)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
+            _formVerification = formVerification;
         }
 
         public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId)
@@ -212,7 +210,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             else throw new ValidationException("Operation forbidden.");
         }
 
-        public Stream GetFileContents(string id, UserModel user)
+        public UpdateFileModel GetFileContents(string id, UserModel user)
         {
             var fileId = ParseGuid(id);
             
@@ -233,19 +231,33 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var response = containerClient.GetBlobClient(file.AzureId.ToString()).Download();
             var stream = response.Value.Content;
 
-            return stream;
+            StreamReader reader = new StreamReader(stream);
+            string text = reader.ReadToEnd();
+
+            var form = _formVerification.GetVerifiedForm();
+
+            var model = new UpdateFileModel()
+            {
+                Id = file.Id,
+                Contents = text,
+                Form = form
+            };
+
+            return model;
         }
 
-        public FileEntity UpdateFileContents(string contents, Guid id, UserModel user)
+        public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
         {
-            var file = _fileRepository.GetById(id);
+            _formVerification.VerifyForm(model.Form);
+
+            var file = _fileRepository.GetById(model.Id);
             
             if (file.UserId != user.Id)
             {
                 throw new ValidationException("Unauthorized");
             }
             
-            byte[] byteArray = Encoding.ASCII.GetBytes( contents );
+            byte[] byteArray = Encoding.ASCII.GetBytes( model.Contents );
             var contentStream = new MemoryStream( byteArray );
 
             var containerClient =
