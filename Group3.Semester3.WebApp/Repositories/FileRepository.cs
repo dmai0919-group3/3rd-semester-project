@@ -81,8 +81,8 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Insert(FileEntity fileEntity)
         {
-            string query = "INSERT INTO Files (Id, UserId, AzureId, Name, ParentId, IsFolder, Updated)" +
-                   " VALUES (@Id, @UserId, @AzureId, @Name, @ParentId, @IsFolder, @Updated)";
+            string query = "INSERT INTO Files (Id, UserId, AzureName, Name, ParentId, IsFolder, Updated)" +
+                   " VALUES (@Id, @UserId, @AzureName, @Name, @ParentId, @IsFolder, @Updated)";
 
             using (var connection = new SqlConnection(connectionString))
             {
