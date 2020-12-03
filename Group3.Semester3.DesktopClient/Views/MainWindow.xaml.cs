@@ -1,6 +1,7 @@
 ﻿using Group3.Semester3.DesktopClient.Services;
 using Group3.Semester3.DesktopClient.ViewHelpers;
 using Group3.Semester3.DesktopClient.Views.ViewPanels;
+using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Models.Users;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,12 @@ namespace Group3.Semester3.DesktopClient.Views
             InitializeComponent();
 
             this.labelUserName.Content = $"{apiService.User.Name} ({apiService.User.Email})".ToUpper();
+
+            DataContext = new List<FileEntityWrapper>()
+            {
+                new FileEntityWrapper { FileEntity = new FileEntity { Name = "Apple" } },
+                new FileEntityWrapper { FileEntity = new FileEntity { Name = "Banana" } }
+            };
 
             UpdateFilePanel(new WebApp.Entities.FileEntity
             {
@@ -78,5 +85,14 @@ namespace Group3.Semester3.DesktopClient.Views
             //switcher.Switch(new UploadFile(apiService, switcher));
         }
 
+        private void ControlTemplate_Selected(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectedFile = (e as SelectionChangedEventArgs).AddedItems[0] as FileEntityWrapper;
+        }
     }
 }

@@ -9,6 +9,15 @@ namespace Group3.Semester3.DesktopClient.Views
 {
     public partial class MainWindow : Window
     {
+        public class FileEntityWrapper
+        {
+            public FileEntity FileEntity { get; set; }
+            public string Icon { get; set; }
+        }
+
+        public FileEntityWrapper SelectedFile { get; set; }
+
+
         private void UpdateFilePanel(FileEntity fileEntity = null)
         {
             panelFileDetails.Children.Clear();

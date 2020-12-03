@@ -14,6 +14,32 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow">
+
+    <Window.Resources>
+        <Style x:Key="FileItemStyle" TargetType="{x:Type ListViewItem}">
+            <Setter Property="Margin" Value="18,18,18,18"/>
+            <Setter Property="Padding" Value="0,0,0,0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListViewItem}">
+                        <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Height="80" Width="60" >
+                            <Border x:Name="border" BorderBrush="{x:Null}" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="2.5"/>
+                            <StackPanel HorizontalAlignment="Stretch"  VerticalAlignment="Stretch">
+                                <ContentPresenter/>
+                            </StackPanel>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="LightGray"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="198"/>
@@ -66,9 +92,31 @@
         </Grid>
         <Grid Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="1" Background="#FFD1D1D1"/>
         <StackPanel Grid.Column="2" Grid.Row="1" Background="#FFF0F0F0" x:Name="panelFileDetails"/>
-        <Button Content="Manage Groups" Click="btnUpload_Click" HorizontalAlignment="Center" Margin="0,339,0,0" Grid.Row="1" VerticalAlignment="Top" Width="178" Foreground="White" FontSize="12" Height="27"/>
+        <Button Content="Manage Groups" Click="btnUpload_Click" HorizontalAlignment="Center" Margin="0,0,0,12" Grid.Row="1" VerticalAlignment="Bottom" Width="178" Foreground="White" FontSize="12" Height="30"/>
         <Label Content="Workspace Name" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="18" Margin="5,7,0,0" Height="30" Width="193" Foreground="#DDFFFFFF" Grid.Row="1" Style="{DynamicResource MaterialDesignLabel}"/>
         <Label Content="Groups" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,33,0,0" Height="30" Width="97" Foreground="#DDFFFFFF" FontSize="14" Grid.Row="1" Style="{DynamicResource MaterialDesignLabel}"/>
-        <Grid Grid.Column="1" Grid.Row="1" x:Name="panelFileView"/>
+
+        <ListView ItemsSource="{Binding}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+              SelectedItem="{Binding SelectedFile, RelativeSource={RelativeSource AncestorType=Window}}"
+              ItemContainerStyle="{StaticResource FileItemStyle}"
+              Grid.Column="1" Grid.Row="1" SelectionChanged="ListView_SelectionChanged">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Bottom" Text="{Binding FileEntity.Name}"/>
+                        <Rectangle Height="40" Width="40" Fill="Gray"/>
+                    </DockPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+
+
+
+        </ListView>
     </Grid>
 </Window>
