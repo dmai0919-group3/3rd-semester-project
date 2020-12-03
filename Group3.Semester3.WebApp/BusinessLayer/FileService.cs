@@ -237,7 +237,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             containerClient.CreateIfNotExists();
 
-            var response = containerClient.GetBlobClient(file.AzureId.ToString()).Download();
+            var response = containerClient.GetBlobClient(file.AzureName).Download();
             var stream = response.Value.Content;
 
             StreamReader reader = new StreamReader(stream);
@@ -284,7 +284,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             containerClient.CreateIfNotExists();
 
-            containerClient.GetBlobClient(file.AzureId.ToString()).Upload(contentStream, true);
+            containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
             return file;
         }
