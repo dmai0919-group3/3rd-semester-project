@@ -196,8 +196,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var user = _userService.GetFromHttpContext(HttpContext);
 
                 var file = _fileService.UpdateFileContents(model, user);
-                
+
                 return Ok(file);
+            }
+            catch (ConcurrencyException exception)
+            {
+                return Conflict(exception.Message);
             }
             catch (ValidationException exception)
             {

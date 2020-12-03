@@ -32,13 +32,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     {
         private IConfiguration _configuration;
         private IFileRepository _fileRepository;
-        private IFormVerificationService _formVerification;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IFormVerificationService formVerification)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
-            _formVerification = formVerification;
         }
 
         public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId)
@@ -243,13 +241,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             StreamReader reader = new StreamReader(stream);
             string text = reader.ReadToEnd();
 
-            var form = _formVerification.GetVerifiedForm();
-
             var model = new UpdateFileModel()
             {
                 Id = file.Id,
                 Contents = text,
-                Form = form
+                Timestamp = DateTime.Now
             };
 
             return model;
@@ -257,18 +253,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
         {
-            _formVerification.VerifyForm(model.Form);
-            var formDatetime = DateTime.FromBinary(model.Form.Timestamp);
-
             var file = _fileRepository.GetById(model.Id);
 
-            var result = DateTime.Compare(formDatetime, file.Updated);
-
-            if (result <= 0)
+            if (!model.Overwrite)
             {
-                throw new ValidationException("File was changed by another user. Please try again");
+                var result = DateTime.Compare(model.Timestamp, file.Updated);
+
+                if (result <= 0)
+                {
+                    throw new ConcurrencyException("File was changed by another user. Please try again");
+                }
             }
-            
+
             if (file.UserId != user.Id)
             {
                 throw new ValidationException("Unauthorized");
@@ -283,6 +279,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             containerClient.CreateIfNotExists();
+
+            // Trigger update change
+            _fileRepository.Rename(file.Id, file.Name);
 
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
