@@ -95,7 +95,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _fileService.DeleteFile(model.Id, user.Id);
+                var result = _fileService.DeleteFile(model.Id, user);
                 if (!result)
                 {
                     return BadRequest();
@@ -115,7 +115,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try {
                 var user = _userService.GetFromHttpContext(HttpContext);
                 
-                var result = _fileService.RenameFile(model.Id, user.Id, model.Name);
+                var result = _fileService.RenameFile(model.Id, user, model.Name);
                 return Ok(result);
             }
             catch(Exception e)
@@ -153,7 +153,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
 
-                var result = _fileService.MoveIntoFolder(model, user.Id);
+                var result = _fileService.MoveIntoFolder(model, user);
                 return Ok(result);
             }
             catch (Exception e)
