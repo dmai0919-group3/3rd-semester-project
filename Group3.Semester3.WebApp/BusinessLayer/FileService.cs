@@ -71,21 +71,21 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 if (formFile.Length > 0)
                 {
-                    var blobName = Guid.NewGuid();
+                    var blobGuid = Guid.NewGuid();
                     try
                     {
-                        await containerClient.UploadBlobAsync(blobName.ToString(), formFile.OpenReadStream());
+                        await containerClient.UploadBlobAsync(blobGuid.ToString(), formFile.OpenReadStream());
                         fileEntries.Add(new FileEntry
                         {
                             Name = formFile.FileName,
-                            Id = blobName,
+                            Id = blobGuid,
                             Parent = new DirectoryEntry { Id = parsedGUID }
                         });
 
                         var file = new FileEntity()
                         {
                             Id = Guid.NewGuid(),
-                            AzureId = blobName,
+                            AzureName = blobGuid.ToString(),
                             Name = formFile.FileName,
                             UserId = user.Id,
                             ParentId = parsedGUID,
@@ -150,10 +150,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public bool DeleteFile(Guid fileId, Guid userId)
         {
+            BlobContainerClient containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
             var file = _fileRepository.GetById(fileId);
             if (userId == file.UserId)
             {
+                // TODO AzureId should be string
+                containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
                 var result = _fileRepository.Delete(fileId);
+
                 if (!result)
                 {
                     throw new ValidationException("File non-existent or not deleted.");
@@ -222,7 +230,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
-                AzureId = Guid.Empty,
+                AzureName = string.Empty,
                 UserId = user.Id,
                 ParentId = parentGuid,
                 IsFolder = true

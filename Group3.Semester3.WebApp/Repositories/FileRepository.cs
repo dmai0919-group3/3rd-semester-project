@@ -47,7 +47,7 @@ namespace Group3.Semester3.WebApp.Repositories
                     {
                         Id = result.Id,
                         UserId = result.UserId,
-                        AzureId = result.AzureId,
+                        AzureName = result.AzureId,
                         Name = result.Name
                     };
 

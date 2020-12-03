@@ -126,6 +126,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
                 var result = _fileService.DeleteFile(model.Id, user.Id);
+
                 if (!result)
                 {
                     return BadRequest();

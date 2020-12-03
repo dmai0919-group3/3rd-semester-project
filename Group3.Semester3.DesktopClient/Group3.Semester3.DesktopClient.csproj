@@ -9,11 +9,12 @@
 
   <ItemGroup>
     <None Remove="image.jpg" />
+    <None Remove="resources\icons\folder-24px.svg" />
+    <None Remove="resources\icons\insert_drive_file-24px.svg" />
   </ItemGroup>
 
   <ItemGroup>
     <Page Remove="folder-24px.xaml" />
-    <Page Remove="Resources\Icons\folder-24px.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +29,12 @@
     <Resource Include="Assets\folder-24px.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
-    <Resource Include="Resources\Icons\folder-24px.xaml" />
+    <Resource Include="resources\icons\folder-24px.svg" />
+    <Resource Include="resources\icons\insert_drive_file-24px.svg" />
+    <None Remove="resources\icons\file-icon.png" />
+    <Resource Include="resources\icons\file-icon.png" />
+    <None Remove="resources\icons\folder-icon.png" />
+    <Resource Include="resources\icons\folder-icon.png" />
   </ItemGroup>
 
 </Project>
