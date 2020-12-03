@@ -25,7 +25,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteFile(Guid fileId, Guid userId);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, Guid userId);
-        public string DownloadFile(Guid fileId, Guid userId);
+        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId);
     }
     public class FileService : IFileService
     {
@@ -107,7 +107,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return fileEntries;
         }
 
-        public string DownloadFile(Guid fileId, Guid userId)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fileId"></param>
+        /// <param name="userId"></param>
+        /// <returns>A tuple with the FileEntity with the given fileId and a string with the download URL</returns>
+        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId)
         {
             var file = _fileRepository.GetById(fileId);
 
@@ -137,7 +143,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
 
-                return $"{containerClient.GetBlockBlobClient(fileId.ToString()).Uri}?{sasToken}";
+                return (file, $"{containerClient.GetBlockBlobClient(fileId.ToString()).Uri}?{sasToken}");
             }
             else throw new ValidationException("Operation forbidden.");
         }

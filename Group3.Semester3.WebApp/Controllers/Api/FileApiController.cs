@@ -69,7 +69,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             return "value";
         }
 
-        // GET: api/browse
+        /// <summary>
+        /// HTTP GET method at api/download/{fileId} which returns a FileEntity and a download URL from the Azure Blob Storage.
+        /// The returned downloadLink is valid for 24 hours from the moment the request is sent.
+        /// </summary>
+        /// <param name="fileId">The ID of the file we want to download</param>
+        /// <returns>200 Ok((FileEntity file, string downloadLink)) if the request was successful or 400 BadRequest with the Exception's message if the request failed.</returns>
         [HttpGet]
         [Route("download/{fileId}")]
         public IActionResult downloadFile(Guid fileId)
@@ -77,8 +82,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var downloadLink = _fileService.DownloadFile(fileId, user.Id);
-                return Ok(downloadLink);
+                var result = _fileService.DownloadFile(fileId, user.Id);
+
+                FileEntity file = result.Item1;
+                string downloadLink = result.Item2; 
+
+                return Ok((file, downloadLink));
             }
             catch (ValidationException exception)
             {
@@ -86,7 +95,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch (Exception e)
             {
-                return BadRequest();
+                return BadRequest(e.Message);
             }
         }
 
