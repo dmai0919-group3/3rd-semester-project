@@ -27,11 +27,13 @@ namespace Group3.Semester3.DesktopClient.Views
         private Switcher switcher;
         
         private bool submitted;
+        private Guid parentId;
 
-        public UploadFile(ApiService apiService, Switcher switcher)
+        public UploadFile(ApiService apiService, Switcher switcher, Guid parentId)
         {
             this.switcher = switcher;
             this.apiService = apiService;
+            this.parentId = parentId;
 
             submitted = false;
             InitializeComponent();
@@ -81,8 +83,8 @@ namespace Group3.Semester3.DesktopClient.Views
                     {
                         newList.Add((FileToUpload)item);
                     }
-
-                    apiService.UploadFiles(newList, null);
+                    var id = parentId;
+                    apiService.UploadFiles(newList, parentId);
 
                     // On upload success
                     this.Dispatcher.Invoke(() =>

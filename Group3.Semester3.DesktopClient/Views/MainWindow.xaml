@@ -16,14 +16,16 @@
         Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="198"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="230"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="57*"/>
+            <RowDefinition Height="31"/>
+            <RowDefinition Height="94*"/>
+            <RowDefinition Height="27"/>
         </Grid.RowDefinitions>
-        <Grid Grid.ColumnSpan="2" Background="#FF3FB9FF">
+        <Grid Grid.ColumnSpan="3" Background="#FF3FB9FF">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
                 <Label Foreground="White" VerticalAlignment="Center" Name="labelUserName">
 
@@ -32,11 +34,40 @@
                     <materialDesign:PackIcon Kind="Account"/>
                 </Button>
             </StackPanel>
-            <Button Content="Show Files" Click="btnShow_Click" HorizontalAlignment="Left" Margin="337,0,0,0" VerticalAlignment="Center" Height="30" Width="99" RenderTransformOrigin="-0.085,0.472"/>
-            <Button Content="Upload Files" Click="btnUpload_Click" HorizontalAlignment="Left" Margin="441,0,0,0" VerticalAlignment="Center" Height="30" Width="123"/>
+            <Button Content="FILE" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Width="57" FontSize="12"/>
+            <Button Content="GROUP" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="57,0,0,0" FontSize="12"/>
+            <Button Content="MENUITEM" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="123,0,0,0" Width="105" FontSize="12"/>
         </Grid>
-        <StackPanel Name="Grid" Grid.ColumnSpan="2" Grid.Row="1" Margin="10,5,-10,-5">
+        <Grid Grid.Row="1" Background="#FF474747" x:Name="panelGroupList">
+            <TreeView Margin="0,61,0,0" Foreground="#DDFFFFFF">
+                <TreeViewItem IsExpanded="True">
+                    <TreeViewItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Group 1" FontSize="14" />
+                        </StackPanel>
+                    </TreeViewItem.Header>
+                </TreeViewItem>
+                <TreeViewItem IsExpanded="True">
+                    <TreeViewItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Group 2" FontSize="14" />
+                        </StackPanel>
+                    </TreeViewItem.Header>
+                </TreeViewItem>
+                <TreeViewItem IsExpanded="True">
+                    <TreeViewItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Group 3" FontSize="14" />
+                        </StackPanel>
+                    </TreeViewItem.Header>
+                </TreeViewItem>
+            </TreeView>
 
-        </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2" Background="#FFD1D1D1" Margin="0,376,0,0"/>
+        <Grid Grid.Column="2" Grid.Row="1" Background="#FFF0F0F0" x:Name="panelFileDetails"/>
+        <Button Content="Manage Groups" Click="btnUpload_Click" HorizontalAlignment="Center" Margin="0,339,0,0" Grid.Row="1" VerticalAlignment="Top" Width="178" Foreground="White" FontSize="12" Height="27"/>
+        <Label Content="Workspace Name" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="18" Margin="5,7,0,0" Height="30" Width="193" Foreground="#DDFFFFFF" Grid.Row="1" Style="{DynamicResource MaterialDesignLabel}"/>
+        <Label Content="Groups" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,33,0,0" Height="30" Width="97" Foreground="#DDFFFFFF" FontSize="14" Grid.Row="1" Style="{DynamicResource MaterialDesignLabel}"/>
     </Grid>
 </Window>
