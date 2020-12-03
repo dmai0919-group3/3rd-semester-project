@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.BusinessLayer;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -190,6 +192,50 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             catch (Exception e)
             {
                 return BadRequest(e.Message);
+            }
+        }
+        
+        [Route("content/{id}")]
+        [HttpGet]
+        public ActionResult GetFileContents(string id)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var updateFileModel = _fileService.GetFileContents(id, user);
+                
+                return Ok(updateFileModel);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("content")]
+        [HttpPost]
+        public IActionResult SetFileContents([FromBody] UpdateFileModel model)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var file = _fileService.UpdateFileContents(model, user);
+                
+                return Ok(file);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
             }
         }
     }

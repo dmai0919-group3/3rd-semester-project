@@ -41,17 +41,9 @@ namespace Group3.Semester3.WebApp.Repositories
                 {
                     connection.Open();
 
-                    var result = connection.QueryFirst(query, parameters);
-
-                    FileEntity fileEntity = new FileEntity()
-                    {
-                        Id = result.Id,
-                        UserId = result.UserId,
-                        AzureName = result.AzureId,
-                        Name = result.Name
-                    };
-
-                    return fileEntity;
+                    var result = connection.QueryFirst<FileEntity>(query, parameters);
+                    
+                    return result;
                 }
                 catch (Exception e)
                 {
@@ -89,8 +81,8 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Insert(FileEntity fileEntity)
         {
-            string query = "INSERT INTO Files (Id, UserId, AzureId, Name, ParentId, IsFolder)" +
-                   " VALUES (@Id, @UserId, @AzureId, @Name, @ParentId, @IsFolder)";
+            string query = "INSERT INTO Files (Id, UserId, AzureName, Name, ParentId, IsFolder, Updated)" +
+                   " VALUES (@Id, @UserId, @AzureName, @Name, @ParentId, @IsFolder, @Updated)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -140,14 +132,15 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Rename(Guid id, string name)
         {
-            string query = "UPDATE Files SET Name=@Name WHERE Id=@Id";
+            string query = "UPDATE Files SET Name=@Name, Updated=@Updated WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
                 var parameters = new
                 {
                     Name = name,
-                    Id = id
+                    Id = id,
+                    Updated = DateTime.Now
                 };
 
                 try
