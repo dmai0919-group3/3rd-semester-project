@@ -8,6 +8,9 @@ namespace Group3.Semester3.WebApp.Helpers
     public class AppSettings
     {
         public string Secret { get; set; }
+        public string FormSecret { get; set; }
         public string AzureDefaultContainer { get; set; }
+        public string AzureStorageAccount { get; set; }
+        public string AzureAccountKey { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
@@ -10,6 +12,9 @@ using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
+using Azure.Storage.Sas;
+using Azure.Storage;
+using Azure.Storage.Blobs.Specialized;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
@@ -22,21 +27,22 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteFile(Guid fileId, Guid userId);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, Guid userId);
+        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId);
+        public UpdateFileModel GetFileContents(string id, UserModel user);
+        public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user);
     }
+    
     public class FileService : IFileService
     {
         private IConfiguration _configuration;
         private IFileRepository _fileRepository;
+        private IFormVerificationService _formVerification;
 
-        public FileService(IFileRepository fileRepository)
-        {
-            _fileRepository = fileRepository;
-        }
-
-        public FileService(IConfiguration configuration, IFileRepository fileRepository)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IFormVerificationService formVerification)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
+            _formVerification = formVerification;
         }
 
         public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId)
@@ -85,7 +91,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             Name = formFile.FileName,
                             UserId = user.Id,
                             ParentId = parsedGUID,
-                            IsFolder = false
+                            IsFolder = false,
+                            Updated = DateTime.Now
                         };
 
                         _fileRepository.Insert(file);
@@ -101,6 +108,47 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             // TODO push entries to db
 
             return fileEntries;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fileId"></param>
+        /// <param name="userId"></param>
+        /// <returns>A tuple with the FileEntity with the given fileId and a string with the download URL</returns>
+        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId)
+        {
+            var file = _fileRepository.GetById(fileId);
+
+            if (userId == file.UserId)
+            {
+                BlobContainerClient containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
+                containerClient.CreateIfNotExists();
+
+                BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
+                {
+                    StartsOn = DateTime.UtcNow,
+                    ExpiresOn = DateTime.UtcNow.AddHours(24),
+                    BlobContainerName = containerClient.Name,
+                    BlobName = file.AzureName,
+                    Resource = "b"
+                };
+
+                blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
+                StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
+
+                string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
+
+                return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
+            }
+            else throw new ValidationException("Operation forbidden.");
         }
 
         public bool DeleteFile(Guid fileId, Guid userId)
@@ -214,6 +262,76 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 else return true;
             }
             else throw new ValidationException("Operation forbidden.");
+        }
+
+        public UpdateFileModel GetFileContents(string id, UserModel user)
+        {
+            var fileId = ParseGuid(id);
+            
+            var file = _fileRepository.GetById(fileId);
+            
+            if (file.UserId != user.Id)
+            {
+                throw new ValidationException("Unauthorized");
+            }
+            
+            var containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
+            containerClient.CreateIfNotExists();
+
+            var response = containerClient.GetBlobClient(file.AzureName).Download();
+            var stream = response.Value.Content;
+
+            StreamReader reader = new StreamReader(stream);
+            string text = reader.ReadToEnd();
+
+            var form = _formVerification.GetVerifiedForm();
+
+            var model = new UpdateFileModel()
+            {
+                Id = file.Id,
+                Contents = text,
+                Form = form
+            };
+
+            return model;
+        }
+
+        public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
+        {
+            _formVerification.VerifyForm(model.Form);
+            var formDatetime = DateTime.FromBinary(model.Form.Timestamp);
+
+            var file = _fileRepository.GetById(model.Id);
+
+            var result = DateTime.Compare(formDatetime, file.Updated);
+
+            if (result <= 0)
+            {
+                throw new ValidationException("File was changed by another user. Please try again");
+            }
+            
+            if (file.UserId != user.Id)
+            {
+                throw new ValidationException("Unauthorized");
+            }
+            
+            byte[] byteArray = Encoding.ASCII.GetBytes( model.Contents );
+            var contentStream = new MemoryStream( byteArray );
+
+            var containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
+            containerClient.CreateIfNotExists();
+
+            containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
+
+            return file;
         }
     }
 }
