@@ -87,7 +87,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             Name = formFile.FileName,
                             UserId = user.Id,
                             ParentId = parsedGUID,
-                            IsFolder = false
+                            IsFolder = false,
+                            Updated = DateTime.Now
                         };
 
                         _fileRepository.Insert(file);
@@ -249,8 +250,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
         {
             _formVerification.VerifyForm(model.Form);
+            var formDatetime = DateTime.FromBinary(model.Form.Timestamp);
 
             var file = _fileRepository.GetById(model.Id);
+
+            var result = DateTime.Compare(formDatetime, file.Updated);
+
+            if (result <= 0)
+            {
+                throw new ValidationException("File was changed by another user. Please try again");
+            }
             
             if (file.UserId != user.Id)
             {
