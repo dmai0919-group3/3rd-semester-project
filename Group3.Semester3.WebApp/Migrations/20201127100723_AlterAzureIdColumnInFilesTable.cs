@@ -8,13 +8,13 @@ namespace Group3.Semester3.WebApp.Migrations
         public override void Up()
         {
             Alter.Table("Files")
-                .AlterColumn("AzureId").AsGuid().Nullable();
+                .AlterColumn("AzureId").AsString().Nullable();
         }
 
         public override void Down()
         {
             Alter.Table("Files")
-                .AlterColumn("AzureId").AsGuid().NotNullable();
+                .AlterColumn("AzureId").AsString().NotNullable();
         }
     }
 }
