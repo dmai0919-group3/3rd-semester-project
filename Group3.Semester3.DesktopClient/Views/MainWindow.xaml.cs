@@ -34,11 +34,20 @@ namespace Group3.Semester3.DesktopClient.Views
 
             this.labelUserName.Content = $"{apiService.User.Name} ({apiService.User.Email})".ToUpper();
 
-            DataContext = new List<FileEntityWrapper>()
+            var userId = apiService.User.Id;
+            var files = apiService.FileList(Guid.Empty);
+            List<FileEntityWrapper> list = new List<FileEntityWrapper>();
+            foreach (FileEntity f in files)
             {
-                new FileEntityWrapper { FileEntity = new FileEntity { Name = "Apple" } },
-                new FileEntityWrapper { FileEntity = new FileEntity { Name = "Banana" } }
-            };
+                list.Add(new FileEntityWrapper { FileEntity = f });
+            }
+            DataContext = list;
+
+            //DataContext = new List<FileEntityWrapper>()
+           // {
+              //  new FileEntityWrapper { FileEntity = new FileEntity { Name = "Apple" } },
+             //   new FileEntityWrapper { FileEntity = new FileEntity { Name = "Banana" } }
+           // };
 
             UpdateFilePanel(new WebApp.Entities.FileEntity
             {
