@@ -84,7 +84,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _fileService.DownloadFile(fileId, user.Id);
+                var result = _fileService.DownloadFile(fileId, user);
 
                 FileEntity file = result.Item1;
                 string downloadLink = result.Item2; 

@@ -27,7 +27,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteFile(Guid fileId, UserModel user);
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
         public bool MoveIntoFolder(FileEntity model, UserModel user);
-        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId);
+        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user);
         public UpdateFileModel GetFileContents(string id, UserModel user);
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user);
     }
@@ -122,39 +122,35 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="fileId"></param>
         /// <param name="userId"></param>
         /// <returns>A tuple with the FileEntity with the given fileId and a string with the download URL</returns>
-        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId)
+        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user)
         {
             var file = _fileRepository.GetById(fileId);
-
-            if (userId == file.UserId)
-            {
-                BlobContainerClient containerClient =
+            _accessService.hasAccess(user, file);
+            BlobContainerClient containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
-                containerClient.CreateIfNotExists();
+            containerClient.CreateIfNotExists();
 
-                BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
-                {
-                    StartsOn = DateTime.UtcNow,
-                    ExpiresOn = DateTime.UtcNow.AddHours(24),
-                    BlobContainerName = containerClient.Name,
-                    BlobName = file.AzureName,
-                    Resource = "b"
-                };
+            BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
+            {
+                StartsOn = DateTime.UtcNow,
+                ExpiresOn = DateTime.UtcNow.AddHours(24),
+                BlobContainerName = containerClient.Name,
+                BlobName = file.AzureName,
+                Resource = "b"
+            };
 
-                blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+            blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
 
-                StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
+            StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
+                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
+                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
 
-                string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
+            string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
 
-                return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
-            }
-            else throw new ValidationException("Operation forbidden.");
+            return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
         }
 
         public bool DeleteFile(Guid fileId, UserModel user)
@@ -165,19 +161,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             var file = _fileRepository.GetById(fileId);
-            if (user.Id == file.UserId)
-            {
-                // TODO AzureId should be string
-                containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
-                var result = _fileRepository.Delete(fileId);
+            _accessService.hasAccess(user, file);
+            containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
+            var result = _fileRepository.Delete(fileId);
 
-                if (!result)
-                {
-                    throw new ValidationException("File non-existent or not deleted.");
-                }
-                else return result;
+            if (!result)
+            {
+                throw new ValidationException("File non-existent or not deleted.");
             }
-            else throw new ValidationException("Operation forbidden.");
+            else return result;
         }
 
         public FileEntity RenameFile(Guid fileId, UserModel user, string name)
@@ -264,12 +256,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var fileId = ParseGuid(id);
             
             var file = _fileRepository.GetById(fileId);
-            
-            if (file.UserId != user.Id)
-            {
-                throw new ValidationException("Unauthorized");
-            }
-            
+            _accessService.hasAccess(user, file);
             var containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -296,6 +283,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
         {
             var file = _fileRepository.GetById(model.Id);
+            _accessService.hasAccess(user, file);
 
             if (!model.Overwrite)
             {
@@ -305,11 +293,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 {
                     throw new ConcurrencyException("File was changed by another user. Please try again");
                 }
-            }
-
-            if (file.UserId != user.Id)
-            {
-                throw new ValidationException("Unauthorized");
             }
             
             byte[] byteArray = Encoding.ASCII.GetBytes( model.Contents );
