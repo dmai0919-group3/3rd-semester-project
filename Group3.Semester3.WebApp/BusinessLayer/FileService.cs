@@ -165,7 +165,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             var file = _fileRepository.GetById(fileId);
-            if (userId == file.UserId)
+            if (user.Id == file.UserId)
             {
                 // TODO AzureId should be string
                 containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
