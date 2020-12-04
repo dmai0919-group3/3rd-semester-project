@@ -22,6 +22,20 @@ $(function () {
                 };
                 Object.assign(items, edit);
             }
+            if (!classes.includes('folder')) {
+                let download = {
+                    download: {
+                        name: "Download",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+                            
+                            initFileDownload(id);
+                        }
+                    }
+                };
+                Object.assign(items, download);
+            }
             
             let standardItems = {
                 move: {
@@ -512,4 +526,23 @@ function editFileSave() {
             },
         }
     });
+}
+
+function initFileDownload(fileId) {
+    $.ajax({
+        url: "/api/file/download/" + fileId,
+        success: function (result) {
+            startFileDownload(result.file, result.downloadLink);
+        }
+    })
+}
+
+function startFileDownload(file, link) {
+    let $downloadLink = $('#downloadLink');
+    $downloadLink.remove();
+    
+    let downloadLink = "<a href='" + link + "' download='"+ file.name +"' id='downloadLink'>Click here to download</a>"
+    $('#downloadFileModal .modal-body').append(downloadLink);
+    
+    $('#downloadFileModal').modal();
 }

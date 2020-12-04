@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
@@ -139,7 +140,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 ExpiresOn = DateTime.UtcNow.AddHours(24),
                 BlobContainerName = containerClient.Name,
                 BlobName = file.AzureName,
-                Resource = "b"
+                Resource = "b",
+                ContentDisposition = new ContentDisposition()
+                {
+                    FileName = file.Name
+                }.ToString()
             };
 
             blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
