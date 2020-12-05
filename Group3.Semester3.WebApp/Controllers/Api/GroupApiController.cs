@@ -93,8 +93,6 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [HttpPost]
         public ActionResult AddUser(UserGroupModel newUser)
         {
-            
-
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);

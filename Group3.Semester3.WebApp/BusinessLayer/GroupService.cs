@@ -27,10 +27,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         private IAccessService _accessService;
         private IUserRepository _userRepository;
 
-        public GroupService(IGroupRepository groupRepository, IAccessService accessService)
+        public GroupService(IGroupRepository groupRepository, IAccessService accessService, IUserRepository userRepository)
         {
             _groupRepository = groupRepository;
             _accessService = accessService;
+            _userRepository = userRepository;
         }
 
 
@@ -113,9 +114,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 var newUser = new UserModel() {Id= newUserEntity.Id};
 
-                if (_accessService.hasAccessToGroup(newUser, group))
+                if (IsPartOfGroup(newUser, group))
                 {
-                    throw new ValidationException("User is already part of the group");
+                        throw new ValidationException("User is already part of the group");
                 }
 
                 return _groupRepository.AddUser(group.Id, newUser.Id);
@@ -140,6 +141,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new ValidationException("Operation forbidden");
             }
+        }
+
+        public bool IsPartOfGroup(UserModel user, Group group)
+        {
+            if (_accessService.hasAccessToGroup(user, group))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

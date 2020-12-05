@@ -31,7 +31,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public IEnumerable<Group> GetByUserId(Guid userId)
         {
-            string query = "SELECT Groups.* FROM Groups JOIN UsersGroups WHERE Groups.GroupId=UsersGroups.GroupId AND UsersGroups.UserId=@UserId";
+            string query = "SELECT Groups.* FROM Groups JOIN UsersGroups ON Groups.Id=UsersGroups.GroupId WHERE UsersGroups.UserId=@UserId";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -47,7 +47,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-
+                    var randomString = "";
                 }
             }
 

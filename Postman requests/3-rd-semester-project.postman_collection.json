@@ -12,7 +12,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Email\": \"erik@erik.sk\",\r\n    \"Password\": \"pass\"\r\n}",
+					"raw": "{\r\n    \"Email\": \"marek@marek.sk\",\r\n    \"Password\": \"marek\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -457,6 +457,44 @@
 						"api",
 						"group",
 						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add User to Group",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"groupId\": \"8bd4cd23-0d9e-4128-8ed4-c44969de7874\",\r\n    \"userId\": \"6CA63F0C-406D-4F0D-831D-DAED56AB5DD9\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/group/add-user",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"group",
+						"add-user"
 					]
 				}
 			},

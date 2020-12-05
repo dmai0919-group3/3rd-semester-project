@@ -19,6 +19,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     {
         IFileRepository _fileRepository;
         IGroupRepository _groupRepository;
+        public AccessService(IFileRepository fileRepository, IGroupRepository groupRepository)
+        {
+            _fileRepository = fileRepository;
+            _groupRepository = groupRepository;
+        }
         public void hasAccessToFile(UserModel user, FileEntity file)
         {
             
@@ -32,15 +37,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var list = _groupRepository.GetByUserId(user.Id);
 
-            if (list.Contains(group))
+            foreach(var g in list) 
             {
-                return true;
+                if(g.Id == group.Id)
+                {
+                    return true;
+                }
             }
-            else
-            {
-                throw new ValidationException("Operation forbidden.");
-            }
-                        
+
+            throw new ValidationException("Operation forbidden.");
+                                    
         }
     }
 }
