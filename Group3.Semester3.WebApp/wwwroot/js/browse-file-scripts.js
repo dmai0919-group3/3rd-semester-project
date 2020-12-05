@@ -2,6 +2,8 @@
 
 let currentDir = "00000000-0000-0000-0000-000000000000";
 
+let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
+
 $(function () {
     browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
 
@@ -12,7 +14,7 @@ $(function () {
             
             let fileName = $trigger.find('.file-name').text();
             let classes = $trigger.attr('class');
-            if (endsWithAny(['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'], fileName)) {
+            if (endsWithAny(previewFiles, fileName)) {
                 let view = {
                     view: {
                         name: "View",
@@ -30,7 +32,7 @@ $(function () {
             if (classes.includes('txt-file')) {
                 let edit = {
                     edit: {
-                        name: "Edit",
+                        name: "View / Edit",
                         callback: function (key, opt) {
                             showEditFileModal(key, opt);
                         }
