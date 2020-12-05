@@ -2,6 +2,8 @@
 
 let currentDir = "00000000-0000-0000-0000-000000000000";
 
+let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
+
 $(function () {
     browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
 
@@ -10,11 +12,27 @@ $(function () {
         build: function($trigger, e) {
             let items = {};
             
+            let fileName = $trigger.find('.file-name').text();
             let classes = $trigger.attr('class');
+            if (endsWithAny(previewFiles, fileName)) {
+                let view = {
+                    view: {
+                        name: "View",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+                            let fileName = $element.find('.file-name').text();
+                            
+                            previewFile(id, fileName);
+                        }
+                    }
+                }
+                Object.assign(items, view);
+            }
             if (classes.includes('txt-file')) {
                 let edit = {
                     edit: {
-                        name: "Edit",
+                        name: "View / Edit",
                         callback: function (key, opt) {
                             showEditFileModal(key, opt);
                         }
@@ -545,4 +563,59 @@ function startFileDownload(file, link) {
     $('#downloadFileModal .modal-body').append(downloadLink);
     
     $('#downloadFileModal').modal();
+}
+
+function previewFile(fileId, fileName) {
+    if (fileName.endsWith('.txt')) {
+        // Separate preview
+    }
+    
+    $('#filePreviewModal').modal();
+    
+    $modalBody = $('#filePreviewModal .modal-body');
+    $('#preview-file-name').text(fileName);
+    $modalBody.empty();
+    
+    $.ajax({
+        url: "/api/file/download/" + fileId,
+        success: function (result) {
+            
+            
+            let element = null;
+            
+            if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
+                element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
+            }
+            
+            if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
+                element = '<video class="video-fluid" width="100%" controls>\n' +
+                    '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
+                    '</video>';
+            }
+            
+            let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
+            
+            if (mp3) {
+                element = '<audio controls>' +
+                    '<source src="'+result.downloadLink+'">' +
+                    '</audio>';
+            }
+            
+            $modalBody.append(element);
+        }
+    })
+}
+
+$(document).ready(function () {
+    $('#filePreviewModal').on('hide.bs.modal', function () {
+        $(this).find('.modal-body').empty();
+    })
+})
+
+function endsWithAny(suffixes, string) {
+    for (let suffix of suffixes) {
+        if(string.endsWith(suffix))
+            return true;
+    }
+    return false;
 }
