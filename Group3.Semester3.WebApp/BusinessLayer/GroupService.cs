@@ -17,14 +17,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group RenameGroup(Guid groupId, UserModel user, string name);
         public bool DeleteGroup(Guid groupId, UserModel user);
         public Group GetByGroupId(Guid groupId);
-        public bool AddUser(Group group, UserModel user, UserModel newUser);
-        public bool RemoveUser(Group group, UserModel user, UserModel newUser);
+        public bool AddUser(UserModel user, UserGroupModel newUser);
+        public bool RemoveUser(UserModel user, UserGroupModel newUser);
 
     }
     public class GroupService : IGroupService
     {
         private IGroupRepository _groupRepository;
         private IAccessService _accessService;
+        private IUserRepository _userRepository;
 
         public GroupService(IGroupRepository groupRepository, IAccessService accessService)
         {
@@ -49,6 +50,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new Exception("Failed to create group");
             }
 
+            _groupRepository.AddUser(group.Id, user.Id);
 
             return group;
         }
@@ -101,10 +103,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return parsedGuid;
         }
 
-        public bool AddUser(Group group, UserModel user, UserModel newUser)
+        public bool AddUser(UserModel user, UserGroupModel model)
         {
+            var group = _groupRepository.GetByGroupId(model.groupId);
+
             if(_accessService.hasAccessToGroup(user, group))
             {
+                var newUserEntity = _userRepository.Get(model.userId);
+
+                var newUser = new UserModel() {Id= newUserEntity.Id};
+
                 if (_accessService.hasAccessToGroup(newUser, group))
                 {
                     throw new ValidationException("User is already part of the group");
@@ -120,11 +128,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
         }
 
-        public bool RemoveUser(Group group, UserModel user, UserModel userToDelete)
+        public bool RemoveUser(UserModel user, UserGroupModel model)
         {
+            var group = _groupRepository.GetByGroupId(model.groupId);
+
             if (_accessService.hasAccessToGroup(user, group))
             {
-                return _groupRepository.RemoveUser(group.Id, userToDelete.Id);
+                return _groupRepository.RemoveUser(group.Id, model.userId);
             }
             else
             {
