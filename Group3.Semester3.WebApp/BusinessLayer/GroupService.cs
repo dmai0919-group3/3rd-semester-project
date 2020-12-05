@@ -17,8 +17,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group RenameGroup(Guid groupId, UserModel user, string name);
         public bool DeleteGroup(Guid groupId, UserModel user);
         public Group GetByGroupId(Guid groupId);
-        public bool AddUser(UserModel user, UserGroupModel newUser);
-        public bool RemoveUser(UserModel user, UserGroupModel newUser);
+        public bool AddUser(UserModel user, UserGroupModel model);
+        public bool RemoveUser(UserModel user, UserGroupModel model);
 
     }
     public class GroupService : IGroupService
@@ -106,17 +106,17 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public bool AddUser(UserModel user, UserGroupModel model)
         {
-            var group = _groupRepository.GetByGroupId(model.groupId);
+            var group = _groupRepository.GetByGroupId(model.GroupId);
 
             if(_accessService.hasAccessToGroup(user, group))
             {
-                var newUserEntity = _userRepository.Get(model.userId);
+                var newUserEntity = _userRepository.Get(model.UserId);
 
                 var newUser = new UserModel() {Id= newUserEntity.Id};
 
                 if (IsPartOfGroup(newUser, group))
                 {
-                        throw new ValidationException("User is already part of the group");
+                    throw new ValidationException("User is already part of the group");
                 }
 
                 return _groupRepository.AddUser(group.Id, newUser.Id);
@@ -125,17 +125,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new ValidationException("Operation forbidden");
             }
-
-            
         }
 
         public bool RemoveUser(UserModel user, UserGroupModel model)
         {
-            var group = _groupRepository.GetByGroupId(model.groupId);
+            var group = _groupRepository.GetByGroupId(model.GroupId);
 
             if (_accessService.hasAccessToGroup(user, group))
             {
-                return _groupRepository.RemoveUser(group.Id, model.userId);
+                return _groupRepository.RemoveUser(group.Id, model.UserId);
             }
             else
             {
@@ -145,12 +143,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public bool IsPartOfGroup(UserModel user, Group group)
         {
-            if (_accessService.hasAccessToGroup(user, group))
+            try
             {
+                _accessService.hasAccessToGroup(user, group);
                 return true;
             }
-
-            return false;
+            catch
+            {
+                return false;
+            }
         }
     }
 }

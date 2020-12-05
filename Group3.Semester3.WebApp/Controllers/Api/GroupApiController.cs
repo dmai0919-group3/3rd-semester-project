@@ -91,12 +91,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
         [Route("add-user")]
         [HttpPost]
-        public ActionResult AddUser(UserGroupModel newUser)
+        public ActionResult AddUser(UserGroupModel model)
         {
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _groupService.AddUser(user, newUser);
+                var result = _groupService.AddUser(user, model);
 
                 return Ok(result);
             }
@@ -112,12 +112,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
         [Route("remove-user")]
         [HttpDelete]
-        public ActionResult RemoveUser(UserGroupModel userToDelete)
+        public ActionResult RemoveUser(UserGroupModel model)
         {
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _groupService.RemoveUser(user, userToDelete);
+                var result = _groupService.RemoveUser(user, model);
                 if (!result)
                 {
                     return BadRequest();

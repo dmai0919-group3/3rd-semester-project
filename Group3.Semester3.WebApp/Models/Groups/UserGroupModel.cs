@@ -7,7 +7,7 @@ namespace Group3.Semester3.WebApp.Models.Groups
 {
     public class UserGroupModel
     {
-        public Guid groupId { get; set; }
-        public Guid userId { get; set; }
+        public Guid GroupId { get; set; }
+        public Guid UserId { get; set; }
     }
 }

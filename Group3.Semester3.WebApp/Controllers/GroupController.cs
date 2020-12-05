@@ -14,7 +14,7 @@ namespace Group3.Semester3.WebApp.Controllers
     {
         public IActionResult Index()
         {
-            return View();
+            return null;
         }
     }
 }
