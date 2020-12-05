@@ -12,7 +12,7 @@ $(function () {
             
             let fileName = $trigger.find('.file-name').text();
             let classes = $trigger.attr('class');
-            if (endsWithAny(['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm'], fileName)) {
+            if (endsWithAny(['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'], fileName)) {
                 let view = {
                     view: {
                         name: "View",
@@ -591,10 +591,24 @@ function previewFile(fileId, fileName) {
                     '</video>';
             }
             
+            let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
+            
+            if (mp3) {
+                element = '<audio controls>' +
+                    '<source src="'+result.downloadLink+'">' +
+                    '</audio>';
+            }
+            
             $modalBody.append(element);
         }
     })
 }
+
+$(document).ready(function () {
+    $('#filePreviewModal').on('hide.bs.modal', function () {
+        $(this).find('.modal-body').empty();
+    })
+})
 
 function endsWithAny(suffixes, string) {
     for (let suffix of suffixes) {
