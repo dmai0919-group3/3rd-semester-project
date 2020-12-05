@@ -10,7 +10,23 @@ $(function () {
         build: function($trigger, e) {
             let items = {};
             
+            let fileName = $trigger.find('.file-name').text();
             let classes = $trigger.attr('class');
+            if (endsWithAny(['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm'], fileName)) {
+                let view = {
+                    view: {
+                        name: "View",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+                            let fileName = $element.find('.file-name').text();
+                            
+                            previewFile(id, fileName);
+                        }
+                    }
+                }
+                Object.assign(items, view);
+            }
             if (classes.includes('txt-file')) {
                 let edit = {
                     edit: {
@@ -545,4 +561,45 @@ function startFileDownload(file, link) {
     $('#downloadFileModal .modal-body').append(downloadLink);
     
     $('#downloadFileModal').modal();
+}
+
+function previewFile(fileId, fileName) {
+    if (fileName.endsWith('.txt')) {
+        // Separate preview
+    }
+    
+    $('#filePreviewModal').modal();
+    
+    $modalBody = $('#filePreviewModal .modal-body');
+    $('#preview-file-name').text(fileName);
+    $modalBody.empty();
+    
+    $.ajax({
+        url: "/api/file/download/" + fileId,
+        success: function (result) {
+            
+            
+            let element = null;
+            
+            if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
+                element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
+            }
+            
+            if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
+                element = '<video class="video-fluid" width="100%" controls>\n' +
+                    '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
+                    '</video>';
+            }
+            
+            $modalBody.append(element);
+        }
+    })
+}
+
+function endsWithAny(suffixes, string) {
+    for (let suffix of suffixes) {
+        if(string.endsWith(suffix))
+            return true;
+    }
+    return false;
 }
