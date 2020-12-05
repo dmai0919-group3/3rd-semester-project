@@ -16,6 +16,8 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Delete(Guid groupId);
         public IEnumerable<Group> GetByUserId(Guid userId);
         public Group GetByGroupId(Guid groupId);
+        public bool AddUser(Guid groupId, Guid userId);
+        public bool RemoveUser(Guid groupId, Guid userId);
     }
 
     public class GroupRepository : IGroupRepository
@@ -29,6 +31,26 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public IEnumerable<Group> GetByUserId(Guid userId)
         {
+            string query = "SELECT Groups.* FROM Groups JOIN UsersGroups WHERE Groups.GroupId=UsersGroups.GroupId AND UsersGroups.UserId=@UserId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { UserId = userId };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<Group>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
             throw new NotImplementedException();
         }
 
@@ -142,6 +164,59 @@ namespace Group3.Semester3.WebApp.Repositories
             }
 
             return null;
+        }
+
+        public bool AddUser(Guid groupId, Guid userId)
+        {
+            string query = "INSERT INTO UsersGroups (UserId, GroupId)" +
+                   " VALUES (@UserId, @GroupId)";
+
+            var parameters = new { GroupId = groupId, UserId = userId };
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    int rowsChanged = connection.Execute(query, parameters);
+
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return false;
+        }
+
+        public bool RemoveUser(Guid groupId, Guid userId)
+        {
+            string query = "DELETE FROM UsersGroups WHERE GroupId=@GroupId AND UserId=@UserId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { GroupId = groupId, UserId = userId };
+
+                try
+                {
+                    connection.Open();
+
+                    int rowsChanged = connection.Execute(query, parameters);
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                }
+                return false;
+            }
         }
     }
 }

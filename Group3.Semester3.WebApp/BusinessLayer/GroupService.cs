@@ -17,6 +17,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group RenameGroup(Guid groupId, UserModel user, string name);
         public bool DeleteGroup(Guid groupId, UserModel user);
         public Group GetByGroupId(Guid groupId);
+        public bool AddUser(Group group, UserModel user, UserModel newUser);
+        public bool RemoveUser(Group group, UserModel user, UserModel newUser);
 
     }
     public class GroupService : IGroupService
@@ -97,6 +99,37 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             catch { }
 
             return parsedGuid;
+        }
+
+        public bool AddUser(Group group, UserModel user, UserModel newUser)
+        {
+            if(_accessService.hasAccessToGroup(user, group))
+            {
+                if (_accessService.hasAccessToGroup(newUser, group))
+                {
+                    throw new ValidationException("User is already part of the group");
+                }
+
+                return _groupRepository.AddUser(group.Id, newUser.Id);
+
+            } else
+            {
+                throw new ValidationException("Operation forbidden");
+            }
+
+            
+        }
+
+        public bool RemoveUser(Group group, UserModel user, UserModel userToDelete)
+        {
+            if (_accessService.hasAccessToGroup(user, group))
+            {
+                return _groupRepository.RemoveUser(group.Id, userToDelete.Id);
+            }
+            else
+            {
+                throw new ValidationException("Operation forbidden");
+            }
         }
     }
 }

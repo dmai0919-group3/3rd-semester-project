@@ -2,6 +2,7 @@
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Groups;
+using Group3.Semester3.WebApp.Models.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -85,6 +86,47 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             catch
             {
                 return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("add-user")]
+        [HttpPost]
+        public ActionResult AddUser(Group group, UserModel newUser)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _groupService.AddUser(group, user, newUser);
+
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("remove-user")]
+        [HttpDelete]
+        public ActionResult RemoveUser(Group group, UserModel userToDelete)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _groupService.RemoveUser(group, user, userToDelete);
+                if (!result)
+                {
+                    return BadRequest();
+                }
+                else return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
             }
         }
     }

@@ -12,27 +12,35 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     public interface IAccessService
     {
         public void hasAccessToFile(UserModel user, FileEntity file);
-        public void hasAccessToGroup(UserModel user, Group group);
+        public bool hasAccessToGroup(UserModel user, Group group);
     }
 
     public class AccessService : IAccessService
     {
         IFileRepository _fileRepository;
+        IGroupRepository _groupRepository;
         public void hasAccessToFile(UserModel user, FileEntity file)
         {
+            
             if (!user.Id.Equals(file.UserId))
             {
                 throw new ValidationException("Operation forbidden.");
             }
         }
 
-        public void hasAccessToGroup(UserModel user, Group group)
+        public bool hasAccessToGroup(UserModel user, Group group)
         {
-            // TODO: implement proper checks
-            // if (!user.Id.Equals(group.UserId))
-            // {
-               // throw new ValidationException("Operation forbidden.");
-            //}
+            var list = _groupRepository.GetByUserId(user.Id);
+
+            if (list.Contains(group))
+            {
+                return true;
+            }
+            else
+            {
+                throw new ValidationException("Operation forbidden.");
+            }
+                        
         }
     }
 }
