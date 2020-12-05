@@ -38,12 +38,21 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             switcher.Switch(new Login(apiService, switcher));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nextPage"></param>
         public void Navigate(UserControl nextPage)
         {
             Grid.Children.Clear();
             Grid.Children.Add(nextPage);
         }
 
+        /// <summary>
+        /// //TODO
+        /// </summary>
+        /// <param name="nextPage"></param>
+        /// <param name="state"></param>
         public void Navigate(UserControl nextPage, object state)
         {
             throw new NotImplementedException();

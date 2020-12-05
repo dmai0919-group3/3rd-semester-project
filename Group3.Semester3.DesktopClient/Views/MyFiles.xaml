@@ -19,23 +19,13 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="57*"/>
+            <RowDefinition Height="*" MinHeight="300"/>
         </Grid.RowDefinitions>
-        <Grid Grid.ColumnSpan="2" Background="#FF3FB9FF">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" >
-                <Label Foreground="White" VerticalAlignment="Center" Name="labelUserName">
-
-                </Label>
-                <Button Style="{StaticResource MaterialDesignFloatingActionMiniAccentButton}" Foreground="White" Background="{x:Null}" BorderBrush="{x:Null}" Width="25" Height="25" >
-                    <materialDesign:PackIcon Kind="Account"/>
-                </Button>
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Row="1" Background="#FFEEEEEE">
+        <Grid Grid.Row="0" Background="#FFEEEEEE">
             <Grid.RowDefinitions>
                 <RowDefinition Height="19*"/>
                 <RowDefinition Height="10*"/>
+                <RowDefinition Height="50*"/>
                 <RowDefinition Height="173*"/>
             </Grid.RowDefinitions>
             <Grid VerticalAlignment="Top" Height="0"/>
@@ -43,23 +33,26 @@
             <Label Content="Default" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="6,0,0,0" Height="30" Width="97" Foreground="#DD2C2C2C" FontSize="14" Grid.Row="1"/>
             <Separator Margin="10,3,10,0" Grid.Row="2" VerticalAlignment="Top" Foreground="#FF818181" Height="1"/>
             <Button Content="Upload files" Click="btnUpload_Click" HorizontalAlignment="Center" Margin="0,21,0,0" Grid.Row="2" VerticalAlignment="Top" Width="130" Foreground="White"/>
+            <Button Grid.Row="3" Content="Create folder" Click="CreateFolder_Click" HorizontalAlignment="Center" VerticalAlignment="Top" Width="130" Foreground="White" />
         </Grid>
-        <Grid Grid.Column="1" Grid.Row="1">
+        <Grid Grid.Column="1" Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="33*"/>
                 <RowDefinition Height="371*"/>
             </Grid.RowDefinitions>
             <Label Content="My Workspace (Root)" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="16" Foreground="#DD2C2C2C" RenderTransformOrigin="0.619,0.001" Margin="10,4,0,0" Height="30" Width="180"/>
-            <TreeView Grid.Row="1" Margin="10,6,10,10">
-                <TreeViewItem IsExpanded="True" Name="treeBogoRoot">
+            <TreeView Grid.Row="1" Margin="10,6,10,10" HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                <TreeViewItem IsExpanded="True" Name="TreeBogoRoot">
                     <TreeViewItem.Header>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Root" FontSize="14" />
+                            <TextBlock Text="Root" Name="FolderName" FontSize="14" />
                         </StackPanel>
                     </TreeViewItem.Header>
 
                 </TreeViewItem>
             </TreeView>
+            <Button Content="Back" Name="BackButton" HorizontalAlignment="Left" Margin="215,5,0,0" Grid.RowSpan="2" VerticalAlignment="Top" Click="BackButton_Click"/>
         </Grid>
     </Grid>
-    </UserControl>
+</UserControl>

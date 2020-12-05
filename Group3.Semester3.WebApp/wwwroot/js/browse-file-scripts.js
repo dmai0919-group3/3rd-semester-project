@@ -2,34 +2,86 @@
 
 let currentDir = "00000000-0000-0000-0000-000000000000";
 
+let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
+
 $(function () {
     browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
 
     $.contextMenu({
         selector: '.file',
-        items: {
-            move: {
-                name: "Move to folder",
-                callback: function (key, opt) {
-                    let $element = opt.$trigger;
-                    let id = $element.attr('id');
-                    
-                    showMoveFileModal(id);
+        build: function($trigger, e) {
+            let items = {};
+            
+            let fileName = $trigger.find('.file-name').text();
+            let classes = $trigger.attr('class');
+            if (endsWithAny(previewFiles, fileName)) {
+                let view = {
+                    view: {
+                        name: "View",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+                            let fileName = $element.find('.file-name').text();
+                            
+                            previewFile(id, fileName);
+                        }
+                    }
                 }
-            },
-            rename: {
-                name: "Rename",
-                callback: function (key, opt) {
-                    showRenameFileModal(key, opt);
-                }
-            },
-            delete: {
-                name: "Delete",
-                callback: function (key, opt) {
-                    // TODO: Show confirm modal first in the future
-                    showDeleteFileModal(key, opt);
+                Object.assign(items, view);
+            }
+            if (classes.includes('txt-file')) {
+                let edit = {
+                    edit: {
+                        name: "View / Edit",
+                        callback: function (key, opt) {
+                            showEditFileModal(key, opt);
+                        }
+                    }
+                };
+                Object.assign(items, edit);
+            }
+            if (!classes.includes('folder')) {
+                let download = {
+                    download: {
+                        name: "Download",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+                            
+                            initFileDownload(id);
+                        }
+                    }
+                };
+                Object.assign(items, download);
+            }
+            
+            let standardItems = {
+                move: {
+                    name: "Move to folder",
+                    callback: function (key, opt) {
+                        let $element = opt.$trigger;
+                        let id = $element.attr('id');
+
+                        showMoveFileModal(id);
+                    }
+                },
+                rename: {
+                    name: "Rename",
+                    callback: function (key, opt) {
+                        showRenameFileModal(key, opt);
+                    }
+                },
+                delete: {
+                    name: "Delete",
+                    callback: function (key, opt) {
+                        showDeleteFileModal(key, opt);
+                    }
                 }
             }
+            
+            Object.assign(items, standardItems);
+            
+            return {items: items};
         }
     });
     $.contextMenu({
@@ -319,7 +371,11 @@ function addFileToFileList(file) {
         markup = markup.replaceAll("{{classes}}", "file folder");
         markup = markup.replaceAll("{{icon}}", folderIconUrl);
     } else {
-        markup = markup.replaceAll("{{classes}}", "file");
+        if (file.name.endsWith('.txt')) {
+            markup = markup.replaceAll("{{classes}}", "file txt-file");
+        } else {
+            markup = markup.replaceAll("{{classes}}", "file");
+        }
         markup = markup.replaceAll("{{icon}}", fileIconUrl);
     }
 
@@ -414,7 +470,152 @@ function moveFile(id, parentId) {
         },
         error: function (result) {
             // TODO: Handle better in the future
-            alert("Failed to move a file");
+            alert(result);
         }
     });
+}
+
+$(document).ready(function () {
+    $('#editModalSave').click(function () {
+       editFileSave();
+    });
+});
+
+function showEditFileModal(key, opt) 
+{
+    let $element = opt.$trigger;
+    let fileId = $element.attr("id");
+    let fileName = $element.find('.file-name').text();
+
+    $.ajax({
+        url: "/api/file/content/" + fileId,
+        type: "GET",
+        success: function (result) {
+            $('#edit-file-name').text(fileName);
+
+            $('#editFileId').val(fileId);
+            $('#editFileContent').val(result.contents);
+            $('#editFileTimestamp').val(result.timestamp);
+            $('#editFileOverwrite').val(0);
+            
+            $('#editFileModal').modal();
+        },
+        error: function (result) {
+            alert(result);
+        }
+    });
+    
+}
+
+function editFileSave() {
+    let contents = $('#editFileContent').val();
+    let id = $('#editFileId').val();
+    let timestamp = $('#editFileTimestamp').val();
+    let overwrite =$('#editFileOverwrite').val();
+
+    let data = {
+        id: id,
+        contents: contents,
+        timestamp: timestamp,
+        overwrite: (overwrite === 'true'),
+    }
+    
+    $.ajax({
+        url: updateFileUrl,
+        data: JSON.stringify(data),
+        type: "POST",
+        contentType: "application/json",
+        statusCode: {
+            200: function (result) {
+
+                alert("File updated!");
+                $("#editFileModal").modal("hide");
+            },
+            400: function (result) {
+                alert(result);
+            },
+            409: function (result) {
+                $('#overwriteEditModal').modal();
+                $('#overwriteEditModalOverwrite').click(function () {
+                    $('#editFileOverwrite').val('true');
+                    $('#overwriteEditModal').modal('hide');
+                    editFileSave();
+                });
+            },
+        }
+    });
+}
+
+function initFileDownload(fileId) {
+    $.ajax({
+        url: "/api/file/download/" + fileId,
+        success: function (result) {
+            startFileDownload(result.file, result.downloadLink);
+        }
+    })
+}
+
+function startFileDownload(file, link) {
+    let $downloadLink = $('#downloadLink');
+    $downloadLink.remove();
+    
+    let downloadLink = "<a href='" + link + "' download='"+ file.name +"' id='downloadLink'>Click here to download</a>"
+    $('#downloadFileModal .modal-body').append(downloadLink);
+    
+    $('#downloadFileModal').modal();
+}
+
+function previewFile(fileId, fileName) {
+    if (fileName.endsWith('.txt')) {
+        // Separate preview
+    }
+    
+    $('#filePreviewModal').modal();
+    
+    $modalBody = $('#filePreviewModal .modal-body');
+    $('#preview-file-name').text(fileName);
+    $modalBody.empty();
+    
+    $.ajax({
+        url: "/api/file/download/" + fileId,
+        success: function (result) {
+            
+            
+            let element = null;
+            
+            if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
+                element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
+            }
+            
+            if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
+                element = '<video class="video-fluid" width="100%" controls>\n' +
+                    '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
+                    '</video>';
+            }
+            
+            let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
+            
+            if (mp3) {
+                element = '<audio controls>' +
+                    '<source src="'+result.downloadLink+'">' +
+                    '</audio>';
+            }
+            
+            $modalBody.append(element);
+        }
+    })
+}
+
+$(document).ready(function () {
+    $('#filePreviewModal').on('hide.bs.modal', function () {
+        $(this).find('.modal-body').empty();
+    })
+})
+
+function endsWithAny(suffixes, string) {
+    for (let suffix of suffixes) {
+        if(string.endsWith(suffix))
+            return true;
+    }
+    return false;
 }

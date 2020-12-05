@@ -44,14 +44,14 @@ namespace Group3.Semester3.DesktopClient.Views
 
         public void Navigate(UserControl nextPage)
         {
-            this.Grid.Children.Clear();
-            this.Grid.Children.Add(nextPage);
+            //this.Grid.Children.Clear();
+            //this.Grid.Children.Add(nextPage);
         }
 
         public void Navigate(UserControl nextPage, object state)
         {
-            this.Grid.Children.Clear();
-            this.Grid.Children.Add(nextPage);
+            //this.Grid.Children.Clear();
+            //this.Grid.Children.Add(nextPage);
 
             ISwitchable s = nextPage as ISwitchable;
 
@@ -64,12 +64,12 @@ namespace Group3.Semester3.DesktopClient.Views
 
         private void btnShow_Click(object sender, RoutedEventArgs e)
         {
-            switcher.Switch(new MyFiles(apiService, switcher));
+            //switcher.Switch(new MyFiles(apiService, switcher));
         }
 
         private void btnUpload_Click(object sender, RoutedEventArgs e)
         {
-            switcher.Switch(new UploadFile(apiService, switcher));
+            //switcher.Switch(new UploadFile(apiService, switcher));
         }
 
     }

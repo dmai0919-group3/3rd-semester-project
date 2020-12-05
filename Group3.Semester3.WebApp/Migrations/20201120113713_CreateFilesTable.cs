@@ -10,7 +10,7 @@ namespace Group3.Semester3.WebApp.Migrations
             Create.Table("Files")
                 .WithColumn("Id").AsGuid().PrimaryKey()
                 .WithColumn("UserId").AsGuid().NotNullable()
-                .WithColumn("AzureId").AsGuid().NotNullable()
+                .WithColumn("AzureId").AsString().NotNullable()
                 .WithColumn("Name").AsString().NotNullable();
             Create.ForeignKey() 
                 .FromTable("Files").ForeignColumn("UserId")
