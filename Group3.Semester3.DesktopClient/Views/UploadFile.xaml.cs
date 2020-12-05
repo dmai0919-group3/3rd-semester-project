@@ -39,7 +39,7 @@ namespace Group3.Semester3.DesktopClient.Views
             InitializeComponent();
         }
         /// <summary>
-        /// This method is called when the Open Files button is clicked. It opens a new OpenFileDialog and 
+        /// This method is called when the Open Files button is clicked. It opens a new OpenFileDialog and lets the user select multiple files.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -72,12 +72,15 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
+        /// <summary>
+        /// This method is called when the Submit button is clicked. It uploads the file in a thread so the app won't hang.
+        /// TODO use exceptions instead of conditional branching
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void btnSubmit_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Do in new thread, so app won't wait
-            // TODO use exceptions instead of conditional branching
-
-            // Prevent multiple submits
+            // This is to prevent multiple submits
             if (!submitted)
             {
                 submitted = true;
@@ -112,9 +115,10 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
+        // I'm not sure this method is actually used anywhere or if it's even necessary.
         private void btnUploadFile_Click(object sender, RoutedEventArgs e)
         {
-            // TODO implement file ctrl logic
+            // TODO implement file ctrl logic ???
         }
 
         public void UtilizeState(object state)

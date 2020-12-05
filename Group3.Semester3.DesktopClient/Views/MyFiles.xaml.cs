@@ -38,12 +38,21 @@ namespace Group3.Semester3.DesktopClient.Views
 
             ShowDirectoryFiles(Guid.Empty);
         }
+        /// <summary>
+        /// This method is called when the Upload button is clicked.
+        /// It calls the Switcher.Switch() method with a new UploadFile class as parameter
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void btnUpload_Click(object sender, RoutedEventArgs e)
         {
-            Guid id = currentFolderGuid();
-            switcher.Switch(new UploadFile(apiService, switcher, currentFolderGuid()));
+            switcher.Switch(new UploadFile(apiService, switcher, GetCurrentFolderGuid()));
         }
 
+        /// <summary>
+        /// Loads the files contained in a given folder. 
+        /// </summary>
+        /// <param name="parentId">the Guid of the parent folder (or null if the parent is the root directory)</param>
         public void ShowDirectoryFiles(Guid parentId)
         {
 
@@ -86,12 +95,22 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
+        /// <summary>
+        /// This method is called when the Create Folder button is clicked. It creates a new CreateFolderModal and shows it.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void CreateFolder_Click(object sender, RoutedEventArgs e)
         {
-            var modal = new CreateFolderModal(apiService, this, currentFolderGuid());
+            var modal = new CreateFolderModal(apiService, this, GetCurrentFolderGuid());
             modal.Show();
         }
         
+        /// <summary>
+        /// This method is called when the user clicks on the name of a Folder. It loads the contents of that given folder.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         public void Folder_OnMouseClick(object sender, MouseButtonEventArgs e)
         {
             var partial = (FileEntryPartial) sender;
@@ -105,6 +124,12 @@ namespace Group3.Semester3.DesktopClient.Views
             ShowDirectoryFiles(file.Id);
         }
 
+        /// <summary>
+        /// This method is called when the user clicks the Rename option in the ContextMenu of a file.
+        /// It creates a new FileRenameModal and shows it.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         public void File_RenameAction(object sender, RoutedEventArgs e)
         {
             var menuItem = (MenuItem) sender;
@@ -119,6 +144,14 @@ namespace Group3.Semester3.DesktopClient.Views
             modal.Show();
         }
 
+        /// <summary>
+        /// This method is called when the user clicks the Delete option in the ContextMenu of a file.
+        /// It shows a confirmation MessageBox that asks the user if they really want to delete a file.
+        /// If they do, it calls the ApiService.DeleteFile() method and tries to delete the file. It also removes the item from the TreeBogoRoot file tree.
+        /// If there are any exceptions, it catches it and shows the MessageBox with the message of the exception.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         public void File_DeleteAction(object sender, RoutedEventArgs e)
         {
             var menuItem = (MenuItem) sender;
@@ -153,7 +186,11 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
-        private Guid currentFolderGuid()
+        /// <summary>
+        /// It finds the Guid of the currently open folder
+        /// </summary>
+        /// <returns>The Guid of the currently open folder</returns>
+        private Guid GetCurrentFolderGuid()
         {
             var id = Guid.Empty;
 
@@ -165,6 +202,11 @@ namespace Group3.Semester3.DesktopClient.Views
             return id;
         }
 
+        /// <summary>
+        /// This method is called when the Back button is clicked. It goes up a folder in the tree.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
             if(CurrentFolder.ParentId != null) {
