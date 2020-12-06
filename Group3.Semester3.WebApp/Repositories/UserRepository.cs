@@ -210,8 +210,8 @@ namespace Group3.Semester3.WebApp.Repositories
                 {
                     Email = user.Email,
                     Name = user.Name,
-                    PasswordHash = user.PasswordHash,
-                    PasswordSalt = user.PasswordSalt,
+                    PasswordHash = Convert.ToBase64String(user.PasswordHash),
+                    PasswordSalt = Convert.ToBase64String(user.PasswordSalt),
                     Id = user.Id
                 };
 
