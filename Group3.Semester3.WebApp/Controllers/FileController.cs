@@ -9,6 +9,10 @@ namespace Group3.Semester3.WebApp.Controllers
     public class FileController : Controller
     {
 
+        /// <summary>
+        /// GET: file/browse
+        /// </summary>
+        /// <returns>A View showing the user's files</returns>
         [Route("browse")]
         [HttpGet]
         public ActionResult Browse()

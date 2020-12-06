@@ -9,12 +9,61 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 {
     public interface IUserService
     {
+        /// <summary>
+        /// This method is used to log a user into the system.
+        /// </summary>
+        /// <param name="model">The AuthenticateModel of the user</param>
+        /// <returns>The UserModel of the logged in user</returns>
+        /// <exception cref="ValidationException">If there were some errors with the entered credentials.</exception>
         UserModel Login(AuthenticateModel model);
+
+        /// <summary>
+        /// Gets a user by id
+        /// </summary>
+        /// <param name="id">The Guid of the user</param>
+        /// <returns>A UserModel matching the given id</returns>
+        /// <exception cref="ValidationException">If there are no users with the given id</exception>
         UserModel GetById(Guid id);
+
+        /// <summary>
+        /// Gets a user by email address
+        /// TODO implement check if the user doesn't exist.
+        /// </summary>
+        /// <param name="email">The email address of a user</param>
+        /// <returns>The UserModel matching the given email address</returns>
         UserModel GetByEmail(String email);
+
+        /// <summary>
+        /// Gets a user based on the HttpContext
+        /// </summary>
+        /// <param name="httpContext">The HttpContext of the request received</param>
+        /// <returns>A UserModel matching the given identity</returns>
+        /// <exception cref="ValidationException">If the user is not found</exception>
         UserModel GetFromHttpContext(HttpContext httpContext);
+
+        /// <summary>
+        /// Registers a new user
+        /// </summary>
+        /// <param name="model">A RegisterModel containing the users details</param>
+        /// <returns>The UserModel object of the new user</returns>
+        /// <exception cref="ValidationException">If there were some problems with the credentials given by the user.</exception>
         UserModel Register(RegisterModel model);
+
+        /// <summary>
+        /// Updates the information of an already existing user.
+        /// TODO Implement this method
+        /// </summary>
+        /// <param name="userParam">The UserModel of the user with the new details included</param>
+        /// <param name="password">The password of the user</param>
+        /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
         void Update(UserModel user, string password = null);
+
+        /// <summary>
+        /// Deletes a user
+        /// </summary>
+        /// <param name="id">The Guid of the user to be deleted</param>
+        /// <returns>True if the user has been deleted successfully.</returns>
+        /// <exception cref="ValidationException">If the user does not exist or if there were some errors deleting the user.</exception>
         bool Delete(Guid id);
     }
 
@@ -57,6 +106,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 Name = user.Name
             };
         }
+        
         /// <summary>
         /// Gets a user by id
         /// </summary>
@@ -136,8 +186,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             };
         }
 
-        // method to update the information about the user that already exists
-
         /// <summary>
         /// Updates the information of an already existing user.
         /// TODO Implement this method
@@ -201,6 +249,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             else return result;
 
         }
+        
         /// <summary>
         /// Gets a user by email address
         /// TODO implement check if the user doesn't exist.
