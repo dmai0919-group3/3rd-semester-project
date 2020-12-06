@@ -21,6 +21,11 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     {
         private ApiService apiService;
         private Switcher switcher;
+        /// <summary>
+        /// Constructor for the AuthWindow class
+        /// </summary>
+        /// <param name="apiService">The ApiService object used by the whole application</param>
+        /// <param name="switcher">The Switcher object used by the whole application</param>
         public AuthWindow(ApiService apiService, Switcher switcher)
         {
             this.switcher = switcher;
@@ -39,9 +44,9 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
         }
 
         /// <summary>
-        /// 
+        /// Logic for changing between the Login and Registration views
         /// </summary>
-        /// <param name="nextPage"></param>
+        /// <param name="nextPage">The new View we want to change to</param>
         public void Navigate(UserControl nextPage)
         {
             Grid.Children.Clear();
@@ -49,10 +54,12 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
         }
 
         /// <summary>
+        /// Not Implemented
         /// //TODO
         /// </summary>
         /// <param name="nextPage"></param>
         /// <param name="state"></param>
+        /// <exception cref="NotImplementedException">This method is not implemented</exception>
         public void Navigate(UserControl nextPage, object state)
         {
             throw new NotImplementedException();
