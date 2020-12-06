@@ -1,6 +1,7 @@
 ﻿let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
 
 let currentDir = "00000000-0000-0000-0000-000000000000";
+let currentGroup = "00000000-0000-0000-0000-000000000000";
 
 let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
 
@@ -196,11 +197,17 @@ function deleteFile() {
 
 function browseDirectoryFiles(parentId) {
 
-    let url = "/api/file/browse/" + parentId;
+    let url = browseFilesUrl;
+    
+    let data = {
+        parentId: parentId,
+        groupId: currentGroup
+    }
 
     $.ajax({
         url: url,
         type: "GET",
+        data: data,
         success: function (result) {
             
             if (parentId in dirArray) {
@@ -276,7 +283,7 @@ function createFolder() {
         },
         error: function (result) {
             // TODO: Handle better in the future
-            alert("Failed to delete a file");
+            alert("Failed to create a folder");
         }
     });
 }

@@ -25,20 +25,22 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// Uploads one or more file(s)
         /// </summary>
         /// <param name="user">The user who will own the uploaded files.</param>
-        /// <param name="parentGUID">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
+        /// <param name="groupId">The Guid of the group or String.Empty if file uploaded belong to user.</param>
+        /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
         /// <param name="files">A List<IFormFile> containing all the files uploaded by the user</param>
         /// <returns>A List<FileEntity> containing all the files that were uploaded</returns>
         /// <exception cref="ValidationException">If there were no files chosen</exception>
-        public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
+        public Task<List<FileEntry>> UploadFile(UserModel user, string groupId, string parentId, List<IFormFile> files);
 
         /// <summary>
         /// Gets the files owned by a given user in a given folder
         /// TODO Why is the parentId a string instead of Guid?
         /// </summary>
         /// <param name="currentUser">The user whose files we are checking</param>
+        /// <param name="groupId">The Guid of group or String.Empty if browsed files do not belong to a group</param>
         /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
         /// <returns>An IEnumerable<FileEntity> which contains the FileEntities that can be accessed by the user.</returns>
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId);
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string groupId, string parentId);
 
         /// <summary>
         /// Renames a file
@@ -124,18 +126,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         private IConfiguration _configuration;
         private IFileRepository _fileRepository;
         private IAccessService _accessService;
+        private IGroupRepository _groupRepository;
 
-        public FileService(IFileRepository fileRepository, IAccessService accessService)
-        {
-            _fileRepository = fileRepository;
-            _accessService = accessService;
-        }
-
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
             _accessService = accessService;
+            _groupRepository = groupRepository;
         }
 
         /// <summary>
@@ -143,13 +141,27 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// TODO Why is the parentId a string instead of Guid?
         /// </summary>
         /// <param name="currentUser">The user whose files we are checking</param>
+        /// <param name="groupId">The Guid of the group or String.Empty if the listed files belong only to user.</param>
         /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
         /// <returns>An IEnumerable<FileEntity> which contains the FileEntities that can be accessed by the user.</returns>
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId)
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string groupId, string parentId)
         {
             var parentGuid = ParseGuid(parentId);
+            var groupGuid = ParseGuid(groupId);
 
-            var fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
+            IEnumerable<FileEntity> fileList = null;
+            
+            if (groupGuid != Guid.Empty)
+            {
+                var group = _groupRepository.GetByGroupId(groupGuid);
+                
+                _accessService.hasAccessToGroup(currentUser, group);
+                fileList = _fileRepository.GetByGroupIdAndParentId(groupGuid, parentGuid);
+            }
+            else
+            {
+                fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
+            }
 
             return fileList;
         }
@@ -158,15 +170,31 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// Uploads one or more file(s)
         /// </summary>
         /// <param name="user">The user who will own the uploaded files.</param>
-        /// <param name="parentGUID">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
+        /// <param name="groupId">The Guid of the group or String.Empty if file uploaded belong to user.</param>
+        /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
         /// <param name="files">A List<IFormFile> containing all the files uploaded by the user</param>
         /// <returns>A List<FileEntity> containing all the files that were uploaded</returns>
         /// <exception cref="ValidationException">If there were no files chosen</exception>
-        public async Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files)
+        public async Task<List<FileEntry>> UploadFile(UserModel user, string groupId, string parentId, List<IFormFile> files)
         {
             //long size = files.Sum(f => f.Length);
 
-            var parsedGUID = ParseGuid(parentGUID);
+            var parentGuid = ParseGuid(parentId);
+            var groupGuid = ParseGuid(groupId);
+            
+            // Check if user has access to a group
+            if (groupGuid != Guid.Empty)
+            {
+                var group = _groupRepository.GetByGroupId(groupGuid);
+                _accessService.hasAccessToGroup(user, group);
+            }
+
+            // Check if user owns parent folder
+            if (!parentGuid.Equals(Guid.Empty))
+            {
+                var parent = GetById(parentGuid);
+                _accessService.hasAccessToFile(user, parent);
+            }
 
             List<FileEntry> fileEntries = new List<FileEntry>();
 
@@ -189,7 +217,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                         {
                             Name = formFile.FileName,
                             Id = blobGuid,
-                            Parent = new DirectoryEntry { Id = parsedGUID }
+                            Parent = new DirectoryEntry { Id = parentGuid }
                         });
 
                         var file = new FileEntity()
@@ -198,7 +226,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             AzureName = blobGuid.ToString(),
                             Name = formFile.FileName,
                             UserId = user.Id,
-                            ParentId = parsedGUID,
+                            ParentId = parentGuid,
+                            GroupId = groupGuid,
                             IsFolder = false,
                             Updated = DateTime.Now
                         };
@@ -351,6 +380,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
 
             var parentGuid = ParseGuid(model.ParentId);
+            var groupGuid = ParseGuid(model.GroupId);
+            
+            // Check if user has access to a group
+            if (groupGuid != Guid.Empty)
+            {
+                var group = _groupRepository.GetByGroupId(groupGuid);
+                _accessService.hasAccessToGroup(user, group);
+            }
 
             // Check if user owns parent folder
             if (!parentGuid.Equals(Guid.Empty))
@@ -363,9 +400,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
-                AzureName = string.Empty,
+                AzureName = null,
                 UserId = user.Id,
                 ParentId = parentGuid,
+                GroupId = groupGuid,
+                Updated = DateTime.Now,
                 IsFolder = true
             };
 

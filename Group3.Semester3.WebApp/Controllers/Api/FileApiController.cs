@@ -38,26 +38,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         /// <returns>FileEntities that are owned by the user</returns>
         [HttpGet]
         [Route("browse")]
-        public IActionResult GetFiles()
-        {
-            var user = _userService.GetFromHttpContext(HttpContext);
-            var fileEntities = _fileService.BrowseFiles(user, "0");
-            return Ok(fileEntities);
-        }
-
-        /// <summary>
-        /// GET: api/file/browse/{parentId}
-        /// </summary>
-        /// <param name="parentId">The id of the directory the user is searching their files in</param>
-        /// <returns>The FileEntities that are owned by the user and are in the given parent folder</returns>
-        [HttpGet]
-        [Route("browse/{parentId}")]
-        public IActionResult GetFiles(string parentId)
+        public IActionResult BrowseFiles([FromQuery] string groupId, [FromQuery] string parentId)
         {
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.BrowseFiles(user, parentId);
+                var fileEntities = _fileService.BrowseFiles(user, groupId, parentId);
                 return Ok(fileEntities);
             }
             catch (ValidationException exception)
@@ -127,6 +113,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 List<Models.FileSystem.FileEntry> generatedEntries = await _fileService.UploadFile(
                     _userService.GetFromHttpContext(HttpContext),
+                    model.GroupId,
                     model.ParentId,
                     model.Files);
                 return Ok(generatedEntries);
@@ -202,7 +189,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch
+            catch (Exception exception)
             {
                 return BadRequest("System error, please contact Administrator");
             }

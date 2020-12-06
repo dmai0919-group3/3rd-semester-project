@@ -17,6 +17,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group RenameGroup(Guid groupId, UserModel user, string name);
         public bool DeleteGroup(Guid groupId, UserModel user);
         public Group GetByGroupId(Guid groupId);
+        public IEnumerable<Group> GetUserGroups(UserModel user);
         public bool AddUser(UserModel user, UserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
@@ -89,6 +90,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("No group found.");
             }
             else return group;
+        }
+
+        public IEnumerable<Group> GetUserGroups(UserModel user)
+        {
+            var groups = _groupRepository.GetByUserId(user.Id);
+
+            return groups;
         }
 
         private Guid ParseGuid(string guid)
