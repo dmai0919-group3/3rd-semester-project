@@ -10,18 +10,36 @@ using Group3.Semester3.WebApp.Helpers.Exceptions;
 
 namespace Group3.Semester3.WebApp.Repositories
 {
-    // adding a layer of abstraction by creating an interface first
     public interface IUserRepository
     {
+        /// <summary>
+        /// Gets a user by their id
+        /// </summary>
+        /// <param name="id">The Guid of the user</param>
+        /// <returns>A User object matching the given id or null if the user doesn't exist.</returns>
         public User Get(Guid id);
 
+        /// <summary>
+        /// Adds a new user to the database
+        /// </summary>
+        /// <param name="user">The User object containing the user's data</param>
+        /// <returns>True if the user is saved and false if not.</returns>
         public bool Insert(User user);
 
+        /// <summary>
+        /// Gets a user by their email address
+        /// </summary>
+        /// <param name="email">The email address of the user</param>
+        /// <returns>The User object matching the given email address or null if there is no user with the given email address.</returns>
         public User GetByEmail(string email);
+
+        /// <summary>
+        /// Deletes a user from the database
+        /// </summary>
+        /// <param name="id">The Guid of the user to be deleted</param>
+        /// <returns>True if the delete is successful and false if not.</returns>
         public bool Delete(Guid id);
     }
-
-    // actual implementation of a user repository that accesses the database and makes changes to it
 
     public class UserRepository : IUserRepository
     {
@@ -32,6 +50,11 @@ namespace Group3.Semester3.WebApp.Repositories
              connectionString = configuration.GetConnectionString("DBConnection");
         }
 
+        /// <summary>
+        /// Deletes a user from the database
+        /// </summary>
+        /// <param name="id">The Guid of the user to be deleted</param>
+        /// <returns>True if the delete is successful and false if not.</returns>
         public bool Delete(Guid id)
         {
             string query = "DELETE FROM Users WHERE id=@Id";
@@ -58,8 +81,11 @@ namespace Group3.Semester3.WebApp.Repositories
             }
         }
 
-        // logic for getting the model of a user by his ID from the database
-        // establishing an SQL connection with the db, querying the db, returning the user model
+        /// <summary>
+        /// Gets a user by their id
+        /// </summary>
+        /// <param name="id">The Guid of the user</param>
+        /// <returns>A User object matching the given id or null if the user doesn't exist.</returns>
         public User Get(Guid id)
         {
             string query = "SELECT TOP 1 * FROM Users WHERE id=@Id";
@@ -94,9 +120,11 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
-        // logic for getting the model of a user by his email from the database
-        // establishing an SQL connection with the db, querying the db, returning the user model
-
+        /// <summary>
+        /// Gets a user by their email address
+        /// </summary>
+        /// <param name="email">The email address of the user</param>
+        /// <returns>The User object matching the given email address or null if there is no user with the given email address.</returns>
         public User GetByEmail(string email)
         {
 
@@ -130,9 +158,11 @@ namespace Group3.Semester3.WebApp.Repositories
             }
         }
 
-        // inserting newly registered user into the database, taking user model as a parameter
-        // sql insert query is populated with data from user and executed, returning success
-
+        /// <summary>
+        /// Adds a new user to the database
+        /// </summary>
+        /// <param name="user">The User object containing the user's data</param>
+        /// <returns>True if the user is saved and false if not.</returns>
         public bool Insert(User user)
         {
             string query = "INSERT INTO Users (Id, Email, Name, PasswordHash, PasswordSalt)" +
