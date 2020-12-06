@@ -16,9 +16,11 @@ namespace Group3.Semester3.WebApp.Repositories
         public User Get(Guid id);
 
         public bool Insert(User user);
+        public bool Update(User user);
 
         public User GetByEmail(string email);
         public bool Delete(Guid id);
+        public IEnumerable<User> GetAll();
     }
 
     // actual implementation of a user repository that accesses the database and makes changes to it
@@ -166,6 +168,63 @@ namespace Group3.Semester3.WebApp.Repositories
             }
 
             return false;
+        }
+
+        public bool Update(User user)
+        {
+            string query = "UPDATE Users SET Email=@Email, Name=@Name, PasswordHash=@PasswordHash, PasswordSalt=@PasswordSalt WHERE Id=@Id";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    Name = user.Name,
+                    Id = user.Id,
+                    Email = user.Email,
+                    PasswordHash = user.PasswordHash,
+                    PasswordSalt = user.PasswordSalt
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    int rowsChanged = connection.Execute(query, parameters);
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+                }
+                return false;
+
+            }
+        }
+
+        public IEnumerable<User> GetAll()
+        {
+            string query = "SELECT * FROM Users";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<User>(query);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return null;
         }
     }
 }
