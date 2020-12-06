@@ -195,7 +195,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="userParam">The UserModel of the user with the new details included</param>
         /// <param name="password">The password of the user</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        public void Update(User userParam, string password = null)
+        public User Update(User userParam, string password = null)
         {
             var user = _userRepository.GetByEmail(userParam.Email);
 
