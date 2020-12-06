@@ -1,12 +1,14 @@
-﻿using Group3.Semester3.WebApp.Entities;
+﻿using System;
+using System.Linq;
+using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
 using Microsoft.AspNetCore.Http;
-using System;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
+    // interface for a User service
     public interface IUserService
     {
         /// <summary>
@@ -56,7 +58,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="userParam">The UserModel of the user with the new details included</param>
         /// <param name="password">The password of the user</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        void Update(UserModel user, string password = null);
+        User Update(User user, string password = null);
 
         /// <summary>
         /// Deletes a user
@@ -193,30 +195,22 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="userParam">The UserModel of the user with the new details included</param>
         /// <param name="password">The password of the user</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        public void Update(UserModel userParam, string password = null)
+        public User Update(User userParam, string password = null)
         {
-            throw new NotImplementedException();
-            /*var user = _context.Users.Find(userParam.Id);
+            var user = _userRepository.GetByEmail(userParam.Email);
 
             if (user == null)
-                throw new AppException("User not found");
+                throw new ValidationException("User not found");
 
             // update username if it has changed
-            if (!string.IsNullOrWhiteSpace(userParam.Username) && userParam.Username != user.Username)
+            if (!string.IsNullOrWhiteSpace(userParam.Name) && userParam.Name != user.Name)
             {
                 // throw error if the new username is already taken
-                if (_context.Users.Any(x => x.Username == userParam.Username))
-                    throw new AppException("Username " + userParam.Username + " is already taken");
+                if (_userRepository.GetAll().Any(x => x.Name == userParam.Name))
+                    throw new ValidationException("Username " + userParam.Name + " is already taken");
 
-                user.Username = userParam.Username;
+                user.Name = userParam.Name;
             }
-
-            // update user properties if provided
-            if (!string.IsNullOrWhiteSpace(userParam.FirstName))
-                user.FirstName = userParam.FirstName;
-
-            if (!string.IsNullOrWhiteSpace(userParam.LastName))
-                user.LastName = userParam.LastName;
 
             // update password if provided
             if (!string.IsNullOrWhiteSpace(password))
@@ -228,8 +222,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 user.PasswordSalt = passwordSalt;
             }
 
-            _context.Users.Update(user);
-            _context.SaveChanges();*/
+            var result = _userRepository.Update(user);
+            if (!result)
+            {
+                throw new ValidationException("User non-existent or not altered.");
+            }
+            else return _userRepository.GetByEmail(user.Email);
         }
 
         /// <summary>

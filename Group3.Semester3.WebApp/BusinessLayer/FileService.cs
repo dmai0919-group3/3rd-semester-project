@@ -226,7 +226,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public (FileEntity, string) DownloadFile(Guid fileId, UserModel user)
         {
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccess(user, file);
+            _accessService.hasAccessToFile(user, file);
             BlobContainerClient containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -273,7 +273,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccess(user, file);
+            _accessService.hasAccessToFile(user, file);
             containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
             var result = _fileRepository.Delete(fileId);
 
@@ -296,7 +296,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity RenameFile(Guid fileId, UserModel user, string name)
         {
             var file = GetById(fileId);
-            _accessService.hasAccess(user, file);
+            _accessService.hasAccessToFile(user, file);
             var result = _fileRepository.Rename(fileId, name);
             if (!result)
             {
@@ -356,7 +356,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (!parentGuid.Equals(Guid.Empty))
             {
                 var parent = GetById(parentGuid);
-                _accessService.hasAccess(user, parent);
+                _accessService.hasAccessToFile(user, parent);
             }
 
             var folder = new FileEntity()
@@ -391,7 +391,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool MoveIntoFolder(FileEntity model, UserModel user)
         {
             var file = GetById(model.Id);
-            _accessService.hasAccess(user, file);
+            _accessService.hasAccessToFile(user, file);
             var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);
             if (!result)
             {
@@ -413,7 +413,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var fileId = ParseGuid(id);
 
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccess(user, file);
+            _accessService.hasAccessToFile(user, file);
             var containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -448,7 +448,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
         {
             var file = _fileRepository.GetById(model.Id);
-            _accessService.hasAccess(user, file);
+            _accessService.hasAccessToFile(user, file);
 
             if (!model.Overwrite)
             {
