@@ -111,6 +111,7 @@ namespace Group3.Semester3.DesktopClient.Services
         private string DeleteFileUrl = $"{host}/api/file/delete";
         private string RenameFileUrl = $"{host}/api/file/rename";
         private string CreateFolderUrl = $"{host}/api/file/create-folder";
+        private string GetLinkUrl = $"{host}/api/file/download";
         #endregion
 
         protected UserModel _currentUserModel;
@@ -161,7 +162,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
 
             if (!string.IsNullOrEmpty(parameters))
-                requestUrl += "?" + parameters;
+                requestUrl += parameters;
 
             var response = httpClient.GetAsync(requestUrl);
             response.Wait();
@@ -182,8 +183,8 @@ namespace Group3.Semester3.DesktopClient.Services
             if (!string.IsNullOrEmpty(BearerToken))
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
 
-            var content = new StringContent(JsonConvert.SerializeObject(new {id}), System.Text.Encoding.UTF8, "application/json");
-            
+            var content = new StringContent(JsonConvert.SerializeObject(new { id }), System.Text.Encoding.UTF8, "application/json");
+
             HttpRequestMessage request = new HttpRequestMessage(
                 HttpMethod.Delete,
                 requestUrl
@@ -328,7 +329,7 @@ namespace Group3.Semester3.DesktopClient.Services
         /// Gets a list of all files accessible by the user
         /// </summary>
         /// <returns>A List containing FileEntity's which can be accessed by the user</returns>
-        public List<FileEntity> FileList(Guid parentId)
+        public List<FileEntity> FileList(Guid parentId = new Guid())
         {
             var url = BrowseFilesUrl;
             if (parentId != Guid.Empty)
@@ -336,7 +337,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 url += "/" + parentId;
             }
 
-            var result = GetRequest(url, BearerToken);
+            var result = GetRequest(url);
             string resultContent;
 
             {
@@ -385,14 +386,36 @@ namespace Group3.Semester3.DesktopClient.Services
             }
 
             if (!result.IsSuccessStatusCode)
-                throw new Exception("Error communicating with the server");
+                throw new ApiAuthorizationException("Error communicating with the server");
 
             return JsonConvert.DeserializeObject<FileEntity>(resultContent);
         }
 
+        public class DownloadArgs { public FileEntity file; public string downloadLink; };
+
+        public DownloadArgs GetDownloadLink(Guid fileId)
+        {
+            var response = GetRequest($"{GetLinkUrl}/{fileId.ToString()}");
+
+            string responseContent;
+
+            {
+                var t = response.Content.ReadAsStringAsync();
+                t.Wait();
+                responseContent = t.Result;
+            }
+
+            if (!response.IsSuccessStatusCode)
+                throw new ApiAuthorizationException("Error communicating with the server");
+
+            DownloadArgs r = JsonConvert.DeserializeObject<DownloadArgs>(responseContent);
+            return r;
+            
+        }
+
         public FileEntity CreateFolder(Guid parentId, string name)
         {
-            var content = new FileEntity() { Name = name, ParentId = parentId};
+            var content = new FileEntity() { Name = name, ParentId = parentId };
 
             var result = PostRequest(CreateFolderUrl, content);
 

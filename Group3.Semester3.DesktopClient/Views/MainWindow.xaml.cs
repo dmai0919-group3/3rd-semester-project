@@ -14,94 +14,75 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Group3.Semester3.DesktopClient.Model;
+using static Group3.Semester3.DesktopClient.Model.MainWindowModel;
 
 namespace Group3.Semester3.DesktopClient.Views
 {
     /// <summary>
     /// Interaction logic for PageSwitcher.xaml
     /// </summary>
-    public partial class MainWindow : Window, INavigatable
+    public partial class MainWindow : Window
     {
         private ApiService apiService;
         private Switcher switcher;
 
+        private MainWindowModel Model = new Model.MainWindowModel();
+
+        public FileEntityWrapper SelectedFile { get; set; }
+
         public MainWindow(ApiService apiService, Switcher switcher)
         {
+            DataContext = Model.FileViewList;
+
             this.switcher = switcher;
             this.apiService = apiService;
 
             InitializeComponent();
 
-            this.labelUserName.Content = $"{apiService.User.Name} ({apiService.User.Email})".ToUpper();
+            labelUserName.Content = $"{apiService.User.Name} ({apiService.User.Email})".ToUpper();
 
-            var userId = apiService.User.Id;
-            var files = apiService.FileList(Guid.Empty);
-            List<FileEntityWrapper> list = new List<FileEntityWrapper>();
-            foreach (FileEntity f in files)
+            foreach (FileEntity f in apiService.FileList())
             {
-                list.Add(new FileEntityWrapper { FileEntity = f });
+                Model.FileViewList.Add(new FileEntityWrapper { FileEntity = f });
             }
-            DataContext = list;
 
-            //DataContext = new List<FileEntityWrapper>()
-           // {
-              //  new FileEntityWrapper { FileEntity = new FileEntity { Name = "Apple" } },
-             //   new FileEntityWrapper { FileEntity = new FileEntity { Name = "Banana" } }
-           // };
-
-            UpdateFilePanel(new WebApp.Entities.FileEntity
+            UpdateFilePanel(new FileEntity
             {
                 Name = "Test Set.xml"
             });
 
-            //if (switcher.ActiveWindow != null)
-            //{
-            //    var currentWindow = (Window) switcher.ActiveWindow;
-            //    currentWindow.Hide();
-            //}
-
-            //switcher.ActiveWindow = this;
-            //switcher.Switch(new UserProfile(apiService, switcher));
-        }
-
-        public void Navigate(UserControl nextPage)
-        {
-            //this.Grid.Children.Clear();
-            //this.Grid.Children.Add(nextPage);
-        }
-
-        public void Navigate(UserControl nextPage, object state)
-        {
-            //this.Grid.Children.Clear();
-            //this.Grid.Children.Add(nextPage);
-
-            //ISwitchable s = nextPage as ISwitchable;
-
-            //if (s != null)
-            //    s.UtilizeState(state);
-            //else
-            //    throw new ArgumentException("NextPage is not ISwitchable! "
-            //      + nextPage.Name.ToString());
-        }
-
-        private void btnShow_Click(object sender, RoutedEventArgs e)
-        {
-            //switcher.Switch(new MyFiles(apiService, switcher));
-        }
-
-        private void btnUpload_Click(object sender, RoutedEventArgs e)
-        {
-            //switcher.Switch(new UploadFile(apiService, switcher));
-        }
-
-        private void ControlTemplate_Selected(object sender, RoutedEventArgs e)
-        {
-            
+            UpdateProgress();
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectedFile = (e as SelectionChangedEventArgs).AddedItems[0] as FileEntityWrapper;
+            foreach (FileEntityWrapper item in e.AddedItems)
+            {
+                UpdateFilePanel(item.FileEntity);
+                item.Selected = true;
+            }
+
+            foreach (FileEntityWrapper item in e.RemovedItems)
+            {
+                item.Selected = false;
+            }
+        }
+
+        private void HandleDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            FileEntityWrapper selected = ((ListViewItem)sender).Content as FileEntityWrapper;
+            if (!selected.FileEntity.IsFolder) FileDownloadAndExecAsync(selected.FileEntity);
+        }
+
+        private void MenuItemSave_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) FileSaveAsAsync(SelectedFile.FileEntity);
+        }
+
+        private void MenuItemRun_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) FileDownloadAndExecAsync(SelectedFile.FileEntity);
         }
     }
 }
