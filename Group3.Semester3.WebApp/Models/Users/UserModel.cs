@@ -14,5 +14,9 @@ namespace Group3.Semester3.WebApp.Models.Users
         [Display(Name = "Name")]
         [DataType(DataType.Text)]
         public string Name { get; set; }
+        [Required]
+        [Display(Name = "Activated")]
+        [DataType(DataType.Text)]
+        public bool Activated { get; set; }
     }
 }

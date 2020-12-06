@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
@@ -67,16 +68,26 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <returns>True if the user has been deleted successfully.</returns>
         /// <exception cref="ValidationException">If the user does not exist or if there were some errors deleting the user.</exception>
         bool Delete(Guid id);
+
+        /// <summary>
+        /// Send a verification email to a given user.
+        /// </summary>
+        /// <param name="user">The UserModel object of the user the email is sent to.</param>
+        /// <returns>True if the email is sent. False if the user is already activated.</returns>
+        /// <exception cref="Exception">If there has been error while sending the email.</exception>
+        Task<bool> SendVerificationEmail(UserModel user);
     }
 
     public class UserService : IUserService
     {
         // getting an instance of a user repository to be able to communicate with the db layer
         private IUserRepository _userRepository;
+        private IEmailService _emailService;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IEmailService emailService)
         {
             _userRepository = userRepository;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -99,13 +110,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (user == null || !VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
                 throw new ValidationException("Incorrect email or password.");
 
+            // check if the user is activated
+            if (!user.Activated)
+                throw new ValidationException("The user account is not activated. Please check your email messages and click the verification link to verify your account.");
+
             // authentication successful, return user
 
             return new UserModel()
             {
                 Id = user.Id,
                 Email = user.Email,
-                Name = user.Name
+                Name = user.Name,
+                Activated = user.Activated
             };
         }
         
@@ -124,7 +140,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 {
                     Id = user.Id,
                     Email = user.Email,
-                    Name = user.Name
+                    Name = user.Name,
+                    Activated = user.Activated
                 };
             }
             else throw new ValidationException("No user found.");
@@ -176,6 +193,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             user.PasswordSalt = passwordSalt;
 
             bool success = _userRepository.Insert(user);
+
+            // sends a verification email to the user
+
 
             if (!success)
                 throw new ValidationException("User not created");
@@ -270,6 +290,31 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Send a verification email to a given user.
+        /// </summary>
+        /// <param name="user">The UserModel object of the user the email is sent to.</param>
+        /// <returns>True if the email is sent. False if the user is already activated.</returns>
+        /// <exception cref="">If there has been error while sending the email.</exception>
+        public async Task<bool> SendVerificationEmail(UserModel user)
+        {
+            if (user.Activated) return false;
+
+            string subject = "User account verification - OGO Filesharing";
+            string contentPlainText = "";
+            string contentHtml = "";
+
+            var Response = await _emailService.SendEmail(user, subject, contentPlainText, contentHtml);
+            string ResponseBody = await Response.Body.ReadAsStringAsync();
+
+            if (Response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+
+                throw new Exception(ResponseBody);
+            }
+            else return true;
         }
 
         #region Private helper methods
