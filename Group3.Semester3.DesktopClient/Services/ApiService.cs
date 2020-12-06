@@ -44,19 +44,17 @@ namespace Group3.Semester3.DesktopClient.Services
 
         /// <summary>
         /// Pushes a set of files to the database
+        /// TODO It shouldn't return bool. Make it return a list of generated FileEntities instead.
+        /// TODO Make it asynchronous and use callbacks to not make everything hang when there's an upload.
         /// </summary>
         /// <param name="files">List of files to upload</param>
         /// <param name="parentGuid">The GUID of the parent DirectoryEntry</param>
         /// <returns>What the actual hecc does it return</returns> //TODO
-
-        // TODO It shouldn't return bool. Make it return a list of generated FileEntities instead.
-        // TODO Make it asynchronous and use callbacks to not make everything hang when there's an upload.
         public void UploadFiles(List<FileToUpload> files, System.Guid parentGuid);
-
-        // TODO should take a parent GUID, page, limits (with a server hard-limit), etc. Returning all the files in bulk is dangerous
 
         /// <summary>
         /// Retrieves all files as a list of FileEntites owned by the current user
+        /// TODO should take a parent GUID, page, limits (with a server hard-limit), etc. Returning all the files in bulk is dangerous
         /// </summary>
         /// <param name="parentId">Guid of parent folder. Use Guid.Empty for root folder</param>
         /// <returns>The list of FileEntities owned by the current user</returns>
@@ -92,6 +90,9 @@ namespace Group3.Semester3.DesktopClient.Services
     {
         protected string BearerToken { get; set; }
 
+        /// <summary>
+        /// This exception is thrown when the user doesn't have access to an API request
+        /// </summary>
         public class ApiAuthorizationException : Exception
         {
             public ApiAuthorizationException() { }
@@ -99,10 +100,9 @@ namespace Group3.Semester3.DesktopClient.Services
             public ApiAuthorizationException(string message, Exception inner) : base(message, inner) { }
         }
 
-        #region Constants
-        const string host = "https://localhost:5001"; // TODO move to settings
+        #region Constants // TODO move everything to settings
+        const string host = "https://localhost:5001";
 
-        // TODO actually move everything to settings
         private string LoginUrl = $"{host}/api/user/login";
         private string RegisterUrl = $"{host}/api/User/register";
         private string FileUploadUrl = $"{host}/api/file/upload";
@@ -127,11 +127,11 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         /// <summary>
-        /// 
+        /// Sends an HTTP POST request
         /// </summary>
-        /// <param name="requestUrl"></param>
-        /// <param name="parameter">Object to be serialized into a json string and sent as the content of the request</param>
-        /// <returns></returns>
+        /// <param name="requestUrl">The URL where we want to send the request</param>
+        /// <param name="parameter">Object to be serialized into a JSON string and sent as the content of the request</param>
+        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
         protected HttpResponseMessage PostRequest(string requestUrl, object parameter = null)
         {
             using var httpClient = new HttpClient();
@@ -148,11 +148,11 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         /// <summary>
-        /// 
+        /// Sends an HTTP GET request
         /// </summary>
-        /// <param name="requestUrl"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <param name="requestUrl">The URL where we want to send the request</param>
+        /// <param name="parameters">The part of the request in the URL after the question mark (?). Example: "key=value&key=value..." </param>
+        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
         protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
         {
             using var httpClient = new HttpClient();
@@ -170,11 +170,11 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         /// <summary>
-        /// 
+        /// Sends an HTTP DELETE request
         /// </summary>
-        /// <param name="requestUrl"></param>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="requestUrl">The URL we want to send the request to</param>
+        /// <param name="id">The Guid of the object to be deleted</param>
+        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
         protected HttpResponseMessage DeleteRequest(string requestUrl, Guid id)
         {
             using var httpClient = new HttpClient();
@@ -197,6 +197,12 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
+        /// <summary>
+        /// Sends an HTTP PUT request
+        /// </summary>
+        /// <param name="requestUrl">The URL we want to send a request to</param>
+        /// <param name="parameter">bject to be serialized into a JSON string and sent as the content of the request</param>
+        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
         protected HttpResponseMessage PutRequest(string requestUrl, object parameter)
         {
             using var httpClient = new HttpClient();
@@ -213,8 +219,10 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         /// <summary>
-        /// Get current user from http context (bearer auth)
+        /// Gets the currently logged in user through the API via the BearerToken
         /// </summary>
+        /// <returns>UserModel object containing the details of the currently logged in user</returns>
+        /// <exception cref="ApiAuthorizationException">If the user is not logged in or if there were an error communicating with the server.</exception>
         private UserModel CurrentUser()
         {
             var result = this.GetRequest(CurrentUserUrl);
@@ -237,10 +245,10 @@ namespace Group3.Semester3.DesktopClient.Services
 
 
         /// <summary>
-        /// 
+        /// Authorizes a user (logs them in) and saves their token in the BearerToken variable
         /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
+        /// <param name="email">The Email Address of the user</param>
+        /// <param name="password">The Password of the user</param>
         public void Authorize(string email, string password)
         {
 
@@ -264,10 +272,11 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         /// <summary>
-        /// 
+        /// Creates a new user in the system and gets the UserModel of the newly registered user.
         /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
+        /// <param name="model">A RegisterModel containing the details of the new user</param>
+        /// <returns>The UserModel of the newly registered user</returns>
+        /// <exception cref="ApiAuthorizationException">If there were some errors communicating with the API server</exception>
         public UserModel Register(RegisterModel model)
         {
             var result = this.PostRequest(RegisterUrl, model);
@@ -390,6 +399,13 @@ namespace Group3.Semester3.DesktopClient.Services
             return JsonConvert.DeserializeObject<FileEntity>(resultContent);
         }
 
+        /// <summary>
+        /// Creates a folder with a given name and parent
+        /// </summary>
+        /// <param name="parentId">The Guid of the parent folder or null if the new folder is in the root directory</param>
+        /// <param name="name">The name of the new folder</param>
+        /// <returns>A FileEntity corresponding to the newly created folder</returns>
+        /// <exception cref="Exception">If there were some errors communicating with the server</exception>
         public FileEntity CreateFolder(Guid parentId, string name)
         {
             var content = new FileEntity() { Name = name, ParentId = parentId};

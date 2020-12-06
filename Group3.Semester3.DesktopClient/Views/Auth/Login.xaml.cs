@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 namespace Group3.Semester3.DesktopClient.Views.Auth
 {
     /// <summary>
-    /// Interaction logic for UserControl1.xaml
+    /// Interaction logic for Login.xaml
     /// </summary>
     public partial class Login : UserControl, ISwitchable
     {
@@ -30,6 +30,13 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             InitializeComponent();
         }
 
+        /// <summary>
+        /// This method is called when the Login button is clicked.
+        /// It calls the ApiService.Authorize() method and logs the user in.
+        /// When the user is logged in, it initializes a new MainWindow and Shows it.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void btnLogin_Click(object sender, RoutedEventArgs e)
         {
             string email = emailTextbox.Text;
@@ -39,6 +46,12 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             new MainWindow(apiService, switcher).Show();
         }
 
+        /// <summary>
+        /// This method is called when the Register button is clicked.
+        /// It calls the Switcher.Switch() and changes the current view to the Registration.
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void btnRegister_Click(object sender, RoutedEventArgs e)
         {
             switcher.Switch(new Registration(apiService, switcher));
