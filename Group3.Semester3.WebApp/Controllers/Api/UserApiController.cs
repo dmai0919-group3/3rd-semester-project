@@ -109,5 +109,22 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             return Ok(user);
         }
 
+        /// <summary>
+        /// PUT: api/User/update
+        /// </summary>
+        [Route("update")]
+        [HttpPut]
+        public ActionResult updateUser(UserUpdateModel userParam)
+        {
+            try
+            {
+                var result = _userService.Update(userParam);
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

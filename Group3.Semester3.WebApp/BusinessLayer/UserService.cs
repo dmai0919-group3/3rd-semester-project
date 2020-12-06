@@ -58,7 +58,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="userParam">The UserModel of the user with the new details included</param>
         /// <param name="password">The password of the user</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        User Update(User user, string password = null);
+        User Update(UserUpdateModel userParam);
 
         /// <summary>
         /// Deletes a user
@@ -193,9 +193,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// TODO Implement this method
         /// </summary>
         /// <param name="userParam">The UserModel of the user with the new details included</param>
-        /// <param name="password">The password of the user</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        public User Update(User userParam, string password = null)
+        public User Update(UserUpdateModel userParam)
         {
             var user = _userRepository.GetByEmail(userParam.Email);
 
@@ -205,18 +204,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             // update username if it has changed
             if (!string.IsNullOrWhiteSpace(userParam.Name) && userParam.Name != user.Name)
             {
-                // throw error if the new username is already taken
-                if (_userRepository.GetAll().Any(x => x.Name == userParam.Name))
-                    throw new ValidationException("Username " + userParam.Name + " is already taken");
-
                 user.Name = userParam.Name;
             }
 
             // update password if provided
-            if (!string.IsNullOrWhiteSpace(password))
+            if (!string.IsNullOrWhiteSpace(userParam.NewPassword))
             {
                 byte[] passwordHash, passwordSalt;
-                CreatePasswordHash(password, out passwordHash, out passwordSalt);
+                CreatePasswordHash(userParam.NewPassword, out passwordHash, out passwordSalt);
 
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;

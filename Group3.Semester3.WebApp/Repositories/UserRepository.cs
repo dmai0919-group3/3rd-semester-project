@@ -208,11 +208,11 @@ namespace Group3.Semester3.WebApp.Repositories
             {
                 var parameters = new
                 {
-                    Name = user.Name,
-                    Id = user.Id,
                     Email = user.Email,
+                    Name = user.Name,
                     PasswordHash = user.PasswordHash,
-                    PasswordSalt = user.PasswordSalt
+                    PasswordSalt = user.PasswordSalt,
+                    Id = user.Id
                 };
 
                 try
