@@ -1,12 +1,14 @@
-﻿let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+﻿let emptyGuid = "00000000-0000-0000-0000-000000000000";
 
-let currentDir = "00000000-0000-0000-0000-000000000000";
-let currentGroup = "00000000-0000-0000-0000-000000000000";
+let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+
+let currentDir = emptyGuid;
+let currentGroup = emptyGuid;
 
 let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
 
 $(function () {
-    browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
+    browseDirectoryFiles(emptyGuid);
 
     $.contextMenu({
         selector: '.file',
@@ -106,6 +108,34 @@ $(function () {
     $("#file-container").on("dblclick", '.folder', function () {
         let id = this.id;
         browseDirectoryFiles(id);
+    });
+
+    $("#sidebar").mCustomScrollbar({
+        theme: "minimal"
+    });
+
+    $('#dismiss, .overlay').on('click', function () {
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').addClass('active');
+        $('.overlay').addClass('active');
+        $('.collapse.in').toggleClass('in');
+        $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+    });
+    
+    loadUserGroups();
+    
+    $('#sidebar').on('click', '.group-toggle', function () {
+        let id = $(this).data('id');
+        
+        currentGroup = id;
+        
+        browseDirectoryFiles(emptyGuid);
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
     })
 });
 
@@ -228,6 +258,12 @@ function browseDirectoryFiles(parentId) {
 
             currentDir = parentId;
             
+            if (currentDir != emptyGuid) {
+                $('#go-back-button').show();
+            } else {
+                $('#go-back-button').hide();
+            }
+            
             updateDirectoryPath();
             
             changeFiles(result);
@@ -240,11 +276,11 @@ function browseDirectoryFiles(parentId) {
 }
 
 const fileMarkup = `
-                <div class="col-md-2 {{classes}} justify-content-center" id="{{fileId}}">
-                    <div>
-                        <img src="{{icon}}" />
+                <div class="col-md-1 {{classes}} justify-content-center" id="{{fileId}}">
+                    <div class="col-12 text-center">
+                        <img src="{{icon}}" width="80%" />
                     </div>
-                    <p class="file-name">{{fileName}}</p>
+                    <p class="file-name text-center">{{fileName}}</p>
                 </div>
             `;
 
@@ -271,6 +307,7 @@ function createFolder() {
     let data = {
         Name: folderName,
         ParentId: currentDir,
+        groupId: currentGroup,
     }
 
     $.ajax({
@@ -280,6 +317,8 @@ function createFolder() {
         contentType: "application/json",
         success: function (result) {
             addFileToFileList(result);
+
+            $("#createFolderModal").modal("hide");
         },
         error: function (result) {
             // TODO: Handle better in the future
@@ -294,6 +333,7 @@ function showUploadFileModal() {
     $('#file-upload-form').trigger("reset");
     
     $("#upload-file-parentId").val(currentDir);
+    $("#upload-file-groupId").val(currentGroup);
 
     $("#uploadFileModal").modal();
 }
@@ -625,4 +665,18 @@ function endsWithAny(suffixes, string) {
             return true;
     }
     return false;
+}
+function loadUserGroups() {
+    $.ajax({
+        url: listUserGroups,
+        success: function (result) {
+            let $groups = $('#groupsSubmenu');
+            result.forEach(group => {
+                let groupElement = '<li>\n' +
+                    '<a href="#" class="group-toggle" data-id="'+group.id+'">'+group.name+'</a>\n' +
+                    '</li>';
+                $groups.append(groupElement);
+            })
+        }
+    });
 }

@@ -12,6 +12,12 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.min.css">
     <link href="~/lib/jquery-contextmenu/jquery.contextMenu.min.css" rel="stylesheet" />
+    
+    @if (IsSectionDefined("HeadCss"))
+    {
+        @RenderSection("HeadCss", required: false)
+    }
+    
     <link href="/css/style.css" rel="stylesheet" />
 
     <script src="~/lib/jquery/jquery.min.js"></script>
@@ -54,9 +60,7 @@
         Messenger.Messages.Clear();
     }
 
-    <div class="container">
-        @RenderBody()
-    </div>
+    @RenderBody()
 
     
 </body>

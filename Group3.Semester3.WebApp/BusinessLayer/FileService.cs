@@ -296,14 +296,20 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
         public bool DeleteFile(Guid fileId, UserModel user)
         {
-            BlobContainerClient containerClient =
-                new BlobContainerClient(
-                    _configuration.GetConnectionString("AzureConnectionString"),
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             var file = _fileRepository.GetById(fileId);
             _accessService.hasAccessToFile(user, file);
-            containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
+            
+            if (!file.IsFolder)
+            {
+                BlobContainerClient containerClient =
+                    new BlobContainerClient(
+                        _configuration.GetConnectionString("AzureConnectionString"),
+                        _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+                
+                containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
+            }
+            
             var result = _fileRepository.Delete(fileId);
 
             if (!result)

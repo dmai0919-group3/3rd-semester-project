@@ -39,7 +39,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
         public void hasAccessToFile(UserModel user, FileEntity file)
         {
-            
+            if (file.GroupId != Guid.Empty)
+            {
+                var group = _groupRepository.GetByGroupId(file.GroupId);
+                if (!hasAccessToGroup(user, group))
+                {
+                    throw new ValidationException("Operation forbidden.");
+                }
+            }
             if (!user.Id.Equals(file.UserId))
             {
                 throw new ValidationException("Operation forbidden.");
