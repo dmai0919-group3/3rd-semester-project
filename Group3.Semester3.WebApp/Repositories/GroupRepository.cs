@@ -15,6 +15,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Rename(Guid groupId, string name);
         public bool Delete(Guid groupId);
         public IEnumerable<Group> GetByUserId(Guid userId);
+        public IEnumerable<User> GetUsersByGroupId(Guid groupId);
         public Group GetByGroupId(Guid groupId);
         public bool AddUser(Guid groupId, Guid userId);
         public bool RemoveUser(Guid groupId, Guid userId);
@@ -47,7 +48,30 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-                    var randomString = "";
+                }
+            }
+
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<User> GetUsersByGroupId(Guid groupId)
+        {
+            string query = "SELECT Users.* FROM Users JOIN UsersGroups ON Users.Id=UsersGroups.UserId WHERE UsersGroups.GroupId=@GroupId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { GroupId = groupId };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<User>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
                 }
             }
 

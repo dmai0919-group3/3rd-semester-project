@@ -31,7 +31,9 @@ namespace Group3.Semester3.WebApp.Repositories
         /// </summary>
         /// <param name="parentId">The Guid of the parent folder</param>
         /// <returns>An IEnumerable containing all FileEntities that match the query</returns>
+        /// 
         public IEnumerable<FileEntity> GetByParentId(Guid parentId);
+        public IEnumerable<FileEntity> GetByGroupId(Guid groupId);
 
         /// <summary>
         /// Gets all files owned by a given user and inside a given parent folder
@@ -40,6 +42,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <param name="parentId">The Guid of the parent folder</param>
         /// <returns>An IEnumerable containing all the FileEntities matching the query</returns>
         public IEnumerable<FileEntity> GetByUserIdAndParentId(Guid userId, Guid parentId);
+        public IEnumerable<FileEntity> GetByGroupIdAndParentId(Guid groupId, Guid parentId);
 
         /// <summary>
         /// Adds a new file to the database
@@ -140,6 +143,31 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
+        public IEnumerable<FileEntity> GetByGroupId(Guid groupId)
+        {
+            string query = "SELECT * FROM Files WHERE groupId=@GroupId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { GroupId = groupId };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<FileEntity>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Adds a new file to the database
         /// </summary>
@@ -147,8 +175,8 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the file has been added false if not</returns>
         public bool Insert(FileEntity fileEntity)
         {
-            string query = "INSERT INTO Files (Id, UserId, AzureName, Name, ParentId, IsFolder, Updated)" +
-                   " VALUES (@Id, @UserId, @AzureName, @Name, @ParentId, @IsFolder, @Updated)";
+            string query = "INSERT INTO Files (Id, UserId, GroupId, AzureName, Name, ParentId, IsFolder, Updated)" +
+                   " VALUES (@Id, @UserId, @GroupId, @AzureName, @Name, @ParentId, @IsFolder, @Updated)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -282,6 +310,35 @@ namespace Group3.Semester3.WebApp.Repositories
             {
                 var parameters = new { 
                     UserId = userId,
+                    ParentId = parentId
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<FileEntity>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return null;
+        }
+
+        public IEnumerable<FileEntity> GetByGroupIdAndParentId(Guid groupId, Guid parentId)
+        {
+            string query = "SELECT * FROM Files WHERE GroupId=@GroupId AND ParentId=@ParentId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    GroupId = groupId,
                     ParentId = parentId
                 };
 
