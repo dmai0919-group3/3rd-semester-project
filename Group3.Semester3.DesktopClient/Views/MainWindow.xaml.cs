@@ -107,7 +107,7 @@ namespace Group3.Semester3.DesktopClient.Views
 
             {
                 string name = "Home";
-                foreach (var x in folderStack)
+                foreach (var x in folderStack.Reverse())
                 {
                     name += $" / {x.Name}";
                 }

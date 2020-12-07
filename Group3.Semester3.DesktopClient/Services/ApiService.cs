@@ -58,7 +58,7 @@ namespace Group3.Semester3.DesktopClient.Services
         /// </summary>
         /// <param name="parentId">Guid of parent folder. Use Guid.Empty for root folder</param>
         /// <returns>The list of FileEntities owned by the current user</returns>
-        public List<FileEntity> FileList(Guid parentId);
+        public List<FileEntity> FileList(Guid parentId, Guid groupId);
 
         /// <summary>
         /// Deletes a file
@@ -338,15 +338,9 @@ namespace Group3.Semester3.DesktopClient.Services
         /// Gets a list of all files accessible by the user
         /// </summary>
         /// <returns>A List containing FileEntity's which can be accessed by the user</returns>
-        public List<FileEntity> FileList(Guid parentId = new Guid())
+        public List<FileEntity> FileList(Guid parentId = new Guid(), Guid groupId = new Guid())
         {
-            var url = BrowseFilesUrl;
-            if (parentId != Guid.Empty)
-            {
-                url += "/" + parentId;
-            }
-
-            var result = GetRequest(url);
+            var result = GetRequest(BrowseFilesUrl, $"?groupId={groupId}&parentId={parentId}");
             string resultContent;
 
             {
