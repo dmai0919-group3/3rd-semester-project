@@ -18,7 +18,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteGroup(Guid groupId, UserModel user);
         public Group GetByGroupId(Guid groupId);
         public IEnumerable<Group> GetUserGroups(UserModel user);
-        public bool AddUser(UserModel user, UserGroupModel model);
+        public UserModel AddUser(string userMail, UserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
     }
@@ -112,11 +112,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return parsedGuid;
         }
 
-        public bool AddUser(UserModel user, UserGroupModel model)
+        public UserModel AddUser(string userMail, UserGroupModel model)
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
+            var user = _userRepository.GetByEmail(userMail);
+            UserModel userModel = new UserModel() { Email = user.Email, Id = user.Id, Name = user.Name };
 
-            if(_accessService.hasAccessToGroup(user, group))
+            if(_accessService.hasAccessToGroup(userModel, group))
             {
                 var newUserEntity = _userRepository.Get(model.UserId);
 
@@ -127,7 +129,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     throw new ValidationException("User is already part of the group");
                 }
 
-                return _groupRepository.AddUser(group.Id, newUser.Id);
+                var result = _groupRepository.AddUser(group.Id, newUser.Id);
+                if(result)
+                {
+                    return userModel;
+                }
+                else
+                {
+                    throw new ValidationException("User not found");
+                }
 
             } else
             {
