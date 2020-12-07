@@ -347,7 +347,7 @@ namespace Group3.Semester3.DesktopClient.Services
             }
 
             if (!result.IsSuccessStatusCode)
-                throw new Exception("Error communicating with the server");
+                throw new ApiAuthorizationException("Error communicating with the server");
 
             return JsonConvert.DeserializeObject<List<FileEntity>>(resultContent);
         }
@@ -361,7 +361,7 @@ namespace Group3.Semester3.DesktopClient.Services
             var result = DeleteRequest(DeleteFileUrl, file.Id);
 
             if (!result.IsSuccessStatusCode)
-                throw new Exception("Error communicating with the server");
+                throw new ApiAuthorizationException("Error communicating with the server");
         }
 
         /// <summary>
@@ -428,7 +428,7 @@ namespace Group3.Semester3.DesktopClient.Services
             }
 
             if (!result.IsSuccessStatusCode)
-                throw new Exception("Error communicating with the server");
+                throw new ApiAuthorizationException("Error communicating with the server");
 
             return JsonConvert.DeserializeObject<FileEntity>(resultContent);
         }
