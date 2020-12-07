@@ -617,28 +617,29 @@ function previewFile(fileId, fileName) {
         url: "/api/file/download/" + fileId,
         success: function (result) {
             
-            
-            let element = null;
-            
-            if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
-                element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
-            }
-            
-            if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
-                element = '<video class="video-fluid" width="100%" controls>\n' +
-                    '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
-                    '</video>';
-            }
-            
-            let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
-            
-            if (mp3) {
-                element = '<audio controls>' +
-                    '<source src="'+result.downloadLink+'">' +
-                    '</audio>';
-            }
-            
-            $modalBody.append(element);
+            setTimeout(() => {
+                let element = null;
+
+                if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
+                    element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
+                }
+
+                if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
+                    element = '<video class="video-fluid" width="100%" controls>\n' +
+                        '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
+                        '</video>';
+                }
+
+                let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
+
+                if (mp3) {
+                    element = '<audio controls>' +
+                        '<source src="'+result.downloadLink+'">' +
+                        '</audio>';
+                }
+
+                $modalBody.append(element);
+            }, 900);
         }
     })
 }

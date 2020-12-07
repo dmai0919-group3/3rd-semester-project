@@ -493,6 +493,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
         {
             var file = _fileRepository.GetById(model.Id);
+            
+            if (file == null)
+            {
+                throw new ConcurrencyException("File was deleted by another user");
+            }
+            
             _accessService.hasAccessToFile(user, file);
 
             if (!model.Overwrite)
