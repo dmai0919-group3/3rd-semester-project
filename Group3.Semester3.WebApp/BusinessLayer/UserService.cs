@@ -218,16 +218,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 {
                     throw new ValidationException("Old password cannot be empty");
                 }
-                if(!VerifyPasswordHash(userParam.OldPassword, user.PasswordHash, user.PasswordSalt))
-                {
-                    throw new ValidationException("Wrong password");
-                }
+                
                 if (userParam.NewPassword.Equals(userParam.NewPasswordCheck)) {
-                byte[] passwordHash, passwordSalt;
-                CreatePasswordHash(userParam.NewPassword, out passwordHash, out passwordSalt);
+                    
+                    if(!VerifyPasswordHash(userParam.OldPassword, user.PasswordHash, user.PasswordSalt))
+                    {
+                        throw new ValidationException("Wrong password");
+                    }
+                    
+                    byte[] passwordHash, passwordSalt;
+                    CreatePasswordHash(userParam.NewPassword, out passwordHash, out passwordSalt);
 
-                user.PasswordHash = passwordHash;
-                user.PasswordSalt = passwordSalt;
+                    user.PasswordHash = passwordHash;
+                    user.PasswordSalt = passwordSalt;
                 }
                 else
                 {
