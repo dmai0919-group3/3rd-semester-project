@@ -26,9 +26,25 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             _groupService = groupService;
             _userService = userService;
         }
+        
+        [HttpGet]
         public IActionResult Index()
         {
-            return null;
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _groupService.GetUserGroups(user);
+
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
         }
 
         [Route("delete")]
@@ -124,9 +140,34 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 }
                 else return NoContent();
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("get-users/{groupId}")]
+        [HttpGet]
+        public ActionResult GetGroupUsers(Guid groupId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _groupService.GetGroupUsers(user, groupId);
+
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest("System error, please contact Administrator");
             }
         }
     }

@@ -180,19 +180,12 @@ namespace Group3.Semester3.WebApp.Repositories
 
             using (var connection = new SqlConnection(connectionString))
             {
-                try
-                {
-                    connection.Open();
-                    int rowsChanged = connection.Execute(query, fileEntity);
+                connection.Open();
+                int rowsChanged = connection.Execute(query, fileEntity);
 
-                    if (rowsChanged > 0)
-                    {
-                        return true;
-                    }
-                }
-                catch (Exception e)
+                if (rowsChanged > 0)
                 {
-
+                    return true;
                 }
             }
 
@@ -211,20 +204,15 @@ namespace Group3.Semester3.WebApp.Repositories
             using (var connection = new SqlConnection(connectionString))
             {
                 var parameters = new { Id = id };
+                
+                connection.Open();
 
-                try
+                int rowsChanged = connection.Execute(query, parameters);
+                if (rowsChanged > 0)
                 {
-                    connection.Open();
-
-                    int rowsChanged = connection.Execute(query, parameters);
-                    if (rowsChanged > 0)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                catch (Exception e)
-                {
-                }
+                
                 return false;
             }
         }
@@ -247,22 +235,16 @@ namespace Group3.Semester3.WebApp.Repositories
                     Id = id,
                     Updated = DateTime.Now
                 };
+                
+                connection.Open();
 
-                try
+                int rowsChanged = connection.Execute(query, parameters);
+                if (rowsChanged > 0)
                 {
-                    connection.Open();
-
-                    int rowsChanged = connection.Execute(query, parameters);
-                    if (rowsChanged > 0)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                catch (Exception e)
-                {
-                }
+                
                 return false;
-
             }
         }
 
@@ -279,18 +261,11 @@ namespace Group3.Semester3.WebApp.Repositories
             {
                 var parameters = new { ParentId = parentId };
 
-                try
-                {
-                    connection.Open();
+                connection.Open();
 
-                    var result = connection.Query<FileEntity>(query, parameters);
+                var result = connection.Query<FileEntity>(query, parameters);
 
-                    return result;
-                }
-                catch (Exception e)
-                {
-
-                }
+                return result;
             }
 
             return null;
@@ -313,18 +288,11 @@ namespace Group3.Semester3.WebApp.Repositories
                     ParentId = parentId
                 };
 
-                try
-                {
-                    connection.Open();
+                connection.Open();
 
-                    var result = connection.Query<FileEntity>(query, parameters);
+                var result = connection.Query<FileEntity>(query, parameters);
 
-                    return result;
-                }
-                catch (Exception e)
-                {
-
-                }
+                return result;
             }
 
             return null;

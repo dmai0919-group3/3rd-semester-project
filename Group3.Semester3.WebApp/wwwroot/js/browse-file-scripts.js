@@ -1,11 +1,14 @@
-﻿let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+﻿let emptyGuid = "00000000-0000-0000-0000-000000000000";
 
-let currentDir = "00000000-0000-0000-0000-000000000000";
+let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+
+let currentDir = emptyGuid;
+let currentGroup = emptyGuid;
 
 let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
 
 $(function () {
-    browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
+    browseDirectoryFiles(emptyGuid);
 
     $.contextMenu({
         selector: '.file',
@@ -105,7 +108,25 @@ $(function () {
     $("#file-container").on("dblclick", '.folder', function () {
         let id = this.id;
         browseDirectoryFiles(id);
-    })
+    });
+
+    $("#sidebar").mCustomScrollbar({
+        theme: "minimal"
+    });
+
+    $('#dismiss, .overlay').on('click', function () {
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').addClass('active');
+        $('.overlay').addClass('active');
+        $('.collapse.in').toggleClass('in');
+        $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+    });
+    
+    loadUserGroups();
 });
 
 function showRenameFileModal(key, opt) {
@@ -196,11 +217,17 @@ function deleteFile() {
 
 function browseDirectoryFiles(parentId) {
 
-    let url = "/api/file/browse/" + parentId;
+    let url = browseFilesUrl;
+    
+    let data = {
+        parentId: parentId,
+        groupId: currentGroup
+    }
 
     $.ajax({
         url: url,
         type: "GET",
+        data: data,
         success: function (result) {
             
             if (parentId in dirArray) {
@@ -221,6 +248,12 @@ function browseDirectoryFiles(parentId) {
 
             currentDir = parentId;
             
+            if (currentDir != emptyGuid) {
+                $('#go-back-button').show();
+            } else {
+                $('#go-back-button').hide();
+            }
+            
             updateDirectoryPath();
             
             changeFiles(result);
@@ -233,11 +266,11 @@ function browseDirectoryFiles(parentId) {
 }
 
 const fileMarkup = `
-                <div class="col-md-2 {{classes}} justify-content-center" id="{{fileId}}">
-                    <div>
-                        <img src="{{icon}}" />
+                <div class="col-md-1 {{classes}} justify-content-center" id="{{fileId}}">
+                    <div class="col-12 text-center">
+                        <img src="{{icon}}" width="80%" />
                     </div>
-                    <p class="file-name">{{fileName}}</p>
+                    <p class="file-name text-center">{{fileName}}</p>
                 </div>
             `;
 
@@ -264,6 +297,7 @@ function createFolder() {
     let data = {
         Name: folderName,
         ParentId: currentDir,
+        groupId: currentGroup,
     }
 
     $.ajax({
@@ -273,10 +307,12 @@ function createFolder() {
         contentType: "application/json",
         success: function (result) {
             addFileToFileList(result);
+
+            $("#createFolderModal").modal("hide");
         },
         error: function (result) {
             // TODO: Handle better in the future
-            alert("Failed to delete a file");
+            alert("Failed to create a folder");
         }
     });
 }
@@ -287,6 +323,7 @@ function showUploadFileModal() {
     $('#file-upload-form').trigger("reset");
     
     $("#upload-file-parentId").val(currentDir);
+    $("#upload-file-groupId").val(currentGroup);
 
     $("#uploadFileModal").modal();
 }
@@ -618,4 +655,71 @@ function endsWithAny(suffixes, string) {
             return true;
     }
     return false;
+}
+function loadUserGroups() {
+    $.ajax({
+        url: listUserGroups,
+        success: function (result) {
+            result.forEach(group => {
+                addGroupToSubmenu(group);
+            })
+        }
+    });
+}
+
+function addGroupToSubmenu(group) {
+    let groupElement = '<li>\n' +
+        '<a href="#" class="group-toggle justify-content-between overflow-auto" data-id="'+group.id+'">'+group.name+'' +
+        '<button class="btn-primary group-setting" style="float: right; border-radius: 5px" href="#"><i class="fas fa-cog"></i></button>' +
+        '</a>\n' +
+        '</li>';
+    $('#groupsSubmenu').append(groupElement);
+}
+
+$(document).ready(function () {
+    $('#sidebar').on('click', '.group-toggle', function () {
+        let id = $(this).data('id');
+
+        currentGroup = id;
+
+        browseDirectoryFiles(emptyGuid);
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+    
+    $('#sidebar').on('click', '.group-setting', function () {
+        let id = $(this).parent().data('id');
+
+        window.location.href = "/group/" + id;
+    });
+    
+    $('#addGroupBtn').click(function () {
+        showCreateGroupModal();
+    })
+});
+
+function showCreateGroupModal() {
+    $('#create-group-name').val('');
+    $('#createGroupModal').modal();
+}
+
+function createGroup() {
+    let name = $('#create-group-name').val();
+
+    let data = {
+        Name: name,
+    };
+
+    $.ajax({
+        url: createGroupUrl,
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (group) {
+            window.location.href = "/group/"+group.id;
+        },
+        error: function (result) {
+            alert(result);
+        }
+    });
 }

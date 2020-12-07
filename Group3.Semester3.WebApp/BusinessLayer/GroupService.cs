@@ -17,7 +17,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group RenameGroup(Guid groupId, UserModel user, string name);
         public bool DeleteGroup(Guid groupId, UserModel user);
         public Group GetByGroupId(Guid groupId);
-        public bool AddUser(UserModel user, UserGroupModel model);
+        public IEnumerable<Group> GetUserGroups(UserModel user);
+        public IEnumerable<UserModel> GetGroupUsers(UserModel model, Guid groupId);
+        public UserModel AddUser(UserModel user, UserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
     }
@@ -91,6 +93,22 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             else return group;
         }
 
+        public IEnumerable<Group> GetUserGroups(UserModel user)
+        {
+            var groups = _groupRepository.GetByUserId(user.Id);
+
+            return groups;
+        }
+
+        public IEnumerable<UserModel> GetGroupUsers(UserModel user, Guid groupId)
+        {
+            var group = _groupRepository.GetByGroupId(groupId);
+            _accessService.hasAccessToGroup(user, group);
+            var users = _groupRepository.GetUsersByGroupId(groupId);
+
+            return users;
+        }
+
         private Guid ParseGuid(string guid)
         {
             Guid parsedGuid = Guid.Empty;
@@ -104,22 +122,31 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return parsedGuid;
         }
 
-        public bool AddUser(UserModel user, UserGroupModel model)
+        public UserModel AddUser(UserModel user, UserGroupModel model)
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
             if(_accessService.hasAccessToGroup(user, group))
             {
-                var newUserEntity = _userRepository.Get(model.UserId);
-
-                var newUser = new UserModel() {Id= newUserEntity.Id};
-
-                if (IsPartOfGroup(newUser, group))
+                var newUserEntity = _userRepository.GetByEmail(model.Email);
+                
+                if(newUserEntity != null)
                 {
-                    throw new ValidationException("User is already part of the group");
-                }
+                    var newUser = new UserModel() {Id= newUserEntity.Id, Name = newUserEntity.Name, Email = newUserEntity.Email};
 
-                return _groupRepository.AddUser(group.Id, newUser.Id);
+                    if (IsPartOfGroup(newUser, group))
+                    {
+                        throw new ValidationException("User is already part of the group");
+                    }
+
+                    var result = _groupRepository.AddUser(group.Id, newUser.Id);
+                    
+                    return newUser;
+                }
+                else
+                {
+                    throw new ValidationException("User not found");
+                }
 
             } else
             {

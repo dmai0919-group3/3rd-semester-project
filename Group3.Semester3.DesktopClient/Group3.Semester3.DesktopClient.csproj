@@ -8,9 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="image.jpg" />
-    <None Remove="resources\icons\folder-24px.svg" />
-    <None Remove="resources\icons\insert_drive_file-24px.svg" />
+    <None Remove="Views\baseline_folder_black_48dp.png" />
+    <None Remove="Views\baseline_folder_open_black_48dp.png" />
+    <None Remove="Views\baseline_headset_black_48dp.png" />
+    <None Remove="Views\baseline_insert_drive_file_black_48dp.png" />
+    <None Remove="Views\baseline_insert_photo_black_48dp.png" />
+    <None Remove="Views\baseline_text_snippet_black_48dp.png" />
+    <None Remove="Views\baseline_wysiwyg_black_48dp.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,12 +33,13 @@
     <Resource Include="Assets\folder-24px.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
-    <Resource Include="resources\icons\folder-24px.svg" />
-    <Resource Include="resources\icons\insert_drive_file-24px.svg" />
-    <None Remove="resources\icons\file-icon.png" />
-    <Resource Include="resources\icons\file-icon.png" />
-    <None Remove="resources\icons\folder-icon.png" />
-    <Resource Include="resources\icons\folder-icon.png" />
+    <Resource Include="Views\baseline_folder_black_48dp.png" />
+    <Resource Include="Views\baseline_folder_open_black_48dp.png" />
+    <Resource Include="Views\baseline_headset_black_48dp.png" />
+    <Resource Include="Views\baseline_insert_drive_file_black_48dp.png" />
+    <Resource Include="Views\baseline_insert_photo_black_48dp.png" />
+    <Resource Include="Views\baseline_text_snippet_black_48dp.png" />
+    <Resource Include="Views\baseline_wysiwyg_black_48dp.png" />
   </ItemGroup>
 
 </Project>

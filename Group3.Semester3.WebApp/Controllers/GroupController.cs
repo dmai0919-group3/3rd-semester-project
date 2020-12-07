@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Group3.Semester3.WebApp.BusinessLayer;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -12,9 +10,30 @@ namespace Group3.Semester3.WebApp.Controllers
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class GroupController : Controller
     {
-        public IActionResult Index()
+        private IGroupService _groupService;
+        private IUserService _userService;
+        
+        public GroupController(IGroupService groupService, IUserService userService)
         {
-            return null;
+            _groupService = groupService;
+            _userService = userService;
         }
+
+        /// <summary>
+        /// GET: file/browse
+        /// </summary>
+        /// <returns>A View showing the user's files</returns>
+        [Route("{groupId}")]
+        [HttpGet]
+        public ActionResult GroupSettings(Guid groupId)
+        {
+            var group = _groupService.GetByGroupId(groupId);
+
+            ViewBag.Group = group;
+            ViewBag.User = _userService.GetFromHttpContext(HttpContext);
+            
+            return View();
+        }
+
     }
 }

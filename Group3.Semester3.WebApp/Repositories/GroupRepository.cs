@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Group3.Semester3.WebApp.Models.Users;
 
 namespace Group3.Semester3.WebApp.Repositories
 {
@@ -15,7 +16,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Rename(Guid groupId, string name);
         public bool Delete(Guid groupId);
         public IEnumerable<Group> GetByUserId(Guid userId);
-        public IEnumerable<User> GetUsersByGroupId(Guid groupId);
+        public IEnumerable<UserModel> GetUsersByGroupId(Guid groupId);
         public Group GetByGroupId(Guid groupId);
         public bool AddUser(Guid groupId, Guid userId);
         public bool RemoveUser(Guid groupId, Guid userId);
@@ -54,7 +55,7 @@ namespace Group3.Semester3.WebApp.Repositories
             throw new NotImplementedException();
         }
 
-        public IEnumerable<User> GetUsersByGroupId(Guid groupId)
+        public IEnumerable<UserModel> GetUsersByGroupId(Guid groupId)
         {
             string query = "SELECT Users.* FROM Users JOIN UsersGroups ON Users.Id=UsersGroups.UserId WHERE UsersGroups.GroupId=@GroupId";
 
@@ -66,7 +67,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 {
                     connection.Open();
 
-                    var result = connection.Query<User>(query, parameters);
+                    var result = connection.Query<UserModel>(query, parameters);
 
                     return result;
                 }
