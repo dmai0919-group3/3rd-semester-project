@@ -25,8 +25,8 @@ namespace Group3.Semester3.DesktopClient.Views
     public class MainWindowCommands
     {
         public static RoutedUICommand RefreshCommand
-                            = new RoutedUICommand("Import excel command",
-                                                  "ImportExcelCmd",
+                            = new RoutedUICommand("Refresh",
+                                                  "RefreshCommand",
                                                   typeof(MainWindowCommands));
     }
 
