@@ -112,7 +112,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _groupService.AddUser(user.Email, model);
+                var result = _groupService.AddUser(user, model);
 
                 return Ok(result);
             }

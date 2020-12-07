@@ -19,7 +19,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group GetByGroupId(Guid groupId);
         public IEnumerable<Group> GetUserGroups(UserModel user);
         public IEnumerable<UserModel> GetGroupUsers(UserModel model, Guid groupId);
-        public UserModel AddUser(string userMail, UserGroupModel model);
+        public UserModel AddUser(UserModel user, UserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
     }
@@ -122,27 +122,26 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return parsedGuid;
         }
 
-        public UserModel AddUser(string userMail, UserGroupModel model)
+        public UserModel AddUser(UserModel user, UserGroupModel model)
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
-            var user = _userRepository.GetByEmail(userMail);
-            UserModel userModel = new UserModel() { Email = user.Email, Id = user.Id, Name = user.Name };
 
-            if(_accessService.hasAccessToGroup(userModel, group))
+            if(_accessService.hasAccessToGroup(user, group))
             {
-                var newUserEntity = _userRepository.Get(model.UserId);
-
-                var newUser = new UserModel() {Id= newUserEntity.Id};
-
-                if (IsPartOfGroup(newUser, group))
+                var newUserEntity = _userRepository.GetByEmail(model.Email);
+                
+                if(newUserEntity != null)
                 {
-                    throw new ValidationException("User is already part of the group");
-                }
+                    var newUser = new UserModel() {Id= newUserEntity.Id, Name = newUserEntity.Name, Email = newUserEntity.Email};
 
-                var result = _groupRepository.AddUser(group.Id, newUser.Id);
-                if(result)
-                {
-                    return userModel;
+                    if (IsPartOfGroup(newUser, group))
+                    {
+                        throw new ValidationException("User is already part of the group");
+                    }
+
+                    var result = _groupRepository.AddUser(group.Id, newUser.Id);
+                    
+                    return newUser;
                 }
                 else
                 {

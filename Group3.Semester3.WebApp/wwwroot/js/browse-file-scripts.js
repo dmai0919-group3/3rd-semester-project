@@ -127,16 +127,6 @@ $(function () {
     });
     
     loadUserGroups();
-    
-    $('#sidebar').on('click', '.group-toggle', function () {
-        let id = $(this).data('id');
-        
-        currentGroup = id;
-        
-        browseDirectoryFiles(emptyGuid);
-        $('#sidebar').removeClass('active');
-        $('.overlay').removeClass('active');
-    })
 });
 
 function showRenameFileModal(key, opt) {
@@ -673,10 +663,30 @@ function loadUserGroups() {
             let $groups = $('#groupsSubmenu');
             result.forEach(group => {
                 let groupElement = '<li>\n' +
-                    '<a href="#" class="group-toggle" data-id="'+group.id+'">'+group.name+'</a>\n' +
+                    '<a href="#" class="group-toggle justify-content-between" data-id="'+group.id+'">'+group.name+'' +
+                    '<button class="btn-primary group-setting" style="float: right; border-radius: 5px" href="#"><i class="fas fa-cog"></i></button>' +
+                    '</a>\n' +
                     '</li>';
                 $groups.append(groupElement);
             })
         }
     });
 }
+
+$(document).ready(function () {
+    $('#sidebar').on('click', '.group-toggle', function () {
+        let id = $(this).data('id');
+
+        currentGroup = id;
+
+        browseDirectoryFiles(emptyGuid);
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+    
+    $('#sidebar').on('click', '.group-setting', function () {
+        let id = $(this).parent().data('id');
+
+        window.location.href = "/group/" + id;
+    });
+});
