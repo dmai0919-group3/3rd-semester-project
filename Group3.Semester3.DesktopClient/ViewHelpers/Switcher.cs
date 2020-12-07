@@ -6,6 +6,9 @@ using System.Windows.Controls;
 
 namespace Group3.Semester3.DesktopClient.ViewHelpers
 {
+    /// <summary>
+    /// A Switcher class which we use to change the currently displayed View.
+    /// </summary>
     public class Switcher
     {
         public INavigatable ActiveWindow;

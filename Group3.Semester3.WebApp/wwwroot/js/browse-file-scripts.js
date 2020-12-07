@@ -1,26 +1,61 @@
-﻿let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+﻿let emptyGuid = "00000000-0000-0000-0000-000000000000";
 
-let currentDir = "00000000-0000-0000-0000-000000000000";
+let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+
+let currentDir = emptyGuid;
+let currentGroup = emptyGuid;
+
+let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
 
 $(function () {
-    browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
+    browseDirectoryFiles(emptyGuid);
 
     $.contextMenu({
         selector: '.file',
         build: function($trigger, e) {
             let items = {};
             
+            let fileName = $trigger.find('.file-name').text();
             let classes = $trigger.attr('class');
+            if (endsWithAny(previewFiles, fileName)) {
+                let view = {
+                    view: {
+                        name: "View",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+                            let fileName = $element.find('.file-name').text();
+                            
+                            previewFile(id, fileName);
+                        }
+                    }
+                }
+                Object.assign(items, view);
+            }
             if (classes.includes('txt-file')) {
                 let edit = {
                     edit: {
-                        name: "Edit",
+                        name: "View / Edit",
                         callback: function (key, opt) {
                             showEditFileModal(key, opt);
                         }
                     }
                 };
                 Object.assign(items, edit);
+            }
+            if (!classes.includes('folder')) {
+                let download = {
+                    download: {
+                        name: "Download",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+                            
+                            initFileDownload(id);
+                        }
+                    }
+                };
+                Object.assign(items, download);
             }
             
             let standardItems = {
@@ -73,7 +108,25 @@ $(function () {
     $("#file-container").on("dblclick", '.folder', function () {
         let id = this.id;
         browseDirectoryFiles(id);
-    })
+    });
+
+    $("#sidebar").mCustomScrollbar({
+        theme: "minimal"
+    });
+
+    $('#dismiss, .overlay').on('click', function () {
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').addClass('active');
+        $('.overlay').addClass('active');
+        $('.collapse.in').toggleClass('in');
+        $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+    });
+    
+    loadUserGroups();
 });
 
 function showRenameFileModal(key, opt) {
@@ -164,11 +217,17 @@ function deleteFile() {
 
 function browseDirectoryFiles(parentId) {
 
-    let url = "/api/file/browse/" + parentId;
+    let url = browseFilesUrl;
+    
+    let data = {
+        parentId: parentId,
+        groupId: currentGroup
+    }
 
     $.ajax({
         url: url,
         type: "GET",
+        data: data,
         success: function (result) {
             
             if (parentId in dirArray) {
@@ -189,6 +248,12 @@ function browseDirectoryFiles(parentId) {
 
             currentDir = parentId;
             
+            if (currentDir != emptyGuid) {
+                $('#go-back-button').show();
+            } else {
+                $('#go-back-button').hide();
+            }
+            
             updateDirectoryPath();
             
             changeFiles(result);
@@ -201,11 +266,11 @@ function browseDirectoryFiles(parentId) {
 }
 
 const fileMarkup = `
-                <div class="col-md-2 {{classes}} justify-content-center" id="{{fileId}}">
-                    <div>
-                        <img src="{{icon}}" />
+                <div class="col-md-1 {{classes}} justify-content-center" id="{{fileId}}">
+                    <div class="col-12 text-center">
+                        <img src="{{icon}}" width="80%" />
                     </div>
-                    <p class="file-name">{{fileName}}</p>
+                    <p class="file-name text-center">{{fileName}}</p>
                 </div>
             `;
 
@@ -232,6 +297,7 @@ function createFolder() {
     let data = {
         Name: folderName,
         ParentId: currentDir,
+        groupId: currentGroup,
     }
 
     $.ajax({
@@ -241,10 +307,12 @@ function createFolder() {
         contentType: "application/json",
         success: function (result) {
             addFileToFileList(result);
+
+            $("#createFolderModal").modal("hide");
         },
         error: function (result) {
             // TODO: Handle better in the future
-            alert("Failed to delete a file");
+            alert("Failed to create a folder");
         }
     });
 }
@@ -255,6 +323,7 @@ function showUploadFileModal() {
     $('#file-upload-form').trigger("reset");
     
     $("#upload-file-parentId").val(currentDir);
+    $("#upload-file-groupId").val(currentGroup);
 
     $("#uploadFileModal").modal();
 }
@@ -438,7 +507,7 @@ function moveFile(id, parentId) {
         },
         error: function (result) {
             // TODO: Handle better in the future
-            alert("Failed to move a file");
+            alert(result);
         }
     });
 }
@@ -463,14 +532,13 @@ function showEditFileModal(key, opt)
 
             $('#editFileId').val(fileId);
             $('#editFileContent').val(result.contents);
-            $('#editFileTimestamp').val(result.form?.timestamp);
-            $('#editFileToken').val(result.form?.token);
+            $('#editFileTimestamp').val(result.timestamp);
+            $('#editFileOverwrite').val(0);
             
             $('#editFileModal').modal();
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to move a file");
+            alert(result);
         }
     });
     
@@ -479,16 +547,14 @@ function showEditFileModal(key, opt)
 function editFileSave() {
     let contents = $('#editFileContent').val();
     let id = $('#editFileId').val();
-    let timestamp = parseInt($('#editFileTimestamp').val());
-    let token = $('#editFileToken').val();
+    let timestamp = $('#editFileTimestamp').val();
+    let overwrite =$('#editFileOverwrite').val();
 
     let data = {
         id: id,
         contents: contents,
-        form: {
-            timestamp: timestamp,
-            token: token
-        }
+        timestamp: timestamp,
+        overwrite: (overwrite === 'true'),
     }
     
     $.ajax({
@@ -496,13 +562,164 @@ function editFileSave() {
         data: JSON.stringify(data),
         type: "POST",
         contentType: "application/json",
+        statusCode: {
+            200: function (result) {
+
+                alert("File updated!");
+                $("#editFileModal").modal("hide");
+            },
+            400: function (result) {
+                alert(result);
+            },
+            409: function (result) {
+                $('#overwriteEditModal').modal();
+                $('#overwriteEditModalOverwrite').click(function () {
+                    $('#editFileOverwrite').val('true');
+                    $('#overwriteEditModal').modal('hide');
+                    editFileSave();
+                });
+            },
+        }
+    });
+}
+
+function initFileDownload(fileId) {
+    $.ajax({
+        url: "/api/file/download/" + fileId,
         success: function (result) {
-            alert("File updated!")
-            $("#editFileModal").modal("hide");
+            startFileDownload(result.file, result.downloadLink);
+        }
+    })
+}
+
+function startFileDownload(file, link) {
+    let $downloadLink = $('#downloadLink');
+    $downloadLink.remove();
+    
+    let downloadLink = "<a href='" + link + "' download='"+ file.name +"' id='downloadLink'>Click here to download</a>"
+    $('#downloadFileModal .modal-body').append(downloadLink);
+    
+    $('#downloadFileModal').modal();
+}
+
+function previewFile(fileId, fileName) {
+    if (fileName.endsWith('.txt')) {
+        // Separate preview
+    }
+    
+    $('#filePreviewModal').modal();
+    
+    $modalBody = $('#filePreviewModal .modal-body');
+    $('#preview-file-name').text(fileName);
+    $modalBody.empty();
+    
+    $.ajax({
+        url: "/api/file/download/" + fileId,
+        success: function (result) {
+            
+            
+            let element = null;
+            
+            if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
+                element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
+            }
+            
+            if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
+                element = '<video class="video-fluid" width="100%" controls>\n' +
+                    '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
+                    '</video>';
+            }
+            
+            let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
+            
+            if (mp3) {
+                element = '<audio controls>' +
+                    '<source src="'+result.downloadLink+'">' +
+                    '</audio>';
+            }
+            
+            $modalBody.append(element);
+        }
+    })
+}
+
+$(document).ready(function () {
+    $('#filePreviewModal').on('hide.bs.modal', function () {
+        $(this).find('.modal-body').empty();
+    })
+})
+
+function endsWithAny(suffixes, string) {
+    for (let suffix of suffixes) {
+        if(string.endsWith(suffix))
+            return true;
+    }
+    return false;
+}
+function loadUserGroups() {
+    $.ajax({
+        url: listUserGroups,
+        success: function (result) {
+            result.forEach(group => {
+                addGroupToSubmenu(group);
+            })
+        }
+    });
+}
+
+function addGroupToSubmenu(group) {
+    let groupElement = '<li>\n' +
+        '<a href="#" class="group-toggle justify-content-between overflow-auto" data-id="'+group.id+'">'+group.name+'' +
+        '<button class="btn-primary group-setting" style="float: right; border-radius: 5px" href="#"><i class="fas fa-cog"></i></button>' +
+        '</a>\n' +
+        '</li>';
+    $('#groupsSubmenu').append(groupElement);
+}
+
+$(document).ready(function () {
+    $('#sidebar').on('click', '.group-toggle', function () {
+        let id = $(this).data('id');
+
+        currentGroup = id;
+
+        browseDirectoryFiles(emptyGuid);
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+    
+    $('#sidebar').on('click', '.group-setting', function () {
+        let id = $(this).parent().data('id');
+
+        window.location.href = "/group/" + id;
+    });
+    
+    $('#addGroupBtn').click(function () {
+        showCreateGroupModal();
+    })
+});
+
+function showCreateGroupModal() {
+    $('#create-group-name').val('');
+    $('#createGroupModal').modal();
+}
+
+function createGroup() {
+    let name = $('#create-group-name').val();
+
+    let data = {
+        Name: name,
+    };
+
+    $.ajax({
+        url: createGroupUrl,
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (group) {
+            window.location.href = "/group/"+group.id;
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to edit a file");
+            alert(result);
         }
     });
 }

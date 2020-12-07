@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
@@ -10,16 +11,63 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     // interface for a User service
     public interface IUserService
     {
+        /// <summary>
+        /// This method is used to log a user into the system.
+        /// </summary>
+        /// <param name="model">The AuthenticateModel of the user</param>
+        /// <returns>The UserModel of the logged in user</returns>
+        /// <exception cref="ValidationException">If there were some errors with the entered credentials.</exception>
         UserModel Login(AuthenticateModel model);
+
+        /// <summary>
+        /// Gets a user by id
+        /// </summary>
+        /// <param name="id">The Guid of the user</param>
+        /// <returns>A UserModel matching the given id</returns>
+        /// <exception cref="ValidationException">If there are no users with the given id</exception>
         UserModel GetById(Guid id);
+
+        /// <summary>
+        /// Gets a user by email address
+        /// TODO implement check if the user doesn't exist.
+        /// </summary>
+        /// <param name="email">The email address of a user</param>
+        /// <returns>The UserModel matching the given email address</returns>
         UserModel GetByEmail(String email);
+
+        /// <summary>
+        /// Gets a user based on the HttpContext
+        /// </summary>
+        /// <param name="httpContext">The HttpContext of the request received</param>
+        /// <returns>A UserModel matching the given identity</returns>
+        /// <exception cref="ValidationException">If the user is not found</exception>
         UserModel GetFromHttpContext(HttpContext httpContext);
+
+        /// <summary>
+        /// Registers a new user
+        /// </summary>
+        /// <param name="model">A RegisterModel containing the users details</param>
+        /// <returns>The UserModel object of the new user</returns>
+        /// <exception cref="ValidationException">If there were some problems with the credentials given by the user.</exception>
         UserModel Register(RegisterModel model);
-        void Update(UserModel user, string password = null);
+
+        /// <summary>
+        /// Updates the information of an already existing user.
+        /// TODO Implement this method
+        /// </summary>
+        /// <param name="userParam">The UserModel of the user with the new details included</param>
+        /// <param name="password">The password of the user</param>
+        /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
+        User Update(User user, string password = null);
+
+        /// <summary>
+        /// Deletes a user
+        /// </summary>
+        /// <param name="id">The Guid of the user to be deleted</param>
+        /// <returns>True if the user has been deleted successfully.</returns>
+        /// <exception cref="ValidationException">If the user does not exist or if there were some errors deleting the user.</exception>
         bool Delete(Guid id);
     }
-
-    // actual implementation of a user service that implements the interface with all the logic
 
     public class UserService : IUserService
     {
@@ -30,8 +78,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             _userRepository = userRepository;
         }
-        // logic of a login function, model is passed, user is then looked up in the db through repository
-        // if credentials are valid, UserModel is returned
+
+        /// <summary>
+        /// This method is used to log a user into the system.
+        /// </summary>
+        /// <param name="model">The AuthenticateModel of the user</param>
+        /// <returns>The UserModel of the logged in user</returns>
+        /// <exception cref="ValidationException">If there were some errors with the entered credentials.</exception>
         public UserModel Login(AuthenticateModel model)
         {
             var email = model.Email;
@@ -48,41 +101,59 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             // authentication successful, return user
 
-            return new UserModel() {
+            return new UserModel()
+            {
                 Id = user.Id,
                 Email = user.Email,
                 Name = user.Name
             };
         }
-        // getting the user from the db by user's ID
+        
+        /// <summary>
+        /// Gets a user by id
+        /// </summary>
+        /// <param name="id">The Guid of the user</param>
+        /// <returns>A UserModel matching the given id</returns>
+        /// <exception cref="ValidationException">If there are no users with the given id</exception>
         public UserModel GetById(Guid id)
         {
             var user = _userRepository.Get(id);
-            if(user != null) {
-            return new UserModel() {
-                Id = user.Id,
-                Email = user.Email,
-                Name = user.Name
-            };
-            }else throw new ValidationException("No user found.");
+            if (user != null)
+            {
+                return new UserModel()
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name
+                };
+            }
+            else throw new ValidationException("No user found.");
         }
-        // getting the user from the db by extracting the user information from a http response
 
+        /// <summary>
+        /// Gets a user based on the HttpContext
+        /// </summary>
+        /// <param name="httpContext">The HttpContext of the request received</param>
+        /// <returns>A UserModel matching the given identity</returns>
+        /// <exception cref="ValidationException">If the user is not found</exception>
         public UserModel GetFromHttpContext(HttpContext httpContext)
         {
             var userId = new Guid(httpContext.User.Identity.Name);
 
             var user = GetById(userId);
-            if(user == null)
+            if (user == null)
             {
                 throw new ValidationException("User not found");
             }
             else return user;
         }
 
-        // logic of a registration function with all the necessary validation, creating a pw hash and inserting
-        // the newly registered used into the db through repository, returning a UserModel
-
+        /// <summary>
+        /// Registers a new user
+        /// </summary>
+        /// <param name="model">A RegisterModel containing the users details</param>
+        /// <returns>The UserModel object of the new user</returns>
+        /// <exception cref="ValidationException">If there were some problems with the credentials given by the user.</exception>
         public UserModel Register(RegisterModel model)
         {
             // validation
@@ -109,38 +180,37 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (!success)
                 throw new ValidationException("User not created");
 
-            return new UserModel() { 
+            return new UserModel()
+            {
                 Id = user.Id,
                 Email = user.Email,
                 Name = user.Name
             };
         }
 
-        // method to update the information about the user that already exists
-
-        public void Update(UserModel userParam, string password = null)
+        /// <summary>
+        /// Updates the information of an already existing user.
+        /// TODO Implement this method
+        /// </summary>
+        /// <param name="userParam">The UserModel of the user with the new details included</param>
+        /// <param name="password">The password of the user</param>
+        /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
+        public User Update(User userParam, string password = null)
         {
-            /*var user = _context.Users.Find(userParam.Id);
+            var user = _userRepository.GetByEmail(userParam.Email);
 
             if (user == null)
-                throw new AppException("User not found");
+                throw new ValidationException("User not found");
 
             // update username if it has changed
-            if (!string.IsNullOrWhiteSpace(userParam.Username) && userParam.Username != user.Username)
+            if (!string.IsNullOrWhiteSpace(userParam.Name) && userParam.Name != user.Name)
             {
                 // throw error if the new username is already taken
-                if (_context.Users.Any(x => x.Username == userParam.Username))
-                    throw new AppException("Username " + userParam.Username + " is already taken");
+                if (_userRepository.GetAll().Any(x => x.Name == userParam.Name))
+                    throw new ValidationException("Username " + userParam.Name + " is already taken");
 
-                user.Username = userParam.Username;
+                user.Name = userParam.Name;
             }
-
-            // update user properties if provided
-            if (!string.IsNullOrWhiteSpace(userParam.FirstName))
-                user.FirstName = userParam.FirstName;
-
-            if (!string.IsNullOrWhiteSpace(userParam.LastName))
-                user.LastName = userParam.LastName;
 
             // update password if provided
             if (!string.IsNullOrWhiteSpace(password))
@@ -152,29 +222,70 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 user.PasswordSalt = passwordSalt;
             }
 
-            _context.Users.Update(user);
-            _context.SaveChanges();*/
+            var result = _userRepository.Update(user);
+            if (!result)
+            {
+                throw new ValidationException("User non-existent or not altered.");
+            }
+            else return _userRepository.GetByEmail(user.Email);
         }
-        
-        // method to completely delete a registered user from the database
+
+        /// <summary>
+        /// Deletes a user
+        /// </summary>
+        /// <param name="id">The Guid of the user to be deleted</param>
+        /// <returns>True if the user has been deleted successfully.</returns>
+        /// <exception cref="ValidationException">If the user does not exist or if there were some errors deleting the user.</exception>
         public bool Delete(Guid id)
         {
 
-            bool result =_userRepository.Delete(id);
+            bool result = _userRepository.Delete(id);
             if (!result)
             {
                 throw new ValidationException("User non-existent or not deleted.");
             }
             else return result;
-            
+
+        }
+        
+        /// <summary>
+        /// Gets a user by email address
+        /// TODO implement check if the user doesn't exist.
+        /// </summary>
+        /// <param name="email">The email address of a user</param>
+        /// <returns>The UserModel matching the given email address</returns>
+        public UserModel GetByEmail(string email)
+        {
+            try
+            {
+                var user = _userRepository.GetByEmail(email);
+                return new UserModel()
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    Name = user.Name
+                };
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
-        // private helper methods
+        #region Private helper methods
 
+        /// <summary>
+        /// Generates a password hash
+        /// </summary>
+        /// <param name="password">The password that needs to be hashed</param>
+        /// <param name="passwordHash">The hash used</param>
+        /// <param name="passwordSalt">The salt used</param>
+        /// <exception cref="ArgumentNullException">If the entered password, hash or salt is empty or invalid.</exception>
+        /// <exception cref="ArgumentException">If the given password is only whitespace or empty.</exception>
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            if (password == null) throw new ArgumentNullException("password");
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
+            if (password == null) throw new ArgumentNullException("password", "Password cannot be null");
+            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("The password cannot be empty or whitespace only.", "password");
 
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
@@ -183,9 +294,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
         }
 
+        /// <summary>
+        /// Verifies a password hash
+        /// </summary>
+        /// <param name="password">The password that needs to be checked</param>
+        /// <param name="storedHash">The hash used</param>
+        /// <param name="storedSalt">The salt used</param>
+        /// <returns>True if the verification passes</returns>
+        /// <exception cref="ArgumentNullException">If the entered password, hash or salt is empty or invalid.</exception>
+        /// <exception cref="ArgumentException">If the entered password, hash or salt is empty or invalid.</exception>
         private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
         {
-            if (password == null) throw new ArgumentNullException("password");
+            if (password == null) throw new ArgumentNullException("password", "Password cannot be null");
             if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
             if (storedHash.Length != 64) throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
             if (storedSalt.Length != 128) throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
@@ -201,22 +321,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             return true;
         }
-
-        public UserModel GetByEmail(string email)
-        {
-            try
-            {
-                var user = _userRepository.GetByEmail(email);
-                return new UserModel()
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    Name = user.Name
-                };
-            } catch(Exception e)
-            {
-                return null;
-            }
-        }
+        #endregion
     }
 }

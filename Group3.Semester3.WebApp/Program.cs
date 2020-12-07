@@ -10,6 +10,10 @@ namespace Group3.Semester3.WebApp
 {
     public class Program
     {
+        /// <summary>
+        /// The Main() method of the entire application
+        /// </summary>
+        /// <param name="args">Not used</param>
         public static void Main(string[] args)
         {
             var serviceProvider = CreateServices();
@@ -24,6 +28,9 @@ namespace Group3.Semester3.WebApp
             CreateHostBuilder(args).Build().Run();
         }
 
+        /// <summary>
+        /// Creates a HostBuilder
+        /// </summary>
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>

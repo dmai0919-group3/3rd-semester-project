@@ -1,15 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Group3.Semester3.WebApp.BusinessLayer;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Group3.Semester3.WebApp.Helpers;
-using Group3.Semester3.WebApp.Entities;
-using System;
-using Group3.Semester3.WebApp.Helpers.Exceptions;
-using Group3.Semester3.WebApp.Models.FileSystem;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
@@ -18,6 +9,10 @@ namespace Group3.Semester3.WebApp.Controllers
     public class FileController : Controller
     {
 
+        /// <summary>
+        /// GET: file/browse
+        /// </summary>
+        /// <returns>A View showing the user's files</returns>
         [Route("browse")]
         [HttpGet]
         public ActionResult Browse()

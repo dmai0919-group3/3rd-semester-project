@@ -19,7 +19,7 @@ using System.Windows.Shapes;
 namespace Group3.Semester3.DesktopClient.Views
 {
     /// <summary>
-    /// Interaction logic for _1UploadFile.xaml
+    /// Interaction logic for UploadFile.xaml
     /// </summary>
     public partial class UploadFile : UserControl, ISwitchable
     {
@@ -38,12 +38,22 @@ namespace Group3.Semester3.DesktopClient.Views
             submitted = false;
             InitializeComponent();
         }
+        /// <summary>
+        /// This method is called when the Open Files button is clicked. It opens a new OpenFileDialog and lets the user select multiple files.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnOpenFiles_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Multiselect = true;
-            // TODO: add filter matching our functionality
-            openFileDialog.Filter = "All files (*.*)|*.*";
+            openFileDialog.Filter =
+                "Image files (*.jpg *.jpeg *.jpe *.jfif *.png *.gif *.bmp *.tif *.tiff *.heif)|*.jpg; *.jpeg; *.jpe; *.jfif; *.png; *.gif; *.bmp; *.tif; *.tiff; *.heif|" +
+                "PDF files (*.pdf)|*.pdf|" +
+                "Text files (*.txt)|*.txt|" +
+                "Audio files (*.mp3 *.m4a *.flac *.wav *.wma *.aac)|*.mp3; *.m4a; *.flac; *.wav; *.wma; *.aac|" +
+                "Video files (*.avi *.flv *.mkv *.mov *.mp4 *.webm *.wmv)|*.avi; *.flv; *.mkv; *.mov; *.mp4; *.webm; *.wmv" +
+                "All files (*.*)|*.*|";
             openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             if (openFileDialog.ShowDialog() == true)
             {
@@ -62,12 +72,15 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
+        /// <summary>
+        /// This method is called when the Submit button is clicked. It uploads the file in a thread so the app won't hang.
+        /// TODO use exceptions instead of conditional branching
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void btnSubmit_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Do in new thread, so app won't wait
-            // TODO use exceptions instead of conditional branching
-
-            // Prevent multiple submits
+            // This is to prevent multiple submits
             if (!submitted)
             {
                 submitted = true;
@@ -102,9 +115,10 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
+        // I'm not sure this method is actually used anywhere or if it's even necessary.
         private void btnUploadFile_Click(object sender, RoutedEventArgs e)
         {
-            // TODO implement file ctrl logic
+            // TODO implement file ctrl logic ???
         }
 
         public void UtilizeState(object state)

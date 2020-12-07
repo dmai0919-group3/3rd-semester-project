@@ -23,7 +23,7 @@ using System.Linq;
 namespace Group3.Semester3.DesktopClient.Views
 {
     /// <summary>
-    /// Interaction logic for PageSwitcher.xaml
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {

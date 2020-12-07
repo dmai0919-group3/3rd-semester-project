@@ -4,40 +4,87 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@section HeadCss{
+    <link rel="stylesheet" href="~/css/sidebar-style.css">
+}
 
-<div class="row">
-    <div class="dropdown" x-placement="bottom-start">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            New
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
-            <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+
+<div class="wrapper">
+    <!-- Sidebar -->
+    
+    <nav id="sidebar">
+        <div id="dismiss">
+            <i class="fas fa-arrow-left"></i>
         </div>
-    </div>
+
+        <div class="sidebar-header">
+            <h3>Menu</h3>
+        </div>
+
+        <ul class="list-unstyled components">
+            <li>
+                <a href="#" class="group-toggle" data-id="0">My files</a>
+            </li>
+            <li>
+                <a href="#groupsSubmenu" data-toggle="collapse" aria-expanded="false">Groups</a>
+                <ul class="collapse list-unstyled" id="groupsSubmenu">
+                    
+                </ul>
+            </li>
+        </ul>
+        <div class="row justify-content-center">
+            <button class="btn btn-primary" id="addGroupBtn">Create group</button>
+        </div>
+    </nav>
     
-    <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
-    
-    <div class="directory-path-container">
-        <h2>Path: <span id="directory-path">/</span></h2>
+    <!-- Page Content -->
+    <div id="content" class="container-fluid">
+        <div class="row">
+            
+            <button type="button" id="sidebarCollapse" class="btn btn-info">
+                <i class="fas fa-align-left"></i>
+                <span>Menu</span>
+            </button>
+            <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-align-justify"></i>
+            </button>
+            
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                New
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
+                <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+            </div>
+
+            <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
+
+            <div class="directory-path-container">
+                <h2>Path: <span id="directory-path">/</span></h2>
+            </div>
+        </div>
+        
+        
+        <div class="row" id="file-container"></div>
     </div>
 </div>
 
 
-<div class="row" id="file-container"></div>
-
-
 <script>
+    const browseFilesUrl = "@Url.Action("BrowseFiles", "FileApi")";
     const renameUrl = "@Url.Action("Rename", "FileApi")";
     const deleteUrl = "@Url.Action("Delete", "FileApi")";
     const createFolderUrl = "@Url.Action("CreateFolder", "FileApi")";
     const uploadFilesUrl = "@Url.Action("UploadFiles", "FileApi")";
     const moveFileUrl = "@Url.Action("MoveIntoFolder", "FileApi")";
     const updateFileUrl = "@Url.Action("SetFileContents", "FileApi")";
+    const listUserGroups = "@Url.Action("Index", "GroupApi")";
+    const createGroupUrl = "@Url.Action("CreateGroup", "GroupApi")";
     const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
     const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
 </script>
 
+<script src="~/js/custom-sidebar.js"></script>
 <script src="~/js/browse-file-scripts.js"></script>
 
 @*
@@ -115,6 +162,9 @@
                     </div>
                     <div class="form-group">
                         <input id="upload-file-parentId" type="hidden" name="ParentId" value="0" />
+                    </div>
+                    <div class="form-group">
+                        <input id="upload-file-groupId" type="hidden" name="GroupId" value="0" />
                     </div>
                 </form>
                 <div class="progress">
@@ -203,11 +253,94 @@
                     </div>
                     <input type="hidden" id="editFileId">
                     <input type="hidden" id="editFileTimestamp">
-                    <input type="hidden" id="editFileToken">
+                    <input type="hidden" id="editFileOverwrite">
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="editModalSave">Save</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="overwriteEditModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h5>Contents of the file have been changed by anothe user. Do you want to continue?</h5>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="overwriteEditModalOverwrite">Overwrite</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="downloadFileModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Downloading <span id="download-file-name"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Your file is ready to download</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="cancel-download">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="filePreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Preview <span id="preview-file-name"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body align-content-center">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create new group</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="create-group-name" class="col-form-label">Group name:</label>
+                        <input type="text" class="form-control" id="create-group-name">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="createGroup()">Create</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>

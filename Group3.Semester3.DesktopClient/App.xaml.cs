@@ -14,6 +14,12 @@ namespace Group3.Semester3.DesktopClient
         private ApiService _apiService;
         private Switcher _switcher;
 
+        /// <summary>
+        /// This method is called when the application is started. It initializes the ApiService and Switcher objects used across the whole application.
+        /// After that, it shows a new AuthWindow.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnStartup(object sender, StartupEventArgs e)
         {
             _apiService = new ApiService();
