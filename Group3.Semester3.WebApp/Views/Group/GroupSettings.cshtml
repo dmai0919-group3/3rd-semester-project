@@ -8,7 +8,7 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <h3>Group @group.Name</h3>
+        <h3 id="group-name">@group.Name <i class="fa fa-edit" onclick="showRenameGroupModal()" style="cursor: pointer;"></i></h3>
     </div>
     <div class="row">
         <p class="col-12">Users:</p>
@@ -22,11 +22,13 @@
 
 
 <script>
-    let groupId = "@group.Id";
-    let userId = "@currentUser.Id";
+    let currentGroupId = "@group.Id";
+    let currentUserId = "@currentUser.Id";
     
     let getGroupUsersUrl = "@Url.Action("GetGroupUsers", "GroupApi", new {groupId = group.Id})";
     let addUserToGroupUrl = "@Url.Action("AddUser", "GroupApi")";
+    let removeUserUrl = "@Url.Action("RemoveUser", "GroupApi")";
+    let renameGroupUrl = "@Url.Action("Rename", "GroupApi")";
     
     $(document).ready(function () {
         $.ajax({
@@ -40,12 +42,15 @@
                 alert("Failed to load users: " +  result);
             }
         });
+        $('#user-list').on('click', '.user-remove', function () {
+            removeUser(this);
+        })
     });
     
     function addUserToList(user) {
         let $item = '<li class="list-group-item d-flex justify-content-between align-items-center" data-id="' + user.id + '">'+
                      user.name +
-                     (user.id !== userId ? ' <button class="btn btn-danger user-remove">Remove</button>' 
+                     (user.id !== currentUserId ? ' <button class="btn btn-danger user-remove">Remove</button>' 
                      : '<button class="btn btn-danger user-remove">Leave group</button>')+
                      '</li>';
         $("#user-list").append($item);
@@ -61,7 +66,7 @@
         
         let data = {
             Email: email,
-            GroupId: groupId
+            GroupId: currentGroupId
         };
         
         $.ajax({
@@ -79,7 +84,58 @@
     }
     
     function removeUser(element) {
+        let userId = $(element).parent().data('id');
         
+        let data = {
+            UserId: userId,
+            GroupId: currentGroupId
+        };
+        $.ajax({
+            url: removeUserUrl,
+            method: 'DELETE',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (user) {
+                if (userId === currentUserId) {
+                    window.location.href = "/file/browse"; 
+                }
+                $(element).parent().remove();
+            },
+            error: function (result) {
+                alert(result.responseText);
+            }
+        });
+    }
+    
+    function showRenameGroupModal() {
+        let groupName = $('#group-name').text();
+        
+        $('#rename-group-name').val(groupName);
+        
+        $('#renameGroupModal').modal();
+    }
+    
+    function renameGroup() {
+        let name = $('#rename-group-name').val();
+        
+        let data = {
+            Id: currentGroupId,
+            Name: name,
+        };
+        
+        $.ajax({
+            url: renameGroupUrl,
+            method: 'PUT',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (group) {
+                $('#group-name').text(group.name);
+                $('#renameGroupModal').modal('hide');
+            },
+            error: function (result) {
+                alert(result.responseText);
+            }
+        });
     }
 </script>
 
@@ -96,12 +152,37 @@
                 <form>
                     <div class="form-group">
                         <label for="add-user-email" class="col-form-label">User email:</label>
-                        <input type="text" class="form-control" id="add-user-email">
+                        <input type="email" class="form-control" id="add-user-email">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" onclick="addUser()">Add</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="renameGroupModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rename group</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="rename-group-name" class="col-form-label">Group name:</label>
+                        <input type="text" class="form-control" id="rename-group-name">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="renameGroup()">Rename</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>
