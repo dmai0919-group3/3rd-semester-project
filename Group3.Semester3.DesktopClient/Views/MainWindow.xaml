@@ -133,7 +133,8 @@
             <ListView ItemsSource="{Binding }" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
               SelectedItem="{Binding SelectedFile, RelativeSource={RelativeSource AncestorType=Window}}"
               ItemContainerStyle="{StaticResource FileItemStyle}"
-               SelectionChanged="ListView_SelectionChanged" Grid.Row="1">
+              SelectionChanged="ListView_SelectionChanged" Grid.Row="1"
+              x:Name="listFileListView">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel/>

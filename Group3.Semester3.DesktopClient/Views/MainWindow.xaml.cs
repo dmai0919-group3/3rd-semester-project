@@ -77,27 +77,26 @@ namespace Group3.Semester3.DesktopClient.Views
         {
             Model.FileViewList.Clear();
 
+            FileEntity upFolder = null;
+
             var l = (rootFolder == null) ? apiService.FileList() : apiService.FileList(rootFolder.Id);
 
-            if (rootFolder != null)
-            {
-
-
-                var e = new FileEntityWrapper
-                {
-                    Icon = IconFolderOpen,
-                    FileEntity = rootFolder
-                };
-                Model.FileViewList.Add(e);
-            }
-
-            // TODO the stack is only to keep track of the folder path. def fix this, it won't work when opening random folders
-
-            if (folderStack.Count > 0 && folderStack.Peek().Id == rootFolder?.Id)
+            if (folderStack.Count > 0 && folderStack.Peek().ParentId == rootFolder?.Id)
             {
                 folderStack.Pop();
             }
-            else if (rootFolder != null) folderStack.Push(rootFolder);
+            else if (rootFolder != null && rootFolder?.Id != Guid.Empty) folderStack.Push(rootFolder);
+
+            if (rootFolder != null && rootFolder?.Id != Guid.Empty)
+            {
+                upFolder = folderStack.Count > 0 ? new FileEntity { Id = folderStack.Peek().ParentId, IsFolder = true } : new FileEntity { Id = Guid.Empty, IsFolder = true };
+                var e = new FileEntityWrapper
+                {
+                    Icon = IconFolderOpen,
+                    FileEntity = upFolder
+                };
+                Model.FileViewList.Add(e);
+            }
 
             {
                 string name = "Home";
@@ -150,7 +149,9 @@ namespace Group3.Semester3.DesktopClient.Views
                 Model.FileViewList.Add(e);
             }
 
-            if(rootFolder != null) rootFolder.Name = "[UP]";
+            if(upFolder != null) upFolder.Name = "[UP]";
+
+            listFileListView.Items.Refresh();
         }
 
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)

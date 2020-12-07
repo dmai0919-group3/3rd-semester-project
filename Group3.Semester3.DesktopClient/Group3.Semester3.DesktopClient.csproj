@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Remove="Views\baseline_folder_black_48dp.png" />
+    <None Remove="Views\baseline_folder_open_black_48dp.png" />
     <None Remove="Views\baseline_headset_black_48dp.png" />
     <None Remove="Views\baseline_insert_drive_file_black_48dp.png" />
     <None Remove="Views\baseline_insert_photo_black_48dp.png" />
@@ -33,6 +34,7 @@
       <Generator>MSBuild:Compile</Generator>
     </Resource>
     <Resource Include="Views\baseline_folder_black_48dp.png" />
+    <Resource Include="Views\baseline_folder_open_black_48dp.png" />
     <Resource Include="Views\baseline_headset_black_48dp.png" />
     <Resource Include="Views\baseline_insert_drive_file_black_48dp.png" />
     <Resource Include="Views\baseline_insert_photo_black_48dp.png" />
