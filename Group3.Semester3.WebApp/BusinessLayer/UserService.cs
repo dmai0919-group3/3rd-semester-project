@@ -196,7 +196,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
         public User Update(UserUpdateModel userParam, UserModel currentUser)
         {
-            var user = _userRepository.GetByEmail(userParam.Email);
+            var user = _userRepository.Get(currentUser.Id);
 
             if(currentUser.Id != user.Id)
             {
@@ -212,13 +212,27 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
 
             // update password if provided
-            if (!string.IsNullOrWhiteSpace(userParam.NewPassword))
+            if (!string.IsNullOrWhiteSpace(userParam.NewPassword) && !string.IsNullOrWhiteSpace(userParam.NewPasswordCheck))
             {
+                if(string.IsNullOrWhiteSpace(userParam.OldPassword))
+                {
+                    throw new ValidationException("Old password cannot be empty");
+                }
+                if(!VerifyPasswordHash(userParam.OldPassword, user.PasswordHash, user.PasswordSalt))
+                {
+                    throw new ValidationException("Wrong password");
+                }
+                if (userParam.NewPassword.Equals(userParam.NewPasswordCheck)) {
                 byte[] passwordHash, passwordSalt;
                 CreatePasswordHash(userParam.NewPassword, out passwordHash, out passwordSalt);
 
                 user.PasswordHash = passwordHash;
                 user.PasswordSalt = passwordSalt;
+                }
+                else
+                {
+                    throw new ValidationException("Passwords are not matching");
+                }
             }
 
             var result = _userRepository.Update(user);

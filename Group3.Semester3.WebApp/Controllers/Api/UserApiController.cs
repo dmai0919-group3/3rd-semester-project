@@ -110,10 +110,10 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         }
 
         /// <summary>
-        /// PUT: api/User/update
+        /// POST: api/User/update
         /// </summary>
         [Route("update")]
-        [HttpPut]
+        [HttpPost]
         public ActionResult updateUser(UserUpdateModel userParam)
         {
             try

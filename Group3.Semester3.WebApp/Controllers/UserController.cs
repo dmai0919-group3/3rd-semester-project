@@ -143,6 +143,25 @@ namespace Group3.Semester3.WebApp.Controllers
         }
 
         /// <summary>
+        /// GET: user/dashboard
+        /// </summary>
+        /// <returns>Checks if the credentials were altered, if yes alters them and redirects the user to the login page</returns>
+        [Route("update")]
+        public ActionResult Update(UserUpdateModel newUser)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                _userService.Update(newUser, user);
+            }
+            catch (ValidationException e)
+            {
+                addMessage(e.Message);
+            }
+            return RedirectToAction("Dashboard");
+        }
+
+        /// <summary>
         /// Adds a new message to the Messenger
         /// </summary>
         /// <param name="message">The message to be added to the Messenger</param>

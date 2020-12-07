@@ -11,5 +11,6 @@ namespace Group3.Semester3.WebApp.Models.Users
         public string Name { get; set; }
         public string OldPassword { get; set; }
         public string NewPassword { get; set; }
+        public string NewPasswordCheck { get; set; }
     }
 }
