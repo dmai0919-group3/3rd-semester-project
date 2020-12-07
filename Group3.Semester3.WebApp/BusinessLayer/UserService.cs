@@ -58,7 +58,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="userParam">The UserModel of the user with the new details included</param>
         /// <param name="password">The password of the user</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        User Update(UserUpdateModel userParam);
+        User Update(UserUpdateModel userParam, UserModel currentUser);
 
         /// <summary>
         /// Deletes a user
@@ -194,10 +194,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// </summary>
         /// <param name="userParam">The UserModel of the user with the new details included</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        public User Update(UserUpdateModel userParam)
+        public User Update(UserUpdateModel userParam, UserModel currentUser)
         {
             var user = _userRepository.GetByEmail(userParam.Email);
 
+            if(currentUser.Id != user.Id)
+            {
+                throw new ValidationException("Operation forbidden.");
+            }
             if (user == null)
                 throw new ValidationException("User not found");
 

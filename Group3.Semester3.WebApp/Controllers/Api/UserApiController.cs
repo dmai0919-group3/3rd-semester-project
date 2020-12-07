@@ -118,7 +118,8 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         {
             try
             {
-                var result = _userService.Update(userParam);
+                var currentUser = _userService.GetFromHttpContext(HttpContext);
+                var result = _userService.Update(userParam, currentUser);
                 return Ok(result);
             }
             catch (Exception e)
