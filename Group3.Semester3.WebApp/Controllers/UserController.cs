@@ -153,11 +153,13 @@ namespace Group3.Semester3.WebApp.Controllers
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
                 _userService.Update(newUser, user);
+                addMessage("User updated successfully");
             }
             catch (ValidationException e)
             {
                 addMessage(e.Message);
             }
+            
             return RedirectToAction("Dashboard");
         }
 

@@ -193,7 +193,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// TODO Implement this method
         /// </summary>
         /// <param name="userParam">The UserModel of the user with the new details included</param>
-        /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
+        /// <exception cref="ValidationException">invalid text in the form</exception>
         public User Update(UserUpdateModel userParam, UserModel currentUser)
         {
             var user = _userRepository.Get(currentUser.Id);
