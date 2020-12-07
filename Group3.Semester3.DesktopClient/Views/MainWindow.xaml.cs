@@ -22,6 +22,14 @@ using System.Linq;
 
 namespace Group3.Semester3.DesktopClient.Views
 {
+    public class MainWindowCommands
+    {
+        public static RoutedUICommand RefreshCommand
+                            = new RoutedUICommand("Import excel command",
+                                                  "ImportExcelCmd",
+                                                  typeof(MainWindowCommands));
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -213,6 +221,21 @@ namespace Group3.Semester3.DesktopClient.Views
         private void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
         {
             // var result = DialogHost.Show(new String("asdf"));
+        }
+
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            try
+            {
+                if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+                else UpdateFileList();
+            }
+            catch { }
         }
     }
 }
