@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
@@ -20,45 +21,180 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 {
     public interface IFileService
     {
-        public Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files);
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId);
-        public FileEntity RenameFile(Guid id, Guid userId, string name);
+        /// <summary>
+        /// Uploads one or more file(s)
+        /// </summary>
+        /// <param name="user">The user who will own the uploaded files.</param>
+        /// <param name="groupId">The Guid of the group or String.Empty if file uploaded belong to user.</param>
+        /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
+        /// <param name="files">A List<IFormFile> containing all the files uploaded by the user</param>
+        /// <returns>A List<FileEntity> containing all the files that were uploaded</returns>
+        /// <exception cref="ValidationException">If there were no files chosen</exception>
+        public Task<List<FileEntry>> UploadFile(UserModel user, string groupId, string parentId, List<IFormFile> files);
+
+        /// <summary>
+        /// Gets the files owned by a given user in a given folder
+        /// TODO Why is the parentId a string instead of Guid?
+        /// </summary>
+        /// <param name="currentUser">The user whose files we are checking</param>
+        /// <param name="groupId">The Guid of group or String.Empty if browsed files do not belong to a group</param>
+        /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
+        /// <returns>An IEnumerable<FileEntity> which contains the FileEntities that can be accessed by the user.</returns>
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string groupId, string parentId);
+
+        /// <summary>
+        /// Renames a file
+        /// </summary>
+        /// <param name="fileId">The Guid of the file that needs to be renamed.</param>
+        /// <param name="user">The User whose file it is.</param>
+        /// <param name="name">The new name of the file.</param>
+        /// <returns>The FileEntity of the file including the new name.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="ValidationException">If the file doesn't exist or if there were some errors while renaming the file.</exception>
+        public FileEntity RenameFile(Guid id, UserModel user, string name);
+
+        /// <summary>
+        /// Gets a file by Guid
+        /// </summary>
+        /// <param name="id">The Guid of the file</param>
+        /// <returns>The FileEntity with the given id</returns>
+        /// <exception cref="ValidationException">If there are no file matching the given id</exception>
         public FileEntity GetById(Guid id);
-        public bool DeleteFile(Guid fileId, Guid userId);
+
+        /// <summary>
+        /// Deletes a file
+        /// </summary>
+        /// <param name="fileId">The Guid of the file that needs to be deleted.</param>
+        /// <param name="user">The User whose file it is.</param>
+        /// <returns>True if the file has been deleted successfully.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
+        public bool DeleteFile(Guid fileId, UserModel user);
+
+        /// <summary>
+        /// Creates a new folder
+        /// </summary>
+        /// <param name="user">The User who will own the new folder</param>
+        /// <param name="model">The CreateFolderModel containing the details of the new folder</param>
+        /// <returns>The FileEntity created for the new folder.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="Exception">If there were come errors while creating the folder.</exception>
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
-        public bool MoveIntoFolder(FileEntity model, Guid userId);
-        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId);
+
+        /// <summary>
+        /// Move a file into a folder
+        /// </summary>
+        /// <param name="model">The FileEntity model containing the new parentId of the file</param>
+        /// <param name="user">The User who is the owner of the file</param>
+        /// <returns>True if the file has been moved successfully.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="ValidationException">If there were some errors while moving the file.</exception>
+        public bool MoveIntoFolder(FileEntity model, UserModel user);
+        
+        /// <summary>
+        /// Generates a SAS URI for a given file
+        /// </summary>
+        /// <param name="fileId">The Guid of the file the user want to download</param>
+        /// <param name="user">The UserModel of the user who wants to download the file</param>
+        /// <returns>A tuple with the FileEntity of the given fileId and a string with the download URL</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
+        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user);
+
+        /// <summary>
+        /// Gets the contents of a PLAINTEXT file.
+        /// TODO Return an exception if the selected file is NOT a plaintext file
+        /// </summary>
+        /// <param name="id">The ID of the file</param>
+        /// <param name="user">The User who is the owner of the file</param>
+        /// <returns>An UpdateFileModel matching the file with the given ID</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
         public UpdateFileModel GetFileContents(string id, UserModel user);
+
+        /// <summary>
+        /// Updates the content of a PLAINTEXT file
+        /// </summary>
+        /// <param name="model">The UpdateFileModel containing the changes made to the file</param>
+        /// <param name="user">The User who is the owner of the file</param>
+        /// <returns>The FileEntity containing the changes</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="ConcurrencyException">If the file has been changed by another user in the meantime.</exception>
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user);
+
     }
-    
+
     public class FileService : IFileService
     {
         private IConfiguration _configuration;
         private IFileRepository _fileRepository;
-        private IFormVerificationService _formVerification;
+        private IAccessService _accessService;
+        private IGroupRepository _groupRepository;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IFormVerificationService formVerification)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
-            _formVerification = formVerification;
+            _accessService = accessService;
+            _groupRepository = groupRepository;
         }
 
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string parentId)
+        /// <summary>
+        /// Gets the files owned by a given user in a given folder
+        /// TODO Why is the parentId a string instead of Guid?
+        /// </summary>
+        /// <param name="currentUser">The user whose files we are checking</param>
+        /// <param name="groupId">The Guid of the group or String.Empty if the listed files belong only to user.</param>
+        /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
+        /// <returns>An IEnumerable<FileEntity> which contains the FileEntities that can be accessed by the user.</returns>
+        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string groupId, string parentId)
         {
             var parentGuid = ParseGuid(parentId);
+            var groupGuid = ParseGuid(groupId);
 
-            var fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
-                        
+            IEnumerable<FileEntity> fileList = null;
+            
+            if (groupGuid != Guid.Empty)
+            {
+                var group = _groupRepository.GetByGroupId(groupGuid);
+                
+                _accessService.hasAccessToGroup(currentUser, group);
+                fileList = _fileRepository.GetByGroupIdAndParentId(groupGuid, parentGuid);
+            }
+            else
+            {
+                fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
+            }
+
             return fileList;
         }
 
-        public async Task<List<FileEntry>> UploadFile(UserModel user, string parentGUID, List<IFormFile> files)
+        /// <summary>
+        /// Uploads one or more file(s)
+        /// </summary>
+        /// <param name="user">The user who will own the uploaded files.</param>
+        /// <param name="groupId">The Guid of the group or String.Empty if file uploaded belong to user.</param>
+        /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
+        /// <param name="files">A List<IFormFile> containing all the files uploaded by the user</param>
+        /// <returns>A List<FileEntity> containing all the files that were uploaded</returns>
+        /// <exception cref="ValidationException">If there were no files chosen</exception>
+        public async Task<List<FileEntry>> UploadFile(UserModel user, string groupId, string parentId, List<IFormFile> files)
         {
             //long size = files.Sum(f => f.Length);
 
-            var parsedGUID = ParseGuid(parentGUID);
+            var parentGuid = ParseGuid(parentId);
+            var groupGuid = ParseGuid(groupId);
+            
+            // Check if user has access to a group
+            if (groupGuid != Guid.Empty)
+            {
+                var group = _groupRepository.GetByGroupId(groupGuid);
+                _accessService.hasAccessToGroup(user, group);
+            }
+
+            // Check if user owns parent folder
+            if (!parentGuid.Equals(Guid.Empty))
+            {
+                var parent = GetById(parentGuid);
+                _accessService.hasAccessToFile(user, parent);
+            }
 
             List<FileEntry> fileEntries = new List<FileEntry>();
 
@@ -81,7 +217,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                         {
                             Name = formFile.FileName,
                             Id = blobGuid,
-                            Parent = new DirectoryEntry { Id = parsedGUID }
+                            Parent = new DirectoryEntry { Id = parentGuid }
                         });
 
                         var file = new FileEntity()
@@ -90,7 +226,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             AzureName = blobGuid.ToString(),
                             Name = formFile.FileName,
                             UserId = user.Id,
-                            ParentId = parsedGUID,
+                            ParentId = parentGuid,
+                            GroupId = groupGuid,
                             IsFolder = false,
                             Updated = DateTime.Now
                         };
@@ -105,90 +242,109 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 else throw new ValidationException("No files chosen.");
             }
 
-            // TODO push entries to db
-
             return fileEntries;
         }
 
         /// <summary>
-        /// 
+        /// Generates a SAS URI for a given file
         /// </summary>
-        /// <param name="fileId"></param>
-        /// <param name="userId"></param>
-        /// <returns>A tuple with the FileEntity with the given fileId and a string with the download URL</returns>
-        public (FileEntity, string) DownloadFile(Guid fileId, Guid userId)
+        /// <param name="fileId">The Guid of the file the user want to download</param>
+        /// <param name="user">The UserModel of the user who wants to download the file</param>
+        /// <returns>A tuple with the FileEntity of the given fileId and a string with the download URL</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
+        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user)
         {
             var file = _fileRepository.GetById(fileId);
-
-            if (userId == file.UserId)
-            {
-                BlobContainerClient containerClient =
-                new BlobContainerClient(
-                    _configuration.GetConnectionString("AzureConnectionString"),
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
-
-                containerClient.CreateIfNotExists();
-
-                BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
-                {
-                    StartsOn = DateTime.UtcNow,
-                    ExpiresOn = DateTime.UtcNow.AddHours(24),
-                    BlobContainerName = containerClient.Name,
-                    BlobName = file.AzureName,
-                    Resource = "b"
-                };
-
-                blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
-
-                StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
-
-                string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
-
-                return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
-            }
-            else throw new ValidationException("Operation forbidden.");
-        }
-
-        public bool DeleteFile(Guid fileId, Guid userId)
-        {
+            _accessService.hasAccessToFile(user, file);
             BlobContainerClient containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
-            var file = _fileRepository.GetById(fileId);
-            if (userId == file.UserId)
-            {
-                // TODO AzureId should be string
-                containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
-                var result = _fileRepository.Delete(fileId);
+            containerClient.CreateIfNotExists();
 
-                if (!result)
+            BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
+            {
+                StartsOn = DateTime.UtcNow,
+                ExpiresOn = DateTime.UtcNow.AddHours(24),
+                BlobContainerName = containerClient.Name,
+                BlobName = file.AzureName,
+                Resource = "b",
+                ContentDisposition = new ContentDisposition()
                 {
-                    throw new ValidationException("File non-existent or not deleted.");
-                }
-                else return result;
-            }
-            else throw new ValidationException("Operation forbidden.");
+                    FileName = file.Name
+                }.ToString()
+            };
+
+            blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
+            StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
+                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
+                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
+
+            string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
+
+            return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
         }
 
-        public FileEntity RenameFile(Guid fileId, Guid userId, string name)
+        /// <summary>
+        /// Deletes a file
+        /// </summary>
+        /// <param name="fileId">The Guid of the file that needs to be deleted.</param>
+        /// <param name="user">The User whose file it is.</param>
+        /// <returns>True if the file has been deleted successfully.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
+        public bool DeleteFile(Guid fileId, UserModel user)
         {
+
             var file = _fileRepository.GetById(fileId);
-            if (userId == file.UserId)
+            _accessService.hasAccessToFile(user, file);
+            
+            if (!file.IsFolder)
             {
-                var result = _fileRepository.Rename(fileId, name);
-                if (!result)
-                {
-                    throw new ValidationException("File non-existent or not deleted.");
-                }
-                else return _fileRepository.GetById(fileId);
+                BlobContainerClient containerClient =
+                    new BlobContainerClient(
+                        _configuration.GetConnectionString("AzureConnectionString"),
+                        _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+                
+                containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
             }
-            else throw new ValidationException("Operation forbidden.");
+            
+            var result = _fileRepository.Delete(fileId);
+
+            if (!result)
+            {
+                throw new ValidationException("File non-existent or not deleted.");
+            }
+            else return result;
         }
 
+        /// <summary>
+        /// Renames a file
+        /// </summary>
+        /// <param name="fileId">The Guid of the file that needs to be renamed.</param>
+        /// <param name="user">The User whose file it is.</param>
+        /// <param name="name">The new name of the file.</param>
+        /// <returns>The FileEntity of the file including the new name.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="ValidationException">If the file doesn't exist or if there were some errors while renaming the file.</exception>
+        public FileEntity RenameFile(Guid fileId, UserModel user, string name)
+        {
+            var file = GetById(fileId);
+            _accessService.hasAccessToFile(user, file);
+            var result = _fileRepository.Rename(fileId, name);
+            if (!result)
+            {
+                throw new ValidationException("File non-existent or not renamed.");
+            }
+            else return GetById(fileId);
+        }
+
+        /// <summary>
+        /// Parses a Guid from a string.
+        /// </summary>
+        /// <param name="guid">A string containing a valid formatted Guid</param>
+        /// <returns>A Guid object matching the given guid. If the given guid is not a valid Guid (eg.: it's a String.Empty or anything not in the valid Guid format) it returns Guid.Empty</returns>
         private Guid ParseGuid(string guid)
         {
             Guid parsedGuid = Guid.Empty;
@@ -202,6 +358,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return parsedGuid;
         }
 
+        /// <summary>
+        /// Gets a file by Guid
+        /// </summary>
+        /// <param name="id">The Guid of the file</param>
+        /// <returns>The FileEntity with the given id</returns>
+        /// <exception cref="ValidationException">If there are no file matching the given id</exception>
         public FileEntity GetById(Guid id)
         {
             var file = _fileRepository.GetById(id);
@@ -212,30 +374,43 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             else return file;
         }
 
+        /// <summary>
+        /// Creates a new folder
+        /// </summary>
+        /// <param name="user">The User who will own the new folder</param>
+        /// <param name="model">The CreateFolderModel containing the details of the new folder</param>
+        /// <returns>The FileEntity created for the new folder.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="Exception">If there were come errors while creating the folder.</exception>
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model)
         {
-            
+
             var parentGuid = ParseGuid(model.ParentId);
+            var groupGuid = ParseGuid(model.GroupId);
+            
+            // Check if user has access to a group
+            if (groupGuid != Guid.Empty)
+            {
+                var group = _groupRepository.GetByGroupId(groupGuid);
+                _accessService.hasAccessToGroup(user, group);
+            }
 
             // Check if user owns parent folder
             if (!parentGuid.Equals(Guid.Empty))
             {
                 var parent = GetById(parentGuid);
-                
-                // TODO: Check for other permissions in the future
-                if (parent.UserId != user.Id)
-                {
-                    throw new ValidationException("Operation fobidden");
-                }
+                _accessService.hasAccessToFile(user, parent);
             }
 
             var folder = new FileEntity()
             {
                 Id = Guid.NewGuid(),
                 Name = model.Name,
-                AzureName = string.Empty,
+                AzureName = null,
                 UserId = user.Id,
                 ParentId = parentGuid,
+                GroupId = groupGuid,
+                Updated = DateTime.Now,
                 IsFolder = true
             };
 
@@ -244,37 +419,46 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (!created)
             {
                 throw new Exception("Failed to create folder");
-            }            
-            
+            }
+
 
             return folder;
         }
 
-        public bool MoveIntoFolder(FileEntity model, Guid userId) {
-            var file = _fileRepository.GetById(model.Id);
-            if (userId == file.UserId)
+        /// <summary>
+        /// Move a file into a folder
+        /// </summary>
+        /// <param name="model">The FileEntity model containing the new parentId of the file</param>
+        /// <param name="user">The User who is the owner of the file</param>
+        /// <returns>True if the file has been moved successfully.</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="ValidationException">If there were some errors while moving the file.</exception>
+        public bool MoveIntoFolder(FileEntity model, UserModel user)
+        {
+            var file = GetById(model.Id);
+            _accessService.hasAccessToFile(user, file);
+            var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);
+            if (!result)
             {
-                var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);
-                if (!result)
-                {
-                    throw new ValidationException("File has not been moved, try again.");
-                }
-                else return true;
+                throw new ValidationException("File has not been moved, try again.");
             }
-            else throw new ValidationException("Operation forbidden.");
+            else return true;
         }
 
+        /// <summary>
+        /// Gets the contents of a PLAINTEXT file.
+        /// TODO Return an exception if the selected file is NOT a plaintext file
+        /// </summary>
+        /// <param name="id">The ID of the file</param>
+        /// <param name="user">The User who is the owner of the file</param>
+        /// <returns>An UpdateFileModel matching the file with the given ID</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
         public UpdateFileModel GetFileContents(string id, UserModel user)
         {
             var fileId = ParseGuid(id);
-            
+
             var file = _fileRepository.GetById(fileId);
-            
-            if (file.UserId != user.Id)
-            {
-                throw new ValidationException("Unauthorized");
-            }
-            
+            _accessService.hasAccessToFile(user, file);
             var containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -288,39 +472,41 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             StreamReader reader = new StreamReader(stream);
             string text = reader.ReadToEnd();
 
-            var form = _formVerification.GetVerifiedForm();
-
             var model = new UpdateFileModel()
             {
                 Id = file.Id,
                 Contents = text,
-                Form = form
+                Timestamp = DateTime.Now
             };
 
             return model;
         }
 
+        /// <summary>
+        /// Updates the content of a PLAINTEXT file
+        /// </summary>
+        /// <param name="model">The UpdateFileModel containing the changes made to the file</param>
+        /// <param name="user">The User who is the owner of the file</param>
+        /// <returns>The FileEntity containing the changes</returns>
+        /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
+        /// <exception cref="ConcurrencyException">If the file has been changed by another user in the meantime.</exception>
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user)
         {
-            _formVerification.VerifyForm(model.Form);
-            var formDatetime = DateTime.FromBinary(model.Form.Timestamp);
-
             var file = _fileRepository.GetById(model.Id);
+            _accessService.hasAccessToFile(user, file);
 
-            var result = DateTime.Compare(formDatetime, file.Updated);
+            if (!model.Overwrite)
+            {
+                var result = DateTime.Compare(model.Timestamp, file.Updated);
 
-            if (result <= 0)
-            {
-                throw new ValidationException("File was changed by another user. Please try again");
+                if (result <= 0)
+                {
+                    throw new ConcurrencyException("File was changed by another user. Please try again");
+                }
             }
-            
-            if (file.UserId != user.Id)
-            {
-                throw new ValidationException("Unauthorized");
-            }
-            
-            byte[] byteArray = Encoding.ASCII.GetBytes( model.Contents );
-            var contentStream = new MemoryStream( byteArray );
+
+            byte[] byteArray = Encoding.ASCII.GetBytes(model.Contents);
+            var contentStream = new MemoryStream(byteArray);
 
             var containerClient =
                 new BlobContainerClient(
@@ -328,6 +514,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             containerClient.CreateIfNotExists();
+
+            // Trigger update change
+            _fileRepository.Rename(file.Id, file.Name);
 
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 

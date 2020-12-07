@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "430ceba6-e814-4a61-a9bb-f4c3838085bf",
+		"_postman_id": "10f124a7-5295-4d8c-b667-41431f9ae7f2",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -12,7 +12,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Email\": \"test@test.test\",\r\n    \"Password\": \"test@test.test\"\r\n}",
+					"raw": "{\r\n    \"Email\": \"marek@marek.sk\",\r\n    \"Password\": \"marek\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -69,7 +69,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"Email\": \"test@test.test\",\r\n    \"Name\": \"Test User\",\r\n    \"Password\": \"test@test.test\"\r\n}",
+					"raw": "{\r\n    \"Email\": \"erik@erik.sk\",\r\n    \"Name\": \"erik\",\r\n    \"Password\": \"pass\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -111,7 +111,10 @@
 						{
 							"key": "files",
 							"type": "file",
-							"src": []
+							"src": [
+								"/C:/Users/Erik/Downloads/Question-mark-logo.png",
+								"/C:/Users/Erik/Downloads/aspnet-core-3-registration-login-api-master.zip"
+							]
 						},
 						{
 							"key": "parentGuid",
@@ -316,7 +319,7 @@
 			"response": []
 		},
 		{
-			"name": "Download FIle",
+			"name": "Download",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -331,7 +334,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/api/file/download/",
+					"raw": "{{host}}/api/file/download/3c5e6e7e-bbae-4224-91a2-12ad15dc91ae",
 					"host": [
 						"{{host}}"
 					],
@@ -339,7 +342,197 @@
 						"api",
 						"file",
 						"download",
-						""
+						"3c5e6e7e-bbae-4224-91a2-12ad15dc91ae"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Group",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"testGroup\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/group/create-group",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"group",
+						"create-group"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Rename Group",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"cfa10908-60bd-4776-a35b-b70ec725009d\",\r\n    \"name\": \"testGroupRenamd\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/group/rename",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"group",
+						"rename"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Group",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"cfa10908-60bd-4776-a35b-b70ec725009d\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/group/delete",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"group",
+						"delete"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add User to Group",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"groupId\": \"8bd4cd23-0d9e-4128-8ed4-c44969de7874\",\r\n    \"userId\": \"6CA63F0C-406D-4F0D-831D-DAED56AB5DD9\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/group/add-user",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"group",
+						"add-user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"testagain@test.com\",\r\n    \"Name\": \"Name changed\",\r\n    \"OldPassword\": \"\",\r\n    \"NewPassword\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/User/update",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"User",
+						"update"
 					]
 				}
 			},

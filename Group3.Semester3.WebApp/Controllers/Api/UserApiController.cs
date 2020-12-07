@@ -13,13 +13,11 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Group3.Semester3.WebApp.Controllers.Api
 {
-    // implementation of an user api controller for an api/User/... endpoints
     [Route("api/User")]
     [ApiController]
     [Authorize]
     public class UserApiController : ControllerBase
     {
-        // defining a user service through interface to flawlessly access the db
         private IUserService _userService;
         private readonly AppSettings _appSettings;
 
@@ -29,11 +27,14 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             _appSettings = appSettings.Value;
         }
 
-        // POST api/<UserController>
+        /// <summary>
+        /// POST: api/User/login
+        /// </summary>
+        /// <param name="model">An AuthenticateModel of a user</param>
+        /// <returns>The LoginResultModel containing the token of the user</returns>
         [Route("login")]
         [HttpPost]
         [AllowAnonymous]
-        // endpoint for logging the user into the app, validating his credentials, creating a session token 
         public IActionResult Login(AuthenticateModel model)
         {
             try
@@ -71,11 +72,14 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
         }
 
-        // POST api/<UserController
+        /// <summary>
+        /// POST: api/User/register
+        /// </summary>
+        /// <param name="model">The RegisterModel of a new user</param>
+        /// <returns>The UserModel of the new user</returns>
         [Route("register")]
         [HttpPost]
         [AllowAnonymous]
-        // endpoint for registration, registerModel is passed to user Service where user is inserted into DB
         public IActionResult Register(RegisterModel model)
         {
             try
@@ -92,9 +96,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
         }
 
+        /// <summary>
+        /// GET: api/User/current
+        /// </summary>
+        /// <returns>The UserModel of the user matching the token used</returns>
         [Route("current")]
         [HttpGet]
-        // endpoint to get current user by retrieving the info from the httpcontext
         public IActionResult Current()
         {
             var user = _userService.GetFromHttpContext(HttpContext);
@@ -102,5 +109,23 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             return Ok(user);
         }
 
+        /// <summary>
+        /// POST: api/User/update
+        /// </summary>
+        [Route("update")]
+        [HttpPost]
+        public ActionResult updateUser(UserUpdateModel userParam)
+        {
+            try
+            {
+                var currentUser = _userService.GetFromHttpContext(HttpContext);
+                var result = _userService.Update(userParam, currentUser);
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

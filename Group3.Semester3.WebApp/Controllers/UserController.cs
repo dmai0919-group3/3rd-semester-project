@@ -14,7 +14,6 @@ using Group3.Semester3.WebApp.Helpers.Exceptions;
 
 namespace Group3.Semester3.WebApp.Controllers
 {
-    // user controller which
     [Route("user")]
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class UserController : Controller
@@ -27,7 +26,10 @@ namespace Group3.Semester3.WebApp.Controllers
             _userService = userService;
         }
         
-        // GET: User/Login
+        /// <summary>
+        /// GET: user/login
+        /// </summary>
+        /// <returns>A view of the login page</returns>
         [Route("login")]
         [AllowAnonymous]
         public ActionResult Login()
@@ -35,7 +37,11 @@ namespace Group3.Semester3.WebApp.Controllers
             return View();
         }
 
-        // POST: User/Login
+        /// <summary>
+        /// POST: user/login
+        /// </summary>
+        /// <param name="model">The AuthenticateModel of the user who wants to log in</param>
+        /// <returns>Redirects the user to the Dashboard if logged in or shows an error message and stays on the same page</returns>
         [Route("login")]
         [HttpPost]
         [AllowAnonymous]
@@ -71,7 +77,10 @@ namespace Group3.Semester3.WebApp.Controllers
             }
         }
 
-        // GET: UserController/Register
+        /// <summary>
+        /// GET: user/register
+        /// </summary>
+        /// <returns>A view of the register page</returns>
         [Route("register")]
         [AllowAnonymous]
         public ActionResult Register()
@@ -79,7 +88,11 @@ namespace Group3.Semester3.WebApp.Controllers
             return View();
         }
 
-        // POST: UserController/Register
+        /// <summary>
+        /// POST: user/register
+        /// </summary>
+        /// <param name="model">The RegisterModel of the new user</param>
+        /// <returns>Shows a message that the user registered successfully or an error message and stays on the page.</returns>
         [Route("register")]
         [HttpPost]
         [AllowAnonymous]
@@ -99,7 +112,10 @@ namespace Group3.Semester3.WebApp.Controllers
             return View();
         }
 
-        // GET: user/dashboard
+        /// <summary>
+        /// GET: user/dashboard
+        /// </summary>
+        /// <returns>Checks if the user is logged in, if yes shows their details or redirects the user to the login page</returns>
         [Route("dashboard")]
         public ActionResult Dashboard()
         {
@@ -114,6 +130,10 @@ namespace Group3.Semester3.WebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// GET: user/logout
+        /// </summary>
+        /// <returns>Redirects the user to the login page</returns>
         [Route("logout")]
         public async Task<ActionResult> LogOut()
         {
@@ -122,6 +142,31 @@ namespace Group3.Semester3.WebApp.Controllers
             return RedirectToAction("Login");
         }
 
+        /// <summary>
+        /// GET: user/dashboard
+        /// </summary>
+        /// <returns>Checks if the credentials were altered, if yes alters them and redirects the user to the login page</returns>
+        [Route("update")]
+        public ActionResult Update(UserUpdateModel newUser)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                _userService.Update(newUser, user);
+                addMessage("User updated successfully");
+            }
+            catch (ValidationException e)
+            {
+                addMessage(e.Message);
+            }
+            
+            return RedirectToAction("Dashboard");
+        }
+
+        /// <summary>
+        /// Adds a new message to the Messenger
+        /// </summary>
+        /// <param name="message">The message to be added to the Messenger</param>
         protected void addMessage(string message)
         {
             Messenger.addMessage(message);

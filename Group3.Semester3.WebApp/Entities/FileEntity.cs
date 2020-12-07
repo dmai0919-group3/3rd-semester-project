@@ -9,6 +9,7 @@ namespace Group3.Semester3.WebApp.Entities
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
+        public Guid GroupId { get; set; }
         public string AzureName { get; set; }
         public string Name { get; set; }
         public Guid ParentId { get; set; }

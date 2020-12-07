@@ -7,5 +7,6 @@ namespace Group3.Semester3.WebApp.Models.FileSystem
     {
         public List<IFormFile> Files { get; set; }
         public string ParentId { get; set; }
+        public string GroupId { get; set; }
     }
 }

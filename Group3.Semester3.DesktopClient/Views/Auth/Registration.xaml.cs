@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 namespace Group3.Semester3.DesktopClient.Views.Auth
 {
     /// <summary>
-    /// Interaction logic for UserControl2.xaml
+    /// Interaction logic for Register.xaml
     /// </summary>
     public partial class Registration : UserControl, ISwitchable
     {
@@ -32,6 +32,14 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             InitializeComponent();
         }
 
+        /// <summary>
+        /// This method is called when the Register button is clicked.
+        /// It first checks if the entered password1 and password2 are the same.
+        /// If they are, it calls the ApiService.Register() method and registers a new user.
+        /// If there are any exceptions thrown, it catches them and shows a MessageBox with the message of the Exception catched
+        /// </summary>
+        /// <param name="sender">Not used</param>
+        /// <param name="e">Not used</param>
         private void btnRegister_Click(object sender, RoutedEventArgs e)
         {
             if (password1.Password != password2.Password)
@@ -40,8 +48,6 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             }
             else
             {
-                ApiService apiService = new ApiService();
-
                 RegisterModel registerModel = new RegisterModel();
                 registerModel.Email = email.Text;
                 registerModel.Password = password1.Password;
@@ -55,7 +61,7 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
                 {
                     MessageBox.Show("Error communicating with the server", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-                catch (Exception ex)
+                catch (Exception ex) // This shouldn't be here. We shouldn't print out a generic exception message.
                 {
                     MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
@@ -67,6 +73,11 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
 
         }
 
+        /// <summary>
+        /// This method is called when the Cancel button is clicked. It calls the Switcher.Switch() method and changes the view to Login.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             //switcher.Switch(new Login(apiService, switcher));
