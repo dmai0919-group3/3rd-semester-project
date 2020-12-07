@@ -18,6 +18,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteGroup(Guid groupId, UserModel user);
         public Group GetByGroupId(Guid groupId);
         public IEnumerable<Group> GetUserGroups(UserModel user);
+        public IEnumerable<UserModel> GetGroupUsers(UserModel model, Guid groupId);
         public UserModel AddUser(string userMail, UserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
@@ -97,6 +98,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var groups = _groupRepository.GetByUserId(user.Id);
 
             return groups;
+        }
+
+        public IEnumerable<UserModel> GetGroupUsers(UserModel user, Guid groupId)
+        {
+            var group = _groupRepository.GetByGroupId(groupId);
+            _accessService.hasAccessToGroup(user, group);
+            var users = _groupRepository.GetUsersByGroupId(groupId);
+
+            return users;
         }
 
         private Guid ParseGuid(string guid)
