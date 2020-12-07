@@ -14,8 +14,16 @@
         TextOptions.TextRenderingMode="Auto"        
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow">
+        Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow"
+        xmlns:commands="clr-namespace:Group3.Semester3.DesktopClient.Views">
 
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static commands:MainWindowCommands.RefreshCommand}" CanExecute="CommandBinding_CanExecute"  Executed="CommandBinding_Executed" />
+    </Window.CommandBindings>
+
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{x:Static commands:MainWindowCommands.RefreshCommand}" />
+    </Window.InputBindings>
 
     <Window.Resources>
         <BitmapImage x:Key="IconFolder" UriSource="/Views/baseline_folder_black_48dp.png"  />

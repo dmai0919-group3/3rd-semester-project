@@ -22,6 +22,14 @@ using System.Linq;
 
 namespace Group3.Semester3.DesktopClient.Views
 {
+    public class MainWindowCommands
+    {
+        public static RoutedUICommand RefreshCommand
+                            = new RoutedUICommand("Refresh",
+                                                  "RefreshCommand",
+                                                  typeof(MainWindowCommands));
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -81,6 +89,13 @@ namespace Group3.Semester3.DesktopClient.Views
 
             var l = (rootFolder == null) ? apiService.FileList() : apiService.FileList(rootFolder.Id);
 
+            if(l.Count > 0 && l[0].ParentId == Guid.Empty)
+            {
+                folderStack.Clear();
+                SelectedFile = null;
+                UpdateFilePanel();
+            }
+
             if (folderStack.Count > 0 && folderStack.Peek().ParentId == rootFolder?.Id)
             {
                 folderStack.Pop();
@@ -100,7 +115,7 @@ namespace Group3.Semester3.DesktopClient.Views
 
             {
                 string name = "Home";
-                foreach (var x in folderStack)
+                foreach (var x in folderStack.Reverse())
                 {
                     name += $" / {x.Name}";
                 }
@@ -190,16 +205,37 @@ namespace Group3.Semester3.DesktopClient.Views
         private void MenuItemRun_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) _ = FileDownloadAndExecAsync(SelectedFile.FileEntity);
+            if (SelectedFile?.FileEntity?.IsFolder == true) UpdateFileList(SelectedFile.FileEntity);
         }
 
         private void MenuItemRemove_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) apiService.DeleteFile(SelectedFile.FileEntity);
+            //TODO 
+            if (SelectedFile?.FileEntity?.IsFolder == true) try { apiService.DeleteFile(SelectedFile.FileEntity); } catch { }
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
         }
 
         private void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
         {
-            //var result = DialogHost.Show(new String("asdf"));
+            // var result = DialogHost.Show(new String("asdf"));
+        }
+
+        private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = true;
+        }
+
+        private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            try
+            {
+                if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+                else UpdateFileList();
+            }
+            catch { }
         }
     }
 }
