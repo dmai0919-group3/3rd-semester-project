@@ -660,17 +660,20 @@ function loadUserGroups() {
     $.ajax({
         url: listUserGroups,
         success: function (result) {
-            let $groups = $('#groupsSubmenu');
             result.forEach(group => {
-                let groupElement = '<li>\n' +
-                    '<a href="#" class="group-toggle justify-content-between" data-id="'+group.id+'">'+group.name+'' +
-                    '<button class="btn-primary group-setting" style="float: right; border-radius: 5px" href="#"><i class="fas fa-cog"></i></button>' +
-                    '</a>\n' +
-                    '</li>';
-                $groups.append(groupElement);
+                addGroupToSubmenu(group);
             })
         }
     });
+}
+
+function addGroupToSubmenu(group) {
+    let groupElement = '<li>\n' +
+        '<a href="#" class="group-toggle justify-content-between overflow-auto" data-id="'+group.id+'">'+group.name+'' +
+        '<button class="btn-primary group-setting" style="float: right; border-radius: 5px" href="#"><i class="fas fa-cog"></i></button>' +
+        '</a>\n' +
+        '</li>';
+    $('#groupsSubmenu').append(groupElement);
 }
 
 $(document).ready(function () {
@@ -689,4 +692,34 @@ $(document).ready(function () {
 
         window.location.href = "/group/" + id;
     });
+    
+    $('#addGroupBtn').click(function () {
+        showCreateGroupModal();
+    })
 });
+
+function showCreateGroupModal() {
+    $('#create-group-name').val('');
+    $('#createGroupModal').modal();
+}
+
+function createGroup() {
+    let name = $('#create-group-name').val();
+
+    let data = {
+        Name: name,
+    };
+
+    $.ajax({
+        url: createGroupUrl,
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (group) {
+            window.location.href = "/group/"+group.id;
+        },
+        error: function (result) {
+            alert(result);
+        }
+    });
+}
