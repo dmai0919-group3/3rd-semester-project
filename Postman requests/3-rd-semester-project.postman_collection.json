@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "60f4f1ad-f932-4b70-b61a-240f52274966",
+		"_postman_id": "10f124a7-5295-4d8c-b667-41431f9ae7f2",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -495,6 +495,44 @@
 						"api",
 						"group",
 						"add-user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Email\": \"testagain@test.com\",\r\n    \"Name\": \"Name changed\",\r\n    \"OldPassword\": \"\",\r\n    \"NewPassword\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/User/update",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"User",
+						"update"
 					]
 				}
 			},
