@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "04be23c7-a9db-439e-a87b-cff2b7a3965c",
+		"_postman_id": "10f124a7-5295-4d8c-b667-41431f9ae7f2",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -501,7 +501,7 @@
 			"response": []
 		},
 		{
-			"name": "Remove user from group",
+			"name": "Update User",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -513,11 +513,11 @@
 						}
 					]
 				},
-				"method": "DELETE",
+				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"groupId\": \"8bd4cd23-0d9e-4128-8ed4-c44969de7874\",\r\n    \"userId\": \"6CA63F0C-406D-4F0D-831D-DAED56AB5DD9\"\r\n}",
+					"raw": "{\r\n    \"Email\": \"testagain@test.com\",\r\n    \"Name\": \"Name changed\",\r\n    \"OldPassword\": \"\",\r\n    \"NewPassword\": \"\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -525,66 +525,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{host}}/api/group/remove-user",
+					"raw": "{{host}}/api/User/update",
 					"host": [
 						"{{host}}"
 					],
 					"path": [
 						"api",
-						"group",
-						"remove-user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Browse files in group",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{host}}/api/file/browse/?groupId=c67ad579-7399-487c-a05e-80fcd551103d/&parentId=0",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"file",
-						"browse",
-						""
-					],
-					"query": [
-						{
-							"key": "groupId",
-							"value": "c67ad579-7399-487c-a05e-80fcd551103d/"
-						},
-						{
-							"key": "parentId",
-							"value": "0"
-						}
+						"User",
+						"update"
 					]
 				}
 			},

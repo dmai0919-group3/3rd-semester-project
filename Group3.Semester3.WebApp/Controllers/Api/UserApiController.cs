@@ -109,5 +109,23 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             return Ok(user);
         }
 
+        /// <summary>
+        /// POST: api/User/update
+        /// </summary>
+        [Route("update")]
+        [HttpPost]
+        public ActionResult updateUser(UserUpdateModel userParam)
+        {
+            try
+            {
+                var currentUser = _userService.GetFromHttpContext(HttpContext);
+                var result = _userService.Update(userParam, currentUser);
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
     }
 }

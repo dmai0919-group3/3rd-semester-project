@@ -58,7 +58,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="userParam">The UserModel of the user with the new details included</param>
         /// <param name="password">The password of the user</param>
         /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        User Update(User user, string password = null);
+        User Update(UserUpdateModel userParam, UserModel currentUser);
 
         /// <summary>
         /// Deletes a user
@@ -193,33 +193,49 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// TODO Implement this method
         /// </summary>
         /// <param name="userParam">The UserModel of the user with the new details included</param>
-        /// <param name="password">The password of the user</param>
-        /// <exception cref="NotImplementedException">This method is not implemented yet.</exception>
-        public User Update(User userParam, string password = null)
+        /// <exception cref="ValidationException">invalid text in the form</exception>
+        public User Update(UserUpdateModel userParam, UserModel currentUser)
         {
-            var user = _userRepository.GetByEmail(userParam.Email);
+            var user = _userRepository.Get(currentUser.Id);
 
+            if(currentUser.Id != user.Id)
+            {
+                throw new ValidationException("Operation forbidden.");
+            }
             if (user == null)
                 throw new ValidationException("User not found");
 
             // update username if it has changed
             if (!string.IsNullOrWhiteSpace(userParam.Name) && userParam.Name != user.Name)
             {
-                // throw error if the new username is already taken
-                if (_userRepository.GetAll().Any(x => x.Name == userParam.Name))
-                    throw new ValidationException("Username " + userParam.Name + " is already taken");
-
                 user.Name = userParam.Name;
             }
 
             // update password if provided
-            if (!string.IsNullOrWhiteSpace(password))
+            if (!string.IsNullOrWhiteSpace(userParam.NewPassword) && !string.IsNullOrWhiteSpace(userParam.NewPasswordCheck))
             {
-                byte[] passwordHash, passwordSalt;
-                CreatePasswordHash(password, out passwordHash, out passwordSalt);
+                if(string.IsNullOrWhiteSpace(userParam.OldPassword))
+                {
+                    throw new ValidationException("Old password cannot be empty");
+                }
+                
+                if (userParam.NewPassword.Equals(userParam.NewPasswordCheck)) {
+                    
+                    if(!VerifyPasswordHash(userParam.OldPassword, user.PasswordHash, user.PasswordSalt))
+                    {
+                        throw new ValidationException("Wrong password");
+                    }
+                    
+                    byte[] passwordHash, passwordSalt;
+                    CreatePasswordHash(userParam.NewPassword, out passwordHash, out passwordSalt);
 
-                user.PasswordHash = passwordHash;
-                user.PasswordSalt = passwordSalt;
+                    user.PasswordHash = passwordHash;
+                    user.PasswordSalt = passwordSalt;
+                }
+                else
+                {
+                    throw new ValidationException("Passwords are not matching");
+                }
             }
 
             var result = _userRepository.Update(user);
