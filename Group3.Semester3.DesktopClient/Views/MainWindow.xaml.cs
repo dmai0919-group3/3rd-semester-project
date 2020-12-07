@@ -190,11 +190,15 @@ namespace Group3.Semester3.DesktopClient.Views
         private void MenuItemRun_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) _ = FileDownloadAndExecAsync(SelectedFile.FileEntity);
+            if (SelectedFile?.FileEntity?.IsFolder == true) UpdateFileList(SelectedFile.FileEntity);
         }
 
         private void MenuItemRemove_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) apiService.DeleteFile(SelectedFile.FileEntity);
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
         }
 
         private void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
