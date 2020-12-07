@@ -162,7 +162,7 @@ namespace Group3.Semester3.DesktopClient.Services
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
 
             if (!string.IsNullOrEmpty(parameters))
-                requestUrl += "?"+parameters;
+                requestUrl += parameters;
 
             var response = httpClient.GetAsync(requestUrl);
             response.Wait();
