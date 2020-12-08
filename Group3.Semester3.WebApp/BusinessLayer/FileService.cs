@@ -435,6 +435,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ValidationException">If there were some errors while moving the file.</exception>
         public bool MoveIntoFolder(FileEntity model, UserModel user)
         {
+            if (model.Id == model.ParentId)
+            {
+                throw new ValidationException("Can not move file into itself");
+            }
             var file = GetById(model.Id);
             _accessService.hasAccessToFile(user, file);
             var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);

@@ -432,12 +432,15 @@ function showMoveFileModal(fileId) {
         keys.forEach(parentId => {
             if (parentId !== currentDir) {
                 let name = dirArray[parentId];
+                
+                // Check for file and parent ID, this ensures folder can't be moved into itself
+                if (fileId !== parentId) {
+                    let link = '<a href="#" ' +
+                        'data-id="' + fileId + '" data-parent-id="' + parentId + '" ' +
+                        'class="list-group-item list-group-item-action list-group-item-info move-file-folder-choice">' + name + '</a>';
 
-                let link = '<a href="#" ' +
-                    'data-id="' + fileId + '" data-parent-id="' + parentId + '" ' +
-                    'class="list-group-item list-group-item-action list-group-item-info move-file-folder-choice">' + name + '</a>';
-
-                $list.append(link);
+                    $list.append(link);
+                }
             }
         });
     }
