@@ -80,6 +80,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="Exception">If there were come errors while creating the folder.</exception>
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
 
+        public SharedFile ShareFile(SharedFile sharedFileModel, UserModel currentUser);
+        public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
+        public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
+        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity);
+
         /// <summary>
         /// Move a file into a folder
         /// </summary>
@@ -127,13 +132,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         private IFileRepository _fileRepository;
         private IAccessService _accessService;
         private IGroupRepository _groupRepository;
+        private ISharedFilesRepository _sharedFilesRepository;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository, ISharedFilesRepository sharedFilesRepository)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
             _accessService = accessService;
             _groupRepository = groupRepository;
+            _sharedFilesRepository = sharedFilesRepository;
         }
 
         /// <summary>
@@ -531,6 +538,33 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
             return file;
+        }
+
+        public SharedFile ShareFile(SharedFile sharedFile, UserModel currentUser)
+        {
+            // TODO: checks
+            _sharedFilesRepository.Insert(sharedFile);
+            return sharedFile;
+        }
+
+        public bool UnShareFile(SharedFile sharedFile, UserModel currentUser)
+        {
+            // TODO: checks
+            return _sharedFilesRepository.DeleteByFileIdFromSharedForOne(sharedFile);
+        }
+
+        public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser)
+        {
+            IEnumerable<FileEntity> fileList = null;
+
+            fileList = _sharedFilesRepository.GetByUserId(currentUser.Id);
+
+            return fileList;
+        }
+
+        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity)
+        {
+            return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
         }
     }
 }
