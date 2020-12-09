@@ -124,7 +124,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId)
         {
-            string query = "SELECT Users.*FROM Users JOIN SharedFiles ON Users.Id = SharedFiles.FileId WHERE SharedFiles.FileId = @FileId";
+            string query = "SELECT Users.* FROM Users JOIN SharedFiles ON Users.Id = SharedFiles.UserId WHERE SharedFiles.FileId = @FileId";
 
             using (var connection = new SqlConnection(connectionString))
             {

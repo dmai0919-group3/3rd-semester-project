@@ -632,7 +632,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser)
         {
-            _accessService.hasAccessToFile(currentUser, fileEntity, IAccessService.Write);
+            var file = _fileRepository.GetById(fileEntity.Id);
+            
+            _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
+            
             return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
         }
     }
