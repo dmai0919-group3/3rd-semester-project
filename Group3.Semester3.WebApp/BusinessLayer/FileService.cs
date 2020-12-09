@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
@@ -16,6 +17,7 @@ using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Azure.Storage.Sas;
 using Azure.Storage;
 using Azure.Storage.Blobs.Specialized;
+using Microsoft.CodeAnalysis;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
@@ -82,11 +84,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public SharedFile ShareFile(SharedFile sharedFileModel, UserModel currentUser);
         public string ShareFile(FileEntity fileEntity, UserModel currentUser);
+        public FileEntity OpenSharedFileLink(string hash, UserModel currentUser);
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
         public bool UnShareFile(FileEntity sharedFile, UserModel currentUser);
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
-        public string ShareFileLink(FileEntity fileEntity, UserModel currentUser);
 
         /// <summary>
         /// Move a file into a folder
@@ -566,7 +568,40 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
 
-            return "share link";
+            var fileHash = "";
+            
+            using (var algorithm = SHA512.Create())
+            {
+                var hashedBytes = algorithm.ComputeHash(Encoding.UTF8.GetBytes(file.Id.ToString()));
+
+                fileHash = Convert.ToBase64String(hashedBytes);
+            }
+
+            var sharedFileLink = new SharedFileLink() { FileId = file.Id, Hash = fileHash};
+            _sharedFilesRepository.InsertWithLink(sharedFileLink);
+
+            // Can not return full url, since controllers can change
+            return fileHash;
+        }
+
+        public FileEntity OpenSharedFileLink(string hash, UserModel currentUser)
+        {
+            var file = _sharedFilesRepository.GetByLink(hash);
+            
+            if (currentUser != null)
+            {
+                // If user owns file we do not want to share
+                if (currentUser.Id != file.UserId)
+                {
+                    if (!_sharedFilesRepository.IsSharedWithUser(file.Id, currentUser.Id))
+                    {
+                        var sharedFile = new SharedFile() {FileId = file.Id, UserId = currentUser.Id};
+                        _sharedFilesRepository.Insert(sharedFile);
+                    }
+                }
+            }
+            
+            return file;
         }
 
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser)
@@ -608,17 +643,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             _accessService.hasAccessToFile(currentUser, fileEntity, IAccessService.Write);
             return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
-        }
-
-        public string ShareFileLink(FileEntity fileEntity, UserModel currentUser)
-        {
-            var file = _fileRepository.GetById(fileEntity.Id);
-            _accessService.hasAccessToFile(currentUser, file);
-            byte fileHash;
-            // TODO: hash and return
-            SharedFileLink sharedFileLink = new SharedFileLink() { FileId = file.Id, Hash = fileHash.ToString()};
-            _sharedFilesRepository.InsertWithLink(sharedFileLink);
-            return "";
         }
     }
 }

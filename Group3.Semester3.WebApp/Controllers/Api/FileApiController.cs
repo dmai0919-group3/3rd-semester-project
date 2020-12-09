@@ -260,7 +260,30 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
         [Route("share")]
         [HttpPost]
-        public ActionResult ShareFile(SharedFile sharedFile)
+        public ActionResult ShareFile(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var hash = _fileService.ShareFile(fileEntity, user);
+
+                var url = Url.Action("SharedFileLink", "File", new {hash = hash},  Request.Scheme);
+                
+                return Ok(url);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+        
+        [Route("share-with")]
+        [HttpPost]
+        public ActionResult ShareFileWith(SharedFile sharedFile)
         {
             try
             {

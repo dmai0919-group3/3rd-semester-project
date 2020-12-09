@@ -14,6 +14,7 @@ namespace Group3.Semester3.WebApp.Repositories
     public interface ISharedFilesRepository
     {
         public IEnumerable<FileEntity> GetByUserId(Guid userId);
+        public FileEntity GetByLink(string hash);
         public bool Insert(SharedFile sharedFile);
         public bool InsertWithLink(SharedFileLink sharedFileLink);
         public bool DeleteByFileIdFromSharedForAll(Guid fileId);
@@ -44,6 +45,22 @@ namespace Group3.Semester3.WebApp.Repositories
                 connection.Open();
 
                 var result = connection.Query<FileEntity>(query, parameters);
+
+                return result;
+            }
+        }
+
+        public FileEntity GetByLink(string hash)
+        {
+            string query = "SELECT Files.* FROM SharedFilesLinks JOIN Files ON (Files.Id = SharedFilesLinks.FileId) WHERE SharedFilesLinks.Hash = @Hash";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { Hash = hash };
+
+                connection.Open();
+
+                var result = connection.QueryFirst<FileEntity>(query, parameters);
 
                 return result;
             }
