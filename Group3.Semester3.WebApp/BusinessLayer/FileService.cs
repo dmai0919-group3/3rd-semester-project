@@ -542,15 +542,22 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public SharedFile ShareFile(SharedFile sharedFile, UserModel currentUser)
         {
-            _accessService.hasAccessToSharedFile(currentUser, sharedFile);
+            
+            var file = _fileRepository.GetById(sharedFile.FileId);
+            if(file.GroupId != Guid.Empty) 
+            {
+                throw new ValidationException("Cannot share group files.");
+            }
+            _accessService.hasAccessToFile(currentUser, file);
             _sharedFilesRepository.Insert(sharedFile);
             return sharedFile;
         }
 
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser)
         {
-            // TODO: if he the one with whom its shared
-            _accessService.hasAccessToSharedFile(currentUser, sharedFile);
+
+            var file = _fileRepository.GetById(sharedFile.FileId);
+            _accessService.hasAccessToFile(currentUser, file);
             var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.FileId);
             foreach(UserModel u in usersList)
             {

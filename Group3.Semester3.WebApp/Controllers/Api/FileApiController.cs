@@ -7,6 +7,7 @@ using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.FileSystem;
+using Group3.Semester3.WebApp.Models.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -244,7 +245,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.SharedWithList(fileEntity);
+                var fileEntities = _fileService.SharedWithList(fileEntity, user);
                 return Ok(fileEntities);
             }
             catch (ValidationException exception)
@@ -266,6 +267,10 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var user = _userService.GetFromHttpContext(HttpContext);
                 var result = _fileService.ShareFile(sharedFile, user);
                 return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
             }
             catch (Exception e)
             {
