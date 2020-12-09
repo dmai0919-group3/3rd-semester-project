@@ -12,27 +12,33 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 {
     public interface IAccessService
     {
+        // Access levels
+        public const int Write = 3;
         public const int Read = 2;
-        public const int Write = 1;
+        public const int Shared = 1;
 
         /// <summary>
         /// This method checks if a user has access to a given file or not. If they have access, nothing happens and if they don't, an exception is thrown.
         /// </summary>
         /// <param name="user">The user whose permission we are checking</param>
         /// <param name="file">The FileEntity object we are checking the user's permissions on</param>
+        /// <param name="accessLevelRequired">The access level required for certain operation</param>
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
-        public void hasAccessToFile(UserModel user, FileEntity file);
+        public void hasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired);
         public bool hasAccessToGroup(UserModel user, Group group);
     }
 
     public class AccessService : IAccessService
     {
-        IFileRepository _fileRepository;
-        IGroupRepository _groupRepository;
-        public AccessService(IFileRepository fileRepository, IGroupRepository groupRepository)
+        private readonly IFileRepository _fileRepository;
+        private readonly IGroupRepository _groupRepository;
+        private readonly ISharedFilesRepository _sharedFilesRepository;
+        
+        public AccessService(IFileRepository fileRepository, IGroupRepository groupRepository, ISharedFilesRepository sharedFilesRepository)
         {
             _fileRepository = fileRepository;
             _groupRepository = groupRepository;
+            _sharedFilesRepository = sharedFilesRepository;
         }
         
         /// <summary>
@@ -40,8 +46,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// </summary>
         /// <param name="user">The user whose permission we are checking</param>
         /// <param name="file">The FileEntity object we are checking the user's permissions on</param>
+        /// <param name="accessLevelRequired">The access level required for certain operation</param>
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
-        public void hasAccessToFile(UserModel user, FileEntity file)
+        public void hasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired)
         {
             if (file.GroupId != Guid.Empty)
             {
@@ -53,6 +60,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             if (!user.Id.Equals(file.UserId))
             {
+                // Check is file is shared with user and operation is lever Read or less
+                if (file.IsShared && accessLevelRequired <= IAccessService.Read)
+                {
+                    if (_sharedFilesRepository.IsSharedWithUser(file.Id, user.Id))
+                    {
+                        return;
+                    }
+                }
+                
                 throw new ValidationException("Operation forbidden.");
             }
         }

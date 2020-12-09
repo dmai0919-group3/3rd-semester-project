@@ -17,6 +17,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Insert(SharedFile sharedFile);
         public bool DeleteByFileIdFromSharedForAll(Guid fileId);
         public bool DeleteByFileIdFromSharedForOne(SharedFile sharedFile);
+        public bool IsSharedWithUser(Guid fileId, Guid userId);
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId);
 
     }
@@ -83,6 +84,22 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
 
                 return false;
+            }
+        }
+
+        public bool IsSharedWithUser(Guid fileId, Guid userId)
+        {
+            var query = "SELECT * FROM SharedFiles WHERE FileId=@FileId AND UserId=@UserId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { FileId = fileId, UserId = userId};
+
+                connection.Open();
+
+                var result = connection.Query(query, parameters);
+                
+                return result.Any();
             }
         }
 
