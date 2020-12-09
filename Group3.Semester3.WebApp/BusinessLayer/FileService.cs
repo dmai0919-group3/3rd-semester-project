@@ -83,7 +83,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public SharedFile ShareFile(SharedFile sharedFileModel, UserModel currentUser);
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
-        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity);
+        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
 
         /// <summary>
         /// Move a file into a folder
@@ -542,15 +542,25 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public SharedFile ShareFile(SharedFile sharedFile, UserModel currentUser)
         {
-            // TODO: checks
+            _accessService.hasAccessToSharedFile(currentUser, sharedFile);
             _sharedFilesRepository.Insert(sharedFile);
             return sharedFile;
         }
 
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser)
         {
-            // TODO: checks
-            return _sharedFilesRepository.DeleteByFileIdFromSharedForOne(sharedFile);
+            // TODO: if he the one with whom its shared
+            _accessService.hasAccessToSharedFile(currentUser, sharedFile);
+            var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.FileId);
+            foreach(UserModel u in usersList)
+            {
+                if(u.Id.Equals(currentUser.Id))
+                {
+                    return _sharedFilesRepository.DeleteByFileIdFromSharedForOne(sharedFile);
+                }
+            }
+            return false;
+            
         }
 
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser)
@@ -562,8 +572,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return fileList;
         }
 
-        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity)
+        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser)
         {
+            _accessService.hasAccessToFile(currentUser, fileEntity);
             return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
         }
     }
