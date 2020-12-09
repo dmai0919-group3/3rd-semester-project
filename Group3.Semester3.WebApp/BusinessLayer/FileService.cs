@@ -81,7 +81,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
 
         public SharedFile ShareFile(SharedFile sharedFileModel, UserModel currentUser);
+        public string ShareFile(FileEntity fileEntity, UserModel currentUser);
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
+        public bool UnShareFile(FileEntity sharedFile, UserModel currentUser);
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
 
@@ -339,7 +341,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = GetById(fileId);
             _accessService.hasAccessToFile(user, file);
-            var result = _fileRepository.Rename(fileId, name);
+            file.Name = name;
+            var result = _fileRepository.Update(file);
             if (!result)
             {
                 throw new ValidationException("File non-existent or not renamed.");
@@ -531,9 +534,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             containerClient.CreateIfNotExists();
-
-            // Trigger update change
-            _fileRepository.Rename(file.Id, file.Name);
+            
+            file.Updated = DateTime.Now;
+            _fileRepository.Update(file);
 
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
@@ -553,6 +556,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return sharedFile;
         }
 
+        public string ShareFile(FileEntity fileEntity, UserModel currentUser)
+        {
+            var file = _fileRepository.GetById(fileEntity.Id);
+            if(file.GroupId != Guid.Empty) 
+            {
+                throw new ValidationException("Cannot share group files.");
+            }
+            _accessService.hasAccessToFile(currentUser, file);
+
+            return "share link";
+        }
+
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser)
         {
 
@@ -568,6 +583,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             return false;
             
+        }
+
+        public bool UnShareFile(FileEntity sharedFile, UserModel currentUser)
+        {
+            var file = _fileRepository.GetById(sharedFile.Id);
+            _accessService.hasAccessToFile(currentUser, file);
+            var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.Id);
+           
+            return _sharedFilesRepository.DeleteByFileIdFromSharedForAll(file.Id);
         }
 
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser)

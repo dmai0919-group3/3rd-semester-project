@@ -13,10 +13,6 @@
     <!-- Sidebar -->
     
     <nav id="sidebar">
-        <div id="dismiss">
-            <i class="fas fa-arrow-left"></i>
-        </div>
-
         <div class="sidebar-header">
             <h3>Menu</h3>
         </div>
@@ -24,6 +20,9 @@
         <ul class="list-unstyled components">
             <li>
                 <a href="#" class="group-toggle" data-id="0">My files</a>
+            </li>
+            <li>
+                <a href="#" class="group-toggle" data-id="shared">Shared with me</a>
             </li>
             <li>
                 <a href="#groupsSubmenu" data-toggle="collapse" aria-expanded="false">Groups</a>
@@ -41,14 +40,10 @@
     <div id="content" class="container-fluid">
         <div class="row">
             
-            <button type="button" id="sidebarCollapse" class="btn btn-info">
-                <i class="fas fa-align-left"></i>
-                <span>Menu</span>
-            </button>
             <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fas fa-align-justify"></i>
             </button>
-            
+
             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 New
             </button>
@@ -80,6 +75,7 @@
     const updateFileUrl = "@Url.Action("SetFileContents", "FileApi")";
     const listUserGroups = "@Url.Action("Index", "GroupApi")";
     const createGroupUrl = "@Url.Action("CreateGroup", "GroupApi")";
+    const browseSharedFilesUrl = "@Url.Action("BrowseSharedFiles", "FileApi")";
     const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
     const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
 </script>

@@ -12,6 +12,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 {
     public interface IAccessService
     {
+        public const int Read = 2;
+        public const int Write = 1;
+
         /// <summary>
         /// This method checks if a user has access to a given file or not. If they have access, nothing happens and if they don't, an exception is thrown.
         /// </summary>

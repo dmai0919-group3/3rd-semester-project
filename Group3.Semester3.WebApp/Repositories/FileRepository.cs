@@ -59,12 +59,11 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Delete(Guid id);
 
         /// <summary>
-        /// Renames a file in the database
+        /// Updates a file in the database
         /// </summary>
-        /// <param name="id">The Guid of the file to be renamed</param>
-        /// <param name="name">The new name of the file</param>
-        /// <returns>True if the file has been renamed, false if not.</returns>
-        public bool Rename(Guid id, string name);
+        /// <param name="fileEntity">A file</param>
+        /// <returns>True if the file has been updated, false if not.</returns>
+        public bool Update(FileEntity fileEntity);
 
         /// <summary>
         /// Moves a file to a new folder (changes the parentId of the file)
@@ -218,27 +217,19 @@ namespace Group3.Semester3.WebApp.Repositories
         }
         
         /// <summary>
-        /// Renames a file in the database
+        /// Updates a file in the database
         /// </summary>
-        /// <param name="id">The Guid of the file to be renamed</param>
-        /// <param name="name">The new name of the file</param>
-        /// <returns>True if the file has been renamed, false if not.</returns>
-        public bool Rename(Guid id, string name)
+        /// <param name="fileEntity">A file</param>
+        /// <returns>True if the file has been updated, false if not.</returns>
+        public bool Update(FileEntity fileEntity)
         {
-            string query = "UPDATE Files SET Name=@Name, Updated=@Updated WHERE Id=@Id";
+            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
-                var parameters = new
-                {
-                    Name = name,
-                    Id = id,
-                    Updated = DateTime.Now
-                };
-                
                 connection.Open();
 
-                int rowsChanged = connection.Execute(query, parameters);
+                int rowsChanged = connection.Execute(query, fileEntity);
                 if (rowsChanged > 0)
                 {
                     return true;

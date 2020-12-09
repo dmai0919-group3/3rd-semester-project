@@ -33,24 +33,17 @@ namespace Group3.Semester3.WebApp.Repositories
         public IEnumerable<FileEntity> GetByUserId(Guid userId)
         {
             
-            string query = "SELECT Files.*FROM Files JOIN SharedFiles ON Files.Id = SharedFiles.UserId WHERE SharedFiles.UserId = @UserId";
+            string query = "SELECT Files.* FROM SharedFiles JOIN Files ON (Files.Id = SharedFiles.FileId) WHERE SharedFiles.UserId = @UserId";
 
             using (var connection = new SqlConnection(connectionString))
             {
                 var parameters = new { UserId = userId };
 
-                try
-                {
-                    connection.Open();
+                connection.Open();
 
-                    var result = connection.Query<FileEntity>(query, parameters);
+                var result = connection.Query<FileEntity>(query, parameters);
 
-                    return result;
-                }
-                catch (Exception e)
-                {
-                }
-                throw new NotImplementedException();
+                return result;
             }
         }
 
