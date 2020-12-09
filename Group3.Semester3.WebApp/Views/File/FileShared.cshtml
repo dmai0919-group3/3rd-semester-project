@@ -14,15 +14,15 @@
     <div id="content" class="container-fluid">
 
 
-        <div class="row">
-            <h2>@file.Name</h2>
+        <div class="row" style="text-align:center">
+            <h2 style="position:absolute; margin:15px; bottom:30%;">@file.Name</h2>
         </div>
 
-        <div class="row">
+        <div class="row" style="position: absolute; left: 40%; right: 40%; bottom: 20%">
 
-            <button class="btn btn-primary" id="view-file.button" onclick="previewFile()">Preview file</button>
+            <button class="btn btn-primary" id="view-file.button" onclick="previewFile()" style="margin: 14px">Preview file</button>
 
-            <button class="btn btn-primary" id="view-file.button" onclick="startFileDownload()">Download file file</button>
+            <button class="btn btn-primary" id="view-file.button" onclick="startFileDownload()" style="margin: 14px">Download file</button>
 
         </div>
 
@@ -31,8 +31,7 @@
 
 
 <script>
-    const browseFilesUrl = "@Url.Action("BrowseFiles", "FileApi")";
-    const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
+   const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
 </script>
 
 @*
