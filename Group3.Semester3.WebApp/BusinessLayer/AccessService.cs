@@ -19,7 +19,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="file">The FileEntity object we are checking the user's permissions on</param>
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
         public void hasAccessToFile(UserModel user, FileEntity file);
-        public void hasAccessToSharedFile(UserModel user, SharedFile file);
         public bool hasAccessToGroup(UserModel user, Group group);
     }
 
@@ -54,15 +53,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("Operation forbidden.");
             }
         }
-
-        public void hasAccessToSharedFile(UserModel user, SharedFile file)
-        {
-            if (!user.Id.Equals(file.UserId))
-            {
-                throw new ValidationException("Operation forbidden.");
-            }
-        }
-
         public bool hasAccessToGroup(UserModel user, Group group)
         {
             var list = _groupRepository.GetByUserId(user.Id);
