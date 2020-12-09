@@ -40,7 +40,7 @@
     <!-- Page Content -->
     <div id="content" class="container-fluid">
         <div class="row">
-            
+
             <button type="button" id="sidebarCollapse" class="btn btn-info">
                 <i class="fas fa-align-left"></i>
                 <span>Menu</span>
@@ -48,24 +48,25 @@
             <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <i class="fas fa-align-justify"></i>
             </button>
-            
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+            <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
+
+            <div class="directory-path-container" style="position:absolute; left:25%">
+                <h2>Path: <span id="directory-path">/</span></h2>
+            </div>
+
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="position: absolute; right: 20%">
                 New
             </button>
+
             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                 <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
                 <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
             </div>
-
-            <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
-
-            <div class="directory-path-container">
-                <h2>Path: <span id="directory-path">/</span></h2>
-            </div>
         </div>
         
         
-        <div class="row" id="file-container"></div>
+        <div class="row" id="file-container" style="position: absolute; left: 25%; width: 75%; margin-top:3%"></div>
     </div>
 </div>
 
