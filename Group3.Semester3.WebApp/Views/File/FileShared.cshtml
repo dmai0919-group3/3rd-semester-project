@@ -1,6 +1,11 @@
-﻿
+﻿@using Group3.Semester3.WebApp.Entities
+
 @{
     ViewData["Title"] = "OGO Filesharing - Shared File";
+    
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+    
+    FileEntity file = ViewBag.File;
 }
 
 
@@ -9,7 +14,9 @@
     <div id="content" class="container-fluid">
 
 
-        <div class="row"><h2><span id="file-name">/</span></h2></div>
+        <div class="row">
+            <h2>@file.Name</h2>
+        </div>
 
         <div class="row">
 

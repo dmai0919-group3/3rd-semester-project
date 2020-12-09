@@ -267,7 +267,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var user = _userService.GetFromHttpContext(HttpContext);
                 var hash = _fileService.ShareFile(fileEntity, user);
 
-                var url = Url.Action("SharedFileLink", "File", new {hash = hash},  Request.Scheme);
+                var url = Url.Action("FileShared", "File", new {hash = hash},  Request.Scheme);
                 
                 return Ok(url);
             }
