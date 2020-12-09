@@ -17,6 +17,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public FileEntity GetByLink(string hash);
         public bool Insert(SharedFile sharedFile);
         public bool InsertWithLink(SharedFileLink sharedFileLink);
+        public bool DeleteShareLinkByFileId(Guid fileId);
         public bool DeleteByFileIdFromSharedForAll(Guid fileId);
         public bool DeleteByFileIdFromSharedForOne(SharedFile sharedFile);
         public bool IsSharedWithUser(Guid fileId, Guid userId);
@@ -181,6 +182,26 @@ namespace Group3.Semester3.WebApp.Repositories
             }
 
             return false;
+        }
+
+        public bool DeleteShareLinkByFileId(Guid fileId)
+        {
+            string query = "DELETE FROM SharedFilesLinks WHERE FileId=@FileId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { FileId = fileId };
+
+                connection.Open();
+
+                int rowsChanged = connection.Execute(query, parameters);
+                if (rowsChanged > 0)
+                {
+                    return true;
+                }
+
+                return false;
+            }
         }
     }
 }
