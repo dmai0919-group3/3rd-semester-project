@@ -86,6 +86,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool UnShareFile(FileEntity sharedFile, UserModel currentUser);
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
+        public string ShareFileLink(FileEntity fileEntity, UserModel currentUser);
 
         /// <summary>
         /// Move a file into a folder
@@ -607,6 +608,17 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             _accessService.hasAccessToFile(currentUser, fileEntity, IAccessService.Write);
             return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
+        }
+
+        public string ShareFileLink(FileEntity fileEntity, UserModel currentUser)
+        {
+            var file = _fileRepository.GetById(fileEntity.Id);
+            _accessService.hasAccessToFile(currentUser, file);
+            byte fileHash;
+            // TODO: hash and return
+            SharedFileLink sharedFileLink = new SharedFileLink() { FileId = file.Id, Hash = fileHash.ToString()};
+            _sharedFilesRepository.InsertWithLink(sharedFileLink);
+            return "";
         }
     }
 }
