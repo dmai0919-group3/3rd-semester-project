@@ -625,8 +625,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var file = _fileRepository.GetById(sharedFile.Id);
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
             var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.Id);
-            
-            // TODO: Remove share link
+            _sharedFilesRepository.DeleteShareLinkByFileId(file.Id);
             return _sharedFilesRepository.DeleteByFileIdFromSharedForAll(file.Id);
         }
 
