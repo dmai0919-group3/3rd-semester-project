@@ -15,6 +15,7 @@ namespace Group3.Semester3.WebApp.Repositories
     {
         public IEnumerable<FileEntity> GetByUserId(Guid userId);
         public bool Insert(SharedFile sharedFile);
+        public bool InsertWithLink(SharedFileLink sharedFileLink);
         public bool DeleteByFileIdFromSharedForAll(Guid fileId);
         public bool DeleteByFileIdFromSharedForOne(SharedFile sharedFile);
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId);
@@ -126,6 +127,26 @@ namespace Group3.Semester3.WebApp.Repositories
 
                 return false;
             }
+        }
+
+        public bool InsertWithLink(SharedFileLink sharedFileLink)
+        {
+            string query = "INSERT INTO SharedFilesLinkS (FileId, Hash)" +
+                   " VALUES (@FileId, @Hash)";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+
+                connection.Open();
+                int rowsChanged = connection.Execute(query, sharedFileLink);
+
+                if (rowsChanged > 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
