@@ -1,4 +1,4 @@
-﻿let emptyGuid = "00000000-0000-0000-0000-000000000000";
+﻿const emptyGuid = "00000000-0000-0000-0000-000000000000";
 
 let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
 
@@ -216,6 +216,11 @@ function deleteFile() {
 }
 
 function browseDirectoryFiles(parentId) {
+    
+    if (parentId === 'shared') {
+        showSharedFiles();
+        return ;
+    }
 
     let url = browseFilesUrl;
     
@@ -262,7 +267,7 @@ function browseDirectoryFiles(parentId) {
             // TODO: Handle better in the future
             alert("Failed to load files");
         }
-    })
+    });
 }
 
 const fileMarkup = `
@@ -684,9 +689,13 @@ $(document).ready(function () {
     $('#sidebar').on('click', '.group-toggle', function () {
         let id = $(this).data('id');
 
-        currentGroup = id;
+        if (id !== 'shared') {
+            currentGroup = id;
 
-        browseDirectoryFiles(emptyGuid);
+            browseDirectoryFiles(emptyGuid);
+        } else {
+            browseDirectoryFiles(id)
+        }
         $('#sidebar').removeClass('active');
         $('.overlay').removeClass('active');
     });
@@ -726,4 +735,34 @@ function createGroup() {
             alert(result);
         }
     });
+}
+
+function showSharedFiles() {
+    currentDir = emptyGuid;
+    currentGroup = emptyGuid;
+
+    $.ajax({
+        url: browseSharedFilesUrl,
+        success: function (result) {
+
+            Object.keys(dirArray).reverse()
+                .forEach(function(index) {
+                    if (index !== emptyGuid && !found) {
+                        delete dirArray[index];
+                    } else {
+                        found = true;
+                    }
+                });
+
+            $('#go-back-button').hide();
+
+            updateDirectoryPath();
+
+            changeFiles(result);
+        },
+        error: function (result) {
+            // TODO: Handle better in the future
+            alert("Failed to load shared files");
+        }
+    })
 }

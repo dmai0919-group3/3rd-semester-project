@@ -138,7 +138,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ValidationException">If the user is not found</exception>
         public UserModel GetFromHttpContext(HttpContext httpContext)
         {
-            var userId = new Guid(httpContext.User.Identity.Name);
+            var identityString = httpContext.User.Identity.Name;
+            
+            if (identityString == null)
+            {
+                return null;
+            }
+            
+            var userId = new Guid(identityString);
 
             var user = GetById(userId);
             if (user == null)

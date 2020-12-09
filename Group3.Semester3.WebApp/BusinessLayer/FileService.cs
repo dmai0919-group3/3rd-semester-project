@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Helpers;
@@ -16,6 +17,7 @@ using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Azure.Storage.Sas;
 using Azure.Storage;
 using Azure.Storage.Blobs.Specialized;
+using Microsoft.CodeAnalysis;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
@@ -80,6 +82,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="Exception">If there were come errors while creating the folder.</exception>
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
 
+        public SharedFile ShareFile(SharedFile sharedFileModel, UserModel currentUser);
+        public string ShareFile(FileEntity fileEntity, UserModel currentUser);
+        public FileEntity OpenSharedFileLink(string hash, UserModel currentUser);
+        public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
+        public bool UnShareFile(FileEntity sharedFile, UserModel currentUser);
+        public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
+        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
+
         /// <summary>
         /// Move a file into a folder
         /// </summary>
@@ -127,13 +137,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         private IFileRepository _fileRepository;
         private IAccessService _accessService;
         private IGroupRepository _groupRepository;
+        private ISharedFilesRepository _sharedFilesRepository;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository, ISharedFilesRepository sharedFilesRepository)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
             _accessService = accessService;
             _groupRepository = groupRepository;
+            _sharedFilesRepository = sharedFilesRepository;
         }
 
         /// <summary>
@@ -193,7 +205,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (!parentGuid.Equals(Guid.Empty))
             {
                 var parent = GetById(parentGuid);
-                _accessService.hasAccessToFile(user, parent);
+                _accessService.hasAccessToFile(user, parent, IAccessService.Write);
             }
 
             List<FileEntry> fileEntries = new List<FileEntry>();
@@ -255,7 +267,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public (FileEntity, string) DownloadFile(Guid fileId, UserModel user)
         {
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccessToFile(user, file);
+            _accessService.hasAccessToFile(user, file, IAccessService.Read);
             BlobContainerClient containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -298,7 +310,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
 
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccessToFile(user, file);
+            _accessService.hasAccessToFile(user, file, IAccessService.Write);
             
             if (!file.IsFolder)
             {
@@ -331,8 +343,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity RenameFile(Guid fileId, UserModel user, string name)
         {
             var file = GetById(fileId);
-            _accessService.hasAccessToFile(user, file);
-            var result = _fileRepository.Rename(fileId, name);
+            _accessService.hasAccessToFile(user, file, IAccessService.Write);
+            file.Name = name;
+            var result = _fileRepository.Update(file);
             if (!result)
             {
                 throw new ValidationException("File non-existent or not renamed.");
@@ -399,7 +412,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (!parentGuid.Equals(Guid.Empty))
             {
                 var parent = GetById(parentGuid);
-                _accessService.hasAccessToFile(user, parent);
+                _accessService.hasAccessToFile(user, parent, IAccessService.Write);
             }
 
             var folder = new FileEntity()
@@ -440,7 +453,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("Can not move file into itself");
             }
             var file = GetById(model.Id);
-            _accessService.hasAccessToFile(user, file);
+            _accessService.hasAccessToFile(user, file, IAccessService.Write);
             var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);
             if (!result)
             {
@@ -462,7 +475,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var fileId = ParseGuid(id);
 
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccessToFile(user, file);
+            _accessService.hasAccessToFile(user, file, IAccessService.Read);
             var containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -503,7 +516,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ConcurrencyException("File was deleted by another user");
             }
             
-            _accessService.hasAccessToFile(user, file);
+            _accessService.hasAccessToFile(user, file, IAccessService.Write);
 
             if (!model.Overwrite)
             {
@@ -524,13 +537,112 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
             containerClient.CreateIfNotExists();
-
-            // Trigger update change
-            _fileRepository.Rename(file.Id, file.Name);
+            
+            file.Updated = DateTime.Now;
+            _fileRepository.Update(file);
 
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
             return file;
+        }
+
+        public SharedFile ShareFile(SharedFile sharedFile, UserModel currentUser)
+        {
+            
+            var file = _fileRepository.GetById(sharedFile.FileId);
+            if(file.GroupId != Guid.Empty) 
+            {
+                throw new ValidationException("Cannot share group files.");
+            }
+            _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
+            _sharedFilesRepository.Insert(sharedFile);
+            return sharedFile;
+        }
+
+        public string ShareFile(FileEntity fileEntity, UserModel currentUser)
+        {
+            var file = _fileRepository.GetById(fileEntity.Id);
+            if(file.GroupId != Guid.Empty) 
+            {
+                throw new ValidationException("Cannot share group files.");
+            }
+            _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
+
+            var fileHash = "";
+            
+            using (var algorithm = SHA512.Create())
+            {
+                var hashedBytes = algorithm.ComputeHash(Encoding.UTF8.GetBytes(file.Id.ToString()));
+
+                fileHash = Convert.ToBase64String(hashedBytes);
+            }
+
+            var sharedFileLink = new SharedFileLink() { FileId = file.Id, Hash = fileHash};
+            _sharedFilesRepository.InsertWithLink(sharedFileLink);
+
+            // Can not return full url, since controllers can change
+            return fileHash;
+        }
+
+        public FileEntity OpenSharedFileLink(string hash, UserModel currentUser)
+        {
+            var file = _sharedFilesRepository.GetByLink(hash);
+            
+            if (currentUser != null)
+            {
+                // If user owns file we do not want to share
+                if (currentUser.Id != file.UserId)
+                {
+                    if (!_sharedFilesRepository.IsSharedWithUser(file.Id, currentUser.Id))
+                    {
+                        var sharedFile = new SharedFile() {FileId = file.Id, UserId = currentUser.Id};
+                        _sharedFilesRepository.Insert(sharedFile);
+                    }
+                }
+            }
+            
+            return file;
+        }
+
+        public bool UnShareFile(SharedFile sharedFile, UserModel currentUser)
+        {
+
+            var file = _fileRepository.GetById(sharedFile.FileId);
+            _accessService.hasAccessToFile(currentUser, file, IAccessService.Shared);
+            var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.FileId);
+            foreach(var user in usersList)
+            {
+                if(user.Id.Equals(currentUser.Id))
+                {
+                    return _sharedFilesRepository.DeleteByFileIdFromSharedForOne(sharedFile);
+                }
+            }
+            return false;
+        }
+
+        public bool UnShareFile(FileEntity sharedFile, UserModel currentUser)
+        {
+            var file = _fileRepository.GetById(sharedFile.Id);
+            _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
+            var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.Id);
+            
+            // TODO: Remove share link
+            return _sharedFilesRepository.DeleteByFileIdFromSharedForAll(file.Id);
+        }
+
+        public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser)
+        {
+            IEnumerable<FileEntity> fileList = null;
+
+            fileList = _sharedFilesRepository.GetByUserId(currentUser.Id);
+
+            return fileList;
+        }
+
+        public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser)
+        {
+            _accessService.hasAccessToFile(currentUser, fileEntity, IAccessService.Write);
+            return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
         }
     }
 }

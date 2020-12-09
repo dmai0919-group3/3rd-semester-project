@@ -7,6 +7,7 @@ using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.FileSystem;
+using Group3.Semester3.WebApp.Models.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -216,7 +217,110 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet]
+        [Route("browse-shared")]
+        public IActionResult BrowseSharedFiles()
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntities = _fileService.BrowseSharedFiles(user);
+                return Ok(fileEntities);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpGet]
+        [Route("get-shared-with")]
+        public IActionResult GetSharedWithUsers(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntities = _fileService.SharedWithList(fileEntity, user);
+                return Ok(fileEntities);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+        }
+
+        [Route("share")]
+        [HttpPost]
+        public ActionResult ShareFile(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var hash = _fileService.ShareFile(fileEntity, user);
+
+                var url = Url.Action("SharedFileLink", "File", new {hash = hash},  Request.Scheme);
+                
+                return Ok(url);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
         
+        [Route("share-with")]
+        [HttpPost]
+        public ActionResult ShareFileWith(SharedFile sharedFile)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.ShareFile(sharedFile, user);
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+
+        [Route("share")]
+        [HttpDelete]
+        public ActionResult UnShareFile(SharedFile sharedFileToDelete)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.UnShareFile(sharedFileToDelete, user);
+                if (!result)
+                {
+                    return BadRequest();
+                }
+                else return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+
         /// <summary>
         /// GET: api/file/content/{id}
         /// </summary>
