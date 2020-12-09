@@ -574,9 +574,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var file = _fileRepository.GetById(sharedFile.FileId);
             _accessService.hasAccessToFile(currentUser, file);
             var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.FileId);
-            foreach(UserModel u in usersList)
+            foreach(var user in usersList)
             {
-                if(u.Id.Equals(currentUser.Id))
+                if(user.Id.Equals(currentUser.Id))
                 {
                     return _sharedFilesRepository.DeleteByFileIdFromSharedForOne(sharedFile);
                 }
