@@ -19,7 +19,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool InsertWithLink(SharedFileLink sharedFileLink);
         public bool DeleteShareLinkByFileId(Guid fileId);
         public bool DeleteByFileIdFromSharedForAll(Guid fileId);
-        public bool DeleteByFileIdFromSharedForOne(SharedFile sharedFile);
+        public bool DeleteBySharedFile(SharedFile sharedFile);
         public bool IsSharedWithUser(Guid fileId, Guid userId);
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId);
 
@@ -145,7 +145,7 @@ namespace Group3.Semester3.WebApp.Repositories
             }
         }
 
-        public bool DeleteByFileIdFromSharedForOne(SharedFile sharedFile)
+        public bool DeleteBySharedFile(SharedFile sharedFile)
         {
             string query = "DELETE FROM SharedFiles WHERE FileId=@FileId AND UserId=@UserId";
 

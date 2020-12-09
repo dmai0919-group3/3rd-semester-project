@@ -609,15 +609,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             var file = _fileRepository.GetById(sharedFile.FileId);
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Shared);
-            var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.FileId);
-            foreach(var user in usersList)
-            {
-                if(user.Id.Equals(currentUser.Id))
-                {
-                    return _sharedFilesRepository.DeleteByFileIdFromSharedForOne(sharedFile);
-                }
-            }
-            return false;
+            return _sharedFilesRepository.DeleteBySharedFile(sharedFile);
         }
 
         public bool UnShareFile(FileEntity sharedFile, UserModel currentUser)

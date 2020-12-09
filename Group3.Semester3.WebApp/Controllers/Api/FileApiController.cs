@@ -311,7 +311,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var result = _fileService.UnShareFile(sharedFileToDelete, user);
                 if (!result)
                 {
-                    return BadRequest();
+                    return NotFound();
                 }
                 else return NoContent();
             }
