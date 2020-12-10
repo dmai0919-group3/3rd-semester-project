@@ -32,12 +32,12 @@ button {
 }
 
 .file-name:hover {
-    position: relative;
+    position: absolute;
     overflow: auto;
     line-height: initial;
     height: initial;
     background-color: white;
     border: 1px solid black;
     border-radius: 5px;
-    z-index: 1000;
+    z-index: 100;
 }

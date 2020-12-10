@@ -10,5 +10,6 @@ namespace Group3.Semester3.WebApp.Models.Groups
         public Guid GroupId { get; set; }
         public Guid UserId { get; set; }
         public string Email { get; set; }
+        public short Permissions { get; set; }
     }
 }

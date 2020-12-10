@@ -237,16 +237,22 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest();
             }
         }
-
+        
         [HttpGet]
-        [Route("get-shared-with")]
-        public IActionResult GetSharedWithUsers(FileEntity fileEntity)
+        [Route("share/{fileId}")]
+        public IActionResult GetShareInfo(Guid fileId)
         {
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.SharedWithList(fileEntity, user);
-                return Ok(fileEntities);
+                var fileEntity = _fileService.GetById(fileId);
+
+                var shareInfo = _fileService.GetShareInfo(fileEntity, user);
+                
+                var url = Url.Action("SharedFileLink", "File", new {hash = shareInfo.Item2},  Request.Scheme);
+                var users = shareInfo.Item1;
+
+                return Ok(new {Link = url, Users = users});
             }
             catch (ValidationException exception)
             {
@@ -254,7 +260,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch (Exception e)
             {
-                return BadRequest();
+                return BadRequest("System error, please contact administrator.");
             }
         }
 

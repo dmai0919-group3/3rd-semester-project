@@ -33,6 +33,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>An IEnumerable containing all FileEntities that match the query</returns>
         /// 
         public IEnumerable<FileEntity> GetByParentId(Guid parentId);
+        public IEnumerable<FileEntity> GetFoldersByParentId(Guid parentId);
         public IEnumerable<FileEntity> GetByGroupId(Guid groupId);
 
         /// <summary>
@@ -140,6 +141,22 @@ namespace Group3.Semester3.WebApp.Repositories
             }
 
             return null;
+        }
+
+        public IEnumerable<FileEntity> GetFoldersByParentId(Guid parentId)
+        {
+            string query = "SELECT * FROM Files WHERE ParentId=@ParentId and IsFolder='1'";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { ParentId = parentId };
+
+                connection.Open();
+
+                var result = connection.Query<FileEntity>(query, parameters);
+
+                return result;
+            }
         }
 
         public IEnumerable<FileEntity> GetByGroupId(Guid groupId)

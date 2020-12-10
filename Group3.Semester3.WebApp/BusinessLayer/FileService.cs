@@ -89,6 +89,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool UnShareFile(FileEntity sharedFile, UserModel currentUser);
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
+        public (IEnumerable<UserModel>, string) GetShareInfo(FileEntity fileEntity, UserModel currentUser);
 
         /// <summary>
         /// Move a file into a folder
@@ -267,7 +268,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public (FileEntity, string) DownloadFile(Guid fileId, UserModel user)
         {
             var file = _fileRepository.GetById(fileId);
+            
             _accessService.hasAccessToFile(user, file, IAccessService.Read);
+            
             BlobContainerClient containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -438,6 +441,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return folder;
         }
 
+        public (IEnumerable<UserModel>, string) GetShareInfo(FileEntity fileEntity, UserModel currentUser)
+        {
+            _accessService.hasAccessToFile(currentUser, fileEntity, IAccessService.Administrate);
+
+            string link = _sharedFilesRepository.GetHashByFileId(fileEntity.Id);
+            var userList = _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
+
+            return (userList, link);
+        }
+
         /// <summary>
         /// Move a file into a folder
         /// </summary>
@@ -555,6 +568,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("Cannot share group files.");
             }
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
+            
+            if (!file.IsShared)
+            {
+                file.IsShared = true;
+                _fileRepository.Update(file);
+            }
+            
             var isShared = _sharedFilesRepository.IsSharedWithUser(file.Id, sharedFile.UserId);
             if(isShared)
             {
@@ -576,6 +596,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
 
+            if (!file.IsShared)
+            {
+                file.IsShared = true;
+                _fileRepository.Update(file);
+            }
+            
             var fileHash = "";
             
             using (var algorithm = SHA512.Create())
@@ -587,6 +613,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             var sharedFileLink = new SharedFileLink() { FileId = file.Id, Hash = fileHash};
             var fileShareExisting = _sharedFilesRepository.GetByLink(fileHash);
+            
+            // Can not return full url, since controllers can change
             if(fileShareExisting == null)
             {
                 _sharedFilesRepository.InsertWithLink(sharedFileLink);
@@ -596,7 +624,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 return fileHash;
             }
-            // Can not return full url, since controllers can change
             
         }
 
@@ -624,7 +651,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
 
             var file = _fileRepository.GetById(sharedFile.FileId);
-            _accessService.hasAccessToFile(currentUser, file, IAccessService.Shared);
+            _accessService.hasAccessToFile(currentUser, file, IAccessService.Read);
+            
+            if (file.IsFolder)
+            {
+                var children = _fileRepository.GetFoldersByParentId(file.Id);
+                foreach (var child in children)
+                {
+                    var childShared = new SharedFile() {FileId = child.Id, UserId = sharedFile.UserId};
+                    UnShareFile(childShared, currentUser);
+                }
+            }
+            
             return _sharedFilesRepository.DeleteBySharedFile(sharedFile);
         }
 
@@ -632,7 +670,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = _fileRepository.GetById(sharedFile.Id);
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
-            var usersList = _sharedFilesRepository.GetUsersByFileId(sharedFile.Id);
+
+            if (file.IsFolder)
+            {
+                var children = _fileRepository.GetFoldersByParentId(file.Id);
+                foreach (var child in children)
+                {
+                    UnShareFile(child, currentUser);
+                }
+            }
+            
             _sharedFilesRepository.DeleteShareLinkByFileId(file.Id);
             return _sharedFilesRepository.DeleteByFileIdFromSharedForAll(file.Id);
         }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Group3.Semester3.WebApp.Models.Groups;
 using Group3.Semester3.WebApp.Models.Users;
 
 namespace Group3.Semester3.WebApp.Repositories
@@ -18,8 +19,10 @@ namespace Group3.Semester3.WebApp.Repositories
         public IEnumerable<Group> GetByUserId(Guid userId);
         public IEnumerable<UserModel> GetUsersByGroupId(Guid groupId);
         public Group GetByGroupId(Guid groupId);
-        public bool AddUser(Guid groupId, Guid userId);
+        public bool AddUser(UserGroupModel model);
         public bool RemoveUser(Guid groupId, Guid userId);
+        public bool IsUserInGroup(Guid groupId, Guid userId);
+        public UserGroupModel GetUserGroupModel(Guid groupId, Guid userId);
     }
 
     public class GroupRepository : IGroupRepository
@@ -191,19 +194,17 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
-        public bool AddUser(Guid groupId, Guid userId)
+        public bool AddUser(UserGroupModel model)
         {
-            string query = "INSERT INTO UsersGroups (UserId, GroupId)" +
-                   " VALUES (@UserId, @GroupId)";
-
-            var parameters = new { GroupId = groupId, UserId = userId };
-
+            string query = "INSERT INTO UsersGroups (UserId, GroupId, Permissions)" +
+                   " VALUES (@UserId, @GroupId, @Permissions)";
+            
             using (var connection = new SqlConnection(connectionString))
             {
                 try
                 {
                     connection.Open();
-                    int rowsChanged = connection.Execute(query, parameters);
+                    int rowsChanged = connection.Execute(query, model);
 
                     if (rowsChanged > 0)
                     {
@@ -241,6 +242,38 @@ namespace Group3.Semester3.WebApp.Repositories
                 {
                 }
                 return false;
+            }
+        }
+
+        public bool IsUserInGroup(Guid groupId, Guid userId)
+        {
+            string query = "SELECT * FROM UsersGroups WHERE GroupId=@GroupId AND UserId=@UserId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { GroupId = groupId, UserId = userId };
+                
+                connection.Open();
+
+                var result = connection.Query(query, parameters);
+
+                return result.Any();
+            }
+        }
+
+        public UserGroupModel GetUserGroupModel(Guid groupId, Guid userId)
+        {
+            string query = "SELECT Permissions FROM UsersGroups WHERE GroupId=@GroupId AND UserId=@UserId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { GroupId = groupId, UserId = userId };
+                
+                connection.Open();
+
+                var result = connection.QueryFirst<UserGroupModel>(query, parameters);
+
+                return result;
             }
         }
     }

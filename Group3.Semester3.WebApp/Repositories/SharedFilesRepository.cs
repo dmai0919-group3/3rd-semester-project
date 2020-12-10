@@ -22,6 +22,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool DeleteBySharedFile(SharedFile sharedFile);
         public bool IsSharedWithUser(Guid fileId, Guid userId);
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId);
+        public string GetHashByFileId(Guid fileId);
 
     }
     public class SharedFilesRepository : ISharedFilesRepository
@@ -61,7 +62,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
                 connection.Open();
 
-                var result = connection.QueryFirst<FileEntity>(query, parameters);
+                var result = connection.QuerySingle<FileEntity>(query, parameters);
 
                 return result;
             }
@@ -140,8 +141,28 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
+                    return new List<UserModel>();
                 }
-                throw new NotImplementedException();
+            }
+        }
+
+        public string GetHashByFileId(Guid fileId)
+        {
+            string query = "SELECT * FROM SharedFilesLinks WHERE FileId=@FileId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    var result = connection.QuerySingle(query, new {FileId = fileId});
+                    
+                    return result.Hash;
+                }
+                catch (Exception e)
+                {
+                    return "";
+                }
             }
         }
 
@@ -166,7 +187,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool InsertWithLink(SharedFileLink sharedFileLink)
         {
-            string query = "INSERT INTO SharedFilesLinkS (FileId, Hash)" +
+            string query = "INSERT INTO SharedFilesLinks (FileId, Hash)" +
                    " VALUES (@FileId, @Hash)";
 
             using (var connection = new SqlConnection(connectionString))

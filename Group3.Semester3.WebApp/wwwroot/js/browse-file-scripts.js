@@ -59,6 +59,15 @@ $(function () {
             }
             
             let standardItems = {
+                sharing: {
+                    name: "Sharing",
+                    callback: function (key, opt) {
+                        let $element = opt.$trigger;
+                        let id = $element.attr('id');
+
+                        showSharingModal(id);
+                    }
+                },
                 move: {
                     name: "Move to folder",
                     callback: function (key, opt) {
@@ -690,7 +699,11 @@ $(document).ready(function () {
         let id = $(this).data('id');
 
         if (id !== 'shared') {
-            currentGroup = id;
+            if (id === '0') {
+                currentGroup = emptyGuid;
+            } else {
+                currentGroup = id;
+            }
 
             browseDirectoryFiles(emptyGuid);
         } else {
@@ -765,4 +778,8 @@ function showSharedFiles() {
             alert("Failed to load shared files");
         }
     })
+}
+
+function showSharingModal(fileId) {
+    
 }
