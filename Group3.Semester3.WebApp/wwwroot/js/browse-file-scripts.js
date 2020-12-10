@@ -782,4 +782,67 @@ function showSharedFiles() {
 
 function showSharingModal(fileId) {
     
+    $('#file-share-id').val(fileId);
+    
+    $('#file-share-users').empty();
+    
+    $('#file-share-enable-link').hide();
+    $('#file-share-disable-link').hide();
+    
+    $.ajax({
+        url: '/api/file/share/'+fileId,
+        success: function (result) {
+            $('#file-share-link').val(result.link);
+            
+            if (result.link == null) {
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            } else {
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            }
+            
+            result.users.forEach(user => {
+                addUserToSharedUsersList(user);
+            });
+        }
+    });
+    
+    $('#fileSharingModal').modal();
+}
+
+function addUserToSharedUsersList(user) {
+    let html = '<li class="list-group-item d-flex justify-content-between" data-id="'+user.id+'">' +
+                    user.name +
+        '          <button class="btn btn-danger user-remove">Remove</button>' +
+        '       </li>';
+    $('#file-share-users').append(html);
+}
+
+function showShareWithUserModal() {
+    $('#shareWithUserModal').modal();
+}
+
+function shareWithUser() {
+    let fileId = $('#file-share-id').val();
+    let email = $('#file-share-user-email').val();
+    
+    let data = {
+        FileId: fileId,
+        Email: email
+    }
+    
+    $.ajax({
+        url: shareWithUserUrl,
+        type: 'post',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (result) {
+            addUserToSharedUsersList(result);
+            $('#shareWithUserModal').modal('hide');
+        },
+        error: function (result) {
+            alert(result.resultText);
+        }
+    })
 }

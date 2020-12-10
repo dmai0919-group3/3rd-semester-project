@@ -82,7 +82,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="Exception">If there were come errors while creating the folder.</exception>
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model);
 
-        public SharedFile ShareFile(SharedFile sharedFileModel, UserModel currentUser);
+        public UserModel ShareFile(SharedFile sharedFileModel, UserModel currentUser);
         public string ShareFile(FileEntity fileEntity, UserModel currentUser);
         public FileEntity OpenSharedFileLink(string hash, UserModel currentUser);
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
@@ -572,14 +572,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return file;
         }
 
-        public SharedFile ShareFile(SharedFile sharedFile, UserModel currentUser)
+        public UserModel ShareFile(SharedFile sharedFile, UserModel currentUser)
         {
             
             var file = _fileRepository.GetById(sharedFile.FileId);
 
+            var user = new User();
+            
             if (sharedFile.UserId == Guid.Empty)
             {
-                var user = _userRepository.GetByEmail(sharedFile.Email);
+                user = _userRepository.GetByEmail(sharedFile.Email);
 
                 if (user == null)
                 {
@@ -616,14 +618,17 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             
             var isShared = _sharedFilesRepository.IsSharedWithUser(file.Id, sharedFile.UserId);
+            
+            var userModel = new UserModel() {Id = user.Id, Email = user.Email, Name = user.Name};
+            
             if(isShared)
             {
-                return sharedFile;
+                return userModel;
             }
             else
             {
                 _sharedFilesRepository.Insert(sharedFile);
-                return sharedFile;
+                return userModel;
             }
         }
 
