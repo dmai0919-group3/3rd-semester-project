@@ -163,7 +163,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var groupGuid = ParseGuid(groupId);
 
             IEnumerable<FileEntity> fileList = null;
-            
+
             if (groupGuid != Guid.Empty)
             {
                 var group = _groupRepository.GetByGroupId(groupGuid);
@@ -173,7 +173,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
+                if (parentGuid != Guid.Empty)
+                {
+                    var file = GetById(parentGuid);
+                    _accessService.hasAccessToFile(currentUser, file, IAccessService.Read);
+                    fileList = _fileRepository.GetByParentId(parentGuid);
+                }
+                else
+                {
+                    fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
+                }
             }
 
             return fileList;
@@ -573,6 +582,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 file.IsShared = true;
                 _fileRepository.Update(file);
+            }
+            
+            if (file.IsFolder)
+            {
+                var children = _fileRepository.GetFoldersByParentId(file.Id);
+                foreach (var child in children)
+                {
+                    if (child.IsFolder)
+                    {
+                        var childShared = new SharedFile() {FileId = child.Id, UserId = sharedFile.UserId};
+                        ShareFile(childShared, currentUser);
+                    }
+                }
             }
             
             var isShared = _sharedFilesRepository.IsSharedWithUser(file.Id, sharedFile.UserId);
