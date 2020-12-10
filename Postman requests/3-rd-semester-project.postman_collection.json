@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "151e7b4c-a78c-4996-8b2d-05eb3e9569cc",
+		"_postman_id": "78245500-2205-4c9e-b4f2-6a8aa612dbb9",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -656,47 +656,6 @@
 			"response": []
 		},
 		{
-			"name": "get users the file is shared with",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"Id\": \"6e7293cc-067b-4b80-bc48-0e1be08c5c43\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{host}}/api/file/get-shared-with",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"api",
-						"file",
-						"get-shared-with"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "Share file with user",
 			"request": {
 				"auth": {
@@ -729,6 +688,36 @@
 						"api",
 						"file",
 						"share-with"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Share info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/file/share/6e7293cc-067b-4b80-bc48-0e1be08c5c43",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"share",
+						"6e7293cc-067b-4b80-bc48-0e1be08c5c43"
 					]
 				}
 			},
