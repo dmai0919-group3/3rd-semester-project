@@ -86,7 +86,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public string ShareFile(FileEntity fileEntity, UserModel currentUser);
         public FileEntity OpenSharedFileLink(string hash, UserModel currentUser);
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
-        public bool UnShareFile(FileEntity sharedFile, UserModel currentUser);
+        public bool DisableShareLink(FileEntity sharedFile, UserModel currentUser);
+        public bool DisableSharing(FileEntity sharedFile, UserModel currentUser);
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
         public (IEnumerable<UserModel>, string) GetShareInfo(FileEntity fileEntity, UserModel currentUser);
@@ -139,14 +140,17 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         private IAccessService _accessService;
         private IGroupRepository _groupRepository;
         private ISharedFilesRepository _sharedFilesRepository;
+        private IUserRepository _userRepository;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository, ISharedFilesRepository sharedFilesRepository)
+        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, 
+            IGroupRepository groupRepository, ISharedFilesRepository sharedFilesRepository, IUserRepository userRepository)
         {
             _configuration = configuration;
             _fileRepository = fileRepository;
             _accessService = accessService;
             _groupRepository = groupRepository;
             _sharedFilesRepository = sharedFilesRepository;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -572,6 +576,20 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             
             var file = _fileRepository.GetById(sharedFile.FileId);
+
+            if (sharedFile.UserId == Guid.Empty)
+            {
+                var user = _userRepository.GetByEmail(sharedFile.Email);
+
+                if (user == null)
+                {
+                    throw new ValidationException("User with this email not found");
+                }
+
+                sharedFile.UserId = user.Id;
+            }
+            
+            
             if(file.GroupId != Guid.Empty) 
             {
                 throw new ValidationException("Cannot share group files.");
@@ -688,7 +706,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return _sharedFilesRepository.DeleteBySharedFile(sharedFile);
         }
 
-        public bool UnShareFile(FileEntity sharedFile, UserModel currentUser)
+        public bool DisableShareLink(FileEntity sharedFile, UserModel currentUser)
         {
             var file = _fileRepository.GetById(sharedFile.Id);
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
@@ -698,11 +716,40 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 var children = _fileRepository.GetFoldersByParentId(file.Id);
                 foreach (var child in children)
                 {
-                    UnShareFile(child, currentUser);
+                    if (child.IsFolder)
+                    {
+                        DisableShareLink(child, currentUser);
+                    }
                 }
             }
             
             return _sharedFilesRepository.DeleteShareLinkByFileId(file.Id);
+        }
+
+        public bool DisableSharing(FileEntity sharedFile, UserModel currentUser)
+        {
+            var file = _fileRepository.GetById(sharedFile.Id);
+            _accessService.hasAccessToFile(currentUser, file, IAccessService.Administrate);
+            
+            if (file.IsFolder)
+            {
+                var children = _fileRepository.GetFoldersByParentId(file.Id);
+                foreach (var child in children)
+                {
+                    if (child.IsFolder)
+                    {
+                        DisableSharing(child, currentUser);
+                    }
+                }
+            }
+            
+            _sharedFilesRepository.DeleteShareLinkByFileId(file.Id);
+            _sharedFilesRepository.DeleteForAll(file.Id);
+
+            file.IsShared = false;
+            _fileRepository.Update(file);
+            
+            return true;
         }
 
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser)

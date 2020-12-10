@@ -9,5 +9,6 @@ namespace Group3.Semester3.WebApp.Models.FileSystem
     {
         public Guid FileId { get; set; }
         public Guid UserId { get; set; }
+        public string Email { get; set; }
     }
 }

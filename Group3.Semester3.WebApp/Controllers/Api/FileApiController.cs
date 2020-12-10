@@ -338,7 +338,31 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _fileService.UnShareFile(fileEntity, user);
+                var result = _fileService.DisableShareLink(fileEntity, user);
+                if (!result)
+                {
+                    return NotFound();
+                }
+                else return NoContent();
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+        
+        [Route("disable-sharing")]
+        [HttpPost]
+        public ActionResult DisableSharing(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.DisableSharing(fileEntity, user);
                 if (!result)
                 {
                     return NotFound();
