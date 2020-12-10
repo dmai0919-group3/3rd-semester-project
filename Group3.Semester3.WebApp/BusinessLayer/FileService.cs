@@ -555,8 +555,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("Cannot share group files.");
             }
             _accessService.hasAccessToFile(currentUser, file, IAccessService.Write);
-            _sharedFilesRepository.Insert(sharedFile);
-            return sharedFile;
+            var isShared = _sharedFilesRepository.IsSharedWithUser(file.Id, sharedFile.UserId);
+            if(isShared)
+            {
+                return sharedFile;
+            }
+            else
+            {
+                _sharedFilesRepository.Insert(sharedFile);
+                return sharedFile;
+            }
         }
 
         public string ShareFile(FileEntity fileEntity, UserModel currentUser)
@@ -578,10 +586,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
 
             var sharedFileLink = new SharedFileLink() { FileId = file.Id, Hash = fileHash};
-            _sharedFilesRepository.InsertWithLink(sharedFileLink);
-
+            var fileShareExisting = _sharedFilesRepository.GetByLink(fileHash);
+            if(fileShareExisting == null)
+            {
+                _sharedFilesRepository.InsertWithLink(sharedFileLink);
+                return fileHash;
+            }
+            else
+            {
+                return fileHash;
+            }
             // Can not return full url, since controllers can change
-            return fileHash;
+            
         }
 
         public FileEntity OpenSharedFileLink(string hash, UserModel currentUser)
