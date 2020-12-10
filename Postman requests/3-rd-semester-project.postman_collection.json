@@ -555,7 +555,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"id\": \"6e7293cc-067b-4b80-bc48-0e1be08c5c43\"\r\n    \r\n}",
+					"raw": "{\r\n    \"Id\": \"6e7293cc-067b-4b80-bc48-0e1be08c5c43\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -609,6 +609,44 @@
 						"api",
 						"file",
 						"share"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Disable sharing link",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id\": \"6e7293cc-067b-4b80-bc48-0e1be08c5c43\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/file/disable-share-link",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"disable-share-link"
 					]
 				}
 			},

@@ -60,11 +60,18 @@ namespace Group3.Semester3.WebApp.Repositories
             {
                 var parameters = new { Hash = hash };
 
-                connection.Open();
+                try
+                {
+                    connection.Open();
 
-                var result = connection.QuerySingle<FileEntity>(query, parameters);
+                    var result = connection.QuerySingle<FileEntity>(query, parameters);
 
-                return result;
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
             }
         }
 

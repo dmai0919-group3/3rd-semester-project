@@ -321,6 +321,34 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 }
                 else return NoContent();
             }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+        
+        [Route("disable-share-link")]
+        [HttpPost]
+        public ActionResult DisableShareLink(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.UnShareFile(fileEntity, user);
+                if (!result)
+                {
+                    return NotFound();
+                }
+                else return NoContent();
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
             catch (Exception e)
             {
                 return BadRequest("System error, please contact administrator.");

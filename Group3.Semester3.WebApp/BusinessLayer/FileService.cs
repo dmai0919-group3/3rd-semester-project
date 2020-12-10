@@ -680,8 +680,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 }
             }
             
-            _sharedFilesRepository.DeleteShareLinkByFileId(file.Id);
-            return _sharedFilesRepository.DeleteByFileIdFromSharedForAll(file.Id);
+            return _sharedFilesRepository.DeleteShareLinkByFileId(file.Id);
         }
 
         public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser)
