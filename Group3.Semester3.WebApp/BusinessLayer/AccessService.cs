@@ -1,23 +1,22 @@
 ﻿using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
-using Group3.Semester3.WebApp.Models.FileSystem;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
-    public interface IAccessService
+    public static class Permissions
     {
         // Permissions
-        public const int Administrate = 128;
-        public const int Manage = 32;
-        public const int Write = 2;
-        public const int Read = 1;
-
+        public const short Administrate = 128;
+        public const short Manage = 32;
+        public const short Write = 2;
+        public const short Read = 1;
+    }
+    
+    public interface IAccessService
+    {
         /// <summary>
         /// This method checks if a user has access to a given file or not. If they have access, nothing happens and if they don't, an exception is thrown.
         /// </summary>
@@ -104,9 +103,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         
         public void hasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1)
         {
-            var isInGroup = _groupRepository.IsUserInGroup(group.Id, user.Id);
-
-            if (!isInGroup)
+            var userGroupModel = _groupRepository.GetUserGroupModel(group.Id, user.Id);
+            
+            if (userGroupModel == null)
+            {
+                throw new ValidationException("Operation forbidden.");
+            }
+            
+            if ((userGroupModel.Permissions & accessLevelRequired) == 0)
             {
                 throw new ValidationException("Operation forbidden.");
             }

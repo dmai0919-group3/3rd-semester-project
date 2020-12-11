@@ -8,7 +8,10 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <h3 id="group-name">@group.Name <i class="fa fa-edit" onclick="showRenameGroupModal()" style="cursor: pointer;"></i></h3>
+        <h3 id="group-name">
+            <span>@group.Name</span>
+            <i class="fa fa-edit" id="group-rename-button" onclick="showRenameGroupModal()" style="cursor: pointer;"></i>
+        </h3>
     </div>
     <div class="row">
         <p class="col-12">Users:</p>
@@ -16,7 +19,7 @@
         </ul> 
     </div>
     <div class="row justify-content-center" style="margin-top: 1em">
-        <button class="btn btn-primary" onclick="showAddUserModal()">Add user</button>
+        <button class="btn btn-primary" id="add-user-button" onclick="showAddUserModal()">Add user</button>
     </div>
 </div>
 
@@ -24,6 +27,8 @@
 <script>
     let currentGroupId = "@group.Id";
     let currentUserId = "@currentUser.Id";
+    let currentUser = null;
+    let users = null;
     
     let getGroupUsersUrl = "@Url.Action("GetGroupUsers", "GroupApi", new {groupId = group.Id})";
     let addUserToGroupUrl = "@Url.Action("AddUser", "GroupApi")";
@@ -31,9 +36,23 @@
     let renameGroupUrl = "@Url.Action("Rename", "GroupApi")";
     
     $(document).ready(function () {
+        $('#add-user-button').hide();
+        $('#group-rename-button').hide();
+        
         $.ajax({
             url: getGroupUsersUrl,
             success: function (result) {
+                currentUser = result.find(user => {
+                    return user.id === currentUserId;
+                });
+                
+                if (currentUser.permissions.hasAdministrate) {
+                    $('#add-user-button').show();
+                    $('#group-rename-button').show();
+                }
+                
+                users = result;
+                
                 result.forEach(user => {
                     addUserToList(user);
                 });
@@ -48,16 +67,41 @@
     });
     
     function addUserToList(user) {
+        let administrate = currentUser.permissions.hasAdministrate;
         let $item = '<li class="list-group-item d-flex justify-content-between align-items-center" data-id="' + user.id + '">'+
                      user.name +
-                     (user.id !== currentUserId ? ' <button class="btn btn-danger user-remove">Remove</button>' 
-                     : '<button class="btn btn-danger user-remove">Leave group</button>')+
+                     (user.id === currentUserId ? '<button class="btn btn-danger user-remove">Leave group</button>' : 
+                     (administrate ? '<div><button class="btn btn-primary edit-permissions">Edit permissions</button>' +
+                      '<button class="btn btn-danger user-remove">Remove</button></div>' : ''))+
                      '</li>';
         $("#user-list").append($item);
     }
     
     function showAddUserModal() {
         $('#add-user-email').val('');
+        $('#add-user-permissions').empty();
+        
+        let permissions = Object.keys(currentUser.permissions);
+        
+        permissions = permissions.filter(value => {
+           return value.includes('has'); 
+        });
+        
+        permissions.forEach(permission => {
+            let name = permission.replace('has', '');
+            if (permission === 'hasRead') {
+                return ;
+            }
+            let element = '<div class="form-check">\n'+
+                           '  <input class="form-check-input" type="checkbox" ' +
+                            'name="'+permission+'" id="'+permission+'">'+
+                           '  <label class="form-check-label" for="'+permission+'">'+
+                            name +
+                           '  </label>'+
+                           '</div>';
+            $('#add-user-permissions').append(element);
+        });
+        
         $('#addUserModal').modal();
     }
     
@@ -84,7 +128,7 @@
     }
     
     function removeUser(element) {
-        let userId = $(element).parent().data('id');
+        let userId = $(element).parent().parent().data('id');
         
         let data = {
             UserId: userId,
@@ -99,7 +143,7 @@
                 if (userId === currentUserId) {
                     window.location.href = "/file/browse"; 
                 }
-                $(element).parent().remove();
+                $(element).parent().parent().remove();
             },
             error: function (result) {
                 alert(result.responseText);
@@ -129,7 +173,7 @@
             data: JSON.stringify(data),
             contentType: "application/json",
             success: function (group) {
-                $('#group-name').text(group.name);
+                $('#group-name').find('span').text(group.name);
                 $('#renameGroupModal').modal('hide');
             },
             error: function (result) {
@@ -153,6 +197,9 @@
                     <div class="form-group">
                         <label for="add-user-email" class="col-form-label">User email:</label>
                         <input type="email" class="form-control" id="add-user-email">
+                    </div>
+                    <div class="form-group" id="add-user-permissions">
+                        
                     </div>
                 </form>
             </div>

@@ -120,7 +120,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch
+            catch (Exception exception)
             {
                 return BadRequest("System error, please contact Administrator");
             }
@@ -165,7 +165,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch
+            catch (Exception exception)
             {
                 return BadRequest("System error, please contact Administrator");
             }

@@ -50,17 +50,16 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return result;
                 }
-                catch (Exception e)
+                catch
                 {
+                    return new List<Group>();
                 }
             }
-
-            throw new NotImplementedException();
         }
 
         public IEnumerable<UserModel> GetUsersByGroupId(Guid groupId)
         {
-            string query = "SELECT Users.* FROM Users JOIN UsersGroups ON Users.Id=UsersGroups.UserId WHERE UsersGroups.GroupId=@GroupId";
+            string query = "SELECT Users.*, UsersGroups.Permissions as PermissionsNumber FROM Users JOIN UsersGroups ON Users.Id=UsersGroups.UserId WHERE UsersGroups.GroupId=@GroupId";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -74,12 +73,11 @@ namespace Group3.Semester3.WebApp.Repositories
 
                     return result;
                 }
-                catch (Exception e)
+                catch
                 {
+                    return new List<UserModel>();
                 }
             }
-
-            throw new NotImplementedException();
         }
 
         public bool Insert(Group group)
@@ -99,13 +97,13 @@ namespace Group3.Semester3.WebApp.Repositories
                         return true;
                     }
                 }
-                catch (Exception e)
+                catch
                 {
-
+                    // ignored
                 }
-            }
 
-            return false;
+                return false;
+            }
         }
 
         public bool Rename(Guid groupId, string name)
@@ -175,29 +173,22 @@ namespace Group3.Semester3.WebApp.Repositories
                 {
                     connection.Open();
 
-                    var result = connection.QueryFirst(query, parameters);
-
-                    Group group = new Group()
-                    {
-                        Id = result.Id,
-                        Name = result.Name,
-                    };
+                    var group = connection.QuerySingle<Group>(query, parameters);
 
                     return group;
                 }
                 catch (Exception e)
                 {
-
+                    return null;
                 }
             }
 
-            return null;
         }
 
         public bool AddUser(UserGroupModel model)
         {
             string query = "INSERT INTO UsersGroups (UserId, GroupId, Permissions)" +
-                   " VALUES (@UserId, @GroupId, @Permissions)";
+                   " VALUES (@UserId, @GroupId, @PermissionsNumber)";
             
             using (var connection = new SqlConnection(connectionString))
             {
@@ -271,7 +262,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 
                 connection.Open();
 
-                var result = connection.QueryFirst<UserGroupModel>(query, parameters);
+                var result = connection.QuerySingle<UserGroupModel>(query, parameters);
 
                 return result;
             }
