@@ -267,8 +267,6 @@ namespace Group3.Semester3.WebApp.Repositories
 
                 return result;
             }
-
-            return null;
         }
 
         /// <summary>
@@ -294,8 +292,6 @@ namespace Group3.Semester3.WebApp.Repositories
 
                 return result;
             }
-
-            return null;
         }
 
         public IEnumerable<FileEntity> GetByGroupIdAndParentId(Guid groupId, Guid parentId)
