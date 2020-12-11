@@ -19,7 +19,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group GetByGroupId(Guid groupId);
         public IEnumerable<Group> GetUserGroups(UserModel user);
         public IEnumerable<UserModel> GetGroupUsers(UserModel model, Guid groupId);
-        public UserModel AddUser(UserModel user, UserGroupModel model);
+        public UserModel AddUser(UserModel user, AddUserGroupModel model);
+        public UserModel UpdateUserPermissions(UserModel user, AddUserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
     }
@@ -53,7 +54,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new Exception("Failed to create group");
             }
             
-            var userGroup = new UserGroupModel() { GroupId = group.Id, UserId = user.Id, Permissions = 255 };
+            var userGroup = new AddUserGroupModel()
+            {
+                GroupId = group.Id, 
+                UserId = user.Id,
+                HasAdministrate = true,
+                HasManage = true,
+                HasRead = true,
+                HasWrite = true
+            };
 
             _groupRepository.AddUser(userGroup);
 
@@ -63,7 +72,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteGroup(Guid groupId, UserModel user)
         {
             var group = _groupRepository.GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group);
+            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
             var result = _groupRepository.Delete(groupId);
 
             if (!result)
@@ -76,7 +85,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group RenameGroup(Guid groupId, UserModel user, string name)
         {
             var group = GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group);
+            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
             var result = _groupRepository.Rename(groupId, name);
             if (!result)
             {
@@ -124,11 +133,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return parsedGuid;
         }
 
-        public UserModel AddUser(UserModel user, UserGroupModel model)
+        public UserModel AddUser(UserModel user, AddUserGroupModel model)
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            _accessService.hasAccessToGroup(user, group);
+            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
             var newUserEntity = _userRepository.GetByEmail(model.Email);
             
             if(newUserEntity != null)
@@ -143,8 +152,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 model.UserId = newUser.Id;
 
                 var result = _groupRepository.AddUser(model);
+
+                if (!result)
+                {
+                    throw new ValidationException("Failed to add user");
+                }
                 
-                return newUser;
+                var userModel = _groupRepository.GetUserModel(@group.Id, model.UserId);
+                return userModel;
             }
             else
             {
@@ -152,11 +167,32 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
         }
 
+        public UserModel UpdateUserPermissions(UserModel user, AddUserGroupModel model)
+        {
+            var group = _groupRepository.GetByGroupId(model.GroupId);
+
+            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+
+            var result = _groupRepository.UpdatePermissions(model);
+            
+            if (!result)
+            {
+                throw new ValidationException("Failed to update users permission");
+            }
+
+            var affectedUser = _groupRepository.GetUserModel(model.GroupId, model.UserId);
+
+            return affectedUser;
+        }
+
         public bool RemoveUser(UserModel user, UserGroupModel model)
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            _accessService.hasAccessToGroup(user, group);
+            if (user.Id != model.UserId)
+            {
+                _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            }
             
             return _groupRepository.RemoveUser(group.Id, model.UserId);
         }

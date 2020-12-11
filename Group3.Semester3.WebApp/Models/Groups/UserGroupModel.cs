@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Group3.Semester3.WebApp.BusinessLayer;
+using Group3.Semester3.WebApp.Helpers;
 
 namespace Group3.Semester3.WebApp.Models.Groups
 {
