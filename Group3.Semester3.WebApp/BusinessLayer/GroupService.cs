@@ -52,8 +52,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new Exception("Failed to create group");
             }
+            
+            var userGroup = new UserGroupModel() { GroupId = group.Id, UserId = user.Id, Permissions = 255 };
 
-            _groupRepository.AddUser(group.Id, user.Id);
+            _groupRepository.AddUser(userGroup);
 
             return group;
         }
@@ -126,31 +128,27 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            if(_accessService.hasAccessToGroup(user, group))
+            _accessService.hasAccessToGroup(user, group);
+            var newUserEntity = _userRepository.GetByEmail(model.Email);
+            
+            if(newUserEntity != null)
             {
-                var newUserEntity = _userRepository.GetByEmail(model.Email);
+                var newUser = new UserModel() {Id= newUserEntity.Id, Name = newUserEntity.Name, Email = newUserEntity.Email};
+
+                if (IsPartOfGroup(newUser, group))
+                {
+                    throw new ValidationException("User is already part of the group");
+                }
+
+                model.UserId = newUser.Id;
+
+                var result = _groupRepository.AddUser(model);
                 
-                if(newUserEntity != null)
-                {
-                    var newUser = new UserModel() {Id= newUserEntity.Id, Name = newUserEntity.Name, Email = newUserEntity.Email};
-
-                    if (IsPartOfGroup(newUser, group))
-                    {
-                        throw new ValidationException("User is already part of the group");
-                    }
-
-                    var result = _groupRepository.AddUser(group.Id, newUser.Id);
-                    
-                    return newUser;
-                }
-                else
-                {
-                    throw new ValidationException("User not found");
-                }
-
-            } else
+                return newUser;
+            }
+            else
             {
-                throw new ValidationException("Operation forbidden");
+                throw new ValidationException("User not found");
             }
         }
 
@@ -158,27 +156,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            if (_accessService.hasAccessToGroup(user, group))
-            {
-                return _groupRepository.RemoveUser(group.Id, model.UserId);
-            }
-            else
-            {
-                throw new ValidationException("Operation forbidden");
-            }
+            _accessService.hasAccessToGroup(user, group);
+            
+            return _groupRepository.RemoveUser(group.Id, model.UserId);
         }
 
         public bool IsPartOfGroup(UserModel user, Group group)
         {
-            try
-            {
-                _accessService.hasAccessToGroup(user, group);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return _groupRepository.IsUserInGroup(group.Id, user.Id);
         }
     }
 }

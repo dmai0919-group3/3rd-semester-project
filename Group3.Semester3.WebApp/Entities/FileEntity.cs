@@ -14,6 +14,7 @@ namespace Group3.Semester3.WebApp.Entities
         public string Name { get; set; }
         public Guid ParentId { get; set; }
         public bool IsFolder { get; set; }
+        public bool IsShared { get; set; }
         public DateTime Updated { get; set; }
     }
 }
