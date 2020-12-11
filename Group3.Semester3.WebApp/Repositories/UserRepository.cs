@@ -108,7 +108,7 @@ namespace Group3.Semester3.WebApp.Repositories
                         Email = result.Email,
                         Name = result.Name,
                         PasswordHash = Convert.FromBase64String(result.PasswordHash),
-                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt),
+                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt)
                     };
 
                     return user;
@@ -148,7 +148,7 @@ namespace Group3.Semester3.WebApp.Repositories
                         Email = result.Email,
                         Name = result.Name,
                         PasswordHash = Convert.FromBase64String(result.PasswordHash),
-                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt),
+                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt)
                     };
 
                     return user;
@@ -167,8 +167,8 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the user is saved and false if not.</returns>
         public bool Insert(User user)
         {
-            string query = "INSERT INTO Users (Id, Email, Name, PasswordHash, PasswordSalt)" +
-                " VALUES (@Id, @Email, @Name, @PasswordHash, @PasswordSalt)";
+            string query = "INSERT INTO Users (Id, Email, Name, PasswordHash, PasswordSalt, Activated)" +
+                " VALUES (@Id, @Email, @Name, @PasswordHash, @PasswordSalt, @Activated)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -179,7 +179,8 @@ namespace Group3.Semester3.WebApp.Repositories
                     Email = user.Email,
                     Name = user.Name,
                     PasswordHash = Convert.ToBase64String(user.PasswordHash),
-                    PasswordSalt = Convert.ToBase64String(user.PasswordSalt)
+                    PasswordSalt = Convert.ToBase64String(user.PasswordSalt),
+                    Activated = true
                 };
 
                 try

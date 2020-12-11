@@ -6,7 +6,7 @@ using Group3.Semester3.WebApp.Helpers;
 namespace Group3.Semester3.WebApp.Models.Users
 {
     public class UserModel
-    { 
+    {
         public Guid Id { get; set; }
         [Required]
         [Display(Name = "Email")]
@@ -28,6 +28,4 @@ namespace Group3.Semester3.WebApp.Models.Users
             }
         }
     }
-
-    
 }
