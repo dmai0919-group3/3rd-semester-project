@@ -90,6 +90,7 @@ namespace Group3.Semester3.WebApp
             services.AddScoped<IAccessService, AccessService>();
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<ISharedFilesRepository, SharedFilesRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

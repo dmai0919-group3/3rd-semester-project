@@ -12,6 +12,13 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/twitter-bootstrap/css/bootstrap.min.css">
     <link href="~/lib/jquery-contextmenu/jquery.contextMenu.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css">
+    
+    @if (IsSectionDefined("HeadCss"))
+    {
+        @RenderSection("HeadCss", required: false)
+    }
+    
     <link href="/css/style.css" rel="stylesheet" />
 
     <script src="~/lib/jquery/jquery.min.js"></script>
@@ -22,7 +29,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-light navbar-expand-md justify-content-right">
+    <nav class="navbar navbar-dark navbar-expand-md justify-content-right">
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -54,9 +61,7 @@
         Messenger.Messages.Clear();
     }
 
-    <div class="container">
-        @RenderBody()
-    </div>
+    @RenderBody()
 
     
 </body>

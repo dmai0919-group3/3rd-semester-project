@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Group3.Semester3.WebApp.Models.Groups
+namespace Group3.Semester3.WebApp.Models.FileSystem
 {
-    public class UserGroupModel
+    public class SharedFile
     {
-        public Guid GroupId { get; set; }
+        public Guid FileId { get; set; }
         public Guid UserId { get; set; }
         public string Email { get; set; }
-        public short Permissions { get; set; }
     }
 }

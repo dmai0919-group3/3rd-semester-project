@@ -209,11 +209,11 @@ namespace Group3.Semester3.WebApp.Repositories
             {
                 var parameters = new
                 {
-                    Name = user.Name,
-                    Id = user.Id,
                     Email = user.Email,
-                    PasswordHash = user.PasswordHash,
-                    PasswordSalt = user.PasswordSalt
+                    Name = user.Name,
+                    PasswordHash = Convert.ToBase64String(user.PasswordHash),
+                    PasswordSalt = Convert.ToBase64String(user.PasswordSalt),
+                    Id = user.Id
                 };
 
                 try

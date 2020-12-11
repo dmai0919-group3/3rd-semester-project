@@ -1,11 +1,14 @@
-﻿let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+﻿const emptyGuid = "00000000-0000-0000-0000-000000000000";
 
-let currentDir = "00000000-0000-0000-0000-000000000000";
+let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
+
+let currentDir = emptyGuid;
+let currentGroup = emptyGuid;
 
 let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
 
 $(function () {
-    browseDirectoryFiles("00000000-0000-0000-0000-000000000000");
+    browseDirectoryFiles(emptyGuid);
 
     $.contextMenu({
         selector: '.file',
@@ -56,6 +59,15 @@ $(function () {
             }
             
             let standardItems = {
+                sharing: {
+                    name: "Sharing",
+                    callback: function (key, opt) {
+                        let $element = opt.$trigger;
+                        let id = $element.attr('id');
+
+                        showSharingModal(id);
+                    }
+                },
                 move: {
                     name: "Move to folder",
                     callback: function (key, opt) {
@@ -105,7 +117,25 @@ $(function () {
     $("#file-container").on("dblclick", '.folder', function () {
         let id = this.id;
         browseDirectoryFiles(id);
-    })
+    });
+
+    $("#sidebar").mCustomScrollbar({
+        theme: "minimal"
+    });
+
+    $('#dismiss, .overlay').on('click', function () {
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+
+    $('#sidebarCollapse').on('click', function () {
+        $('#sidebar').addClass('active');
+        $('.overlay').addClass('active');
+        $('.collapse.in').toggleClass('in');
+        $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+    });
+    
+    loadUserGroups();
 });
 
 function showRenameFileModal(key, opt) {
@@ -195,12 +225,23 @@ function deleteFile() {
 }
 
 function browseDirectoryFiles(parentId) {
+    
+    if (parentId === 'shared') {
+        showSharedFiles();
+        return ;
+    }
 
-    let url = "/api/file/browse/" + parentId;
+    let url = browseFilesUrl;
+    
+    let data = {
+        parentId: parentId,
+        groupId: currentGroup
+    }
 
     $.ajax({
         url: url,
         type: "GET",
+        data: data,
         success: function (result) {
             
             if (parentId in dirArray) {
@@ -221,6 +262,12 @@ function browseDirectoryFiles(parentId) {
 
             currentDir = parentId;
             
+            if (currentDir != emptyGuid) {
+                $('#go-back-button').show();
+            } else {
+                $('#go-back-button').hide();
+            }
+            
             updateDirectoryPath();
             
             changeFiles(result);
@@ -229,15 +276,15 @@ function browseDirectoryFiles(parentId) {
             // TODO: Handle better in the future
             alert("Failed to load files");
         }
-    })
+    });
 }
 
 const fileMarkup = `
-                <div class="col-md-2 {{classes}} justify-content-center" id="{{fileId}}">
-                    <div>
-                        <img src="{{icon}}" />
+                <div class="col-md-1 {{classes}} justify-content-center" id="{{fileId}}">
+                    <div class="col-12 text-center">
+                        <img src="{{icon}}" width="80%" />
                     </div>
-                    <p class="file-name">{{fileName}}</p>
+                    <p class="file-name text-center">{{fileName}}</p>
                 </div>
             `;
 
@@ -264,6 +311,7 @@ function createFolder() {
     let data = {
         Name: folderName,
         ParentId: currentDir,
+        groupId: currentGroup,
     }
 
     $.ajax({
@@ -273,10 +321,12 @@ function createFolder() {
         contentType: "application/json",
         success: function (result) {
             addFileToFileList(result);
+
+            $("#createFolderModal").modal("hide");
         },
         error: function (result) {
             // TODO: Handle better in the future
-            alert("Failed to delete a file");
+            alert("Failed to create a folder");
         }
     });
 }
@@ -287,6 +337,7 @@ function showUploadFileModal() {
     $('#file-upload-form').trigger("reset");
     
     $("#upload-file-parentId").val(currentDir);
+    $("#upload-file-groupId").val(currentGroup);
 
     $("#uploadFileModal").modal();
 }
@@ -395,12 +446,15 @@ function showMoveFileModal(fileId) {
         keys.forEach(parentId => {
             if (parentId !== currentDir) {
                 let name = dirArray[parentId];
+                
+                // Check for file and parent ID, this ensures folder can't be moved into itself
+                if (fileId !== parentId) {
+                    let link = '<a href="#" ' +
+                        'data-id="' + fileId + '" data-parent-id="' + parentId + '" ' +
+                        'class="list-group-item list-group-item-action list-group-item-info move-file-folder-choice">' + name + '</a>';
 
-                let link = '<a href="#" ' +
-                    'data-id="' + fileId + '" data-parent-id="' + parentId + '" ' +
-                    'class="list-group-item list-group-item-action list-group-item-info move-file-folder-choice">' + name + '</a>';
-
-                $list.append(link);
+                    $list.append(link);
+                }
             }
         });
     }
@@ -580,28 +634,29 @@ function previewFile(fileId, fileName) {
         url: "/api/file/download/" + fileId,
         success: function (result) {
             
-            
-            let element = null;
-            
-            if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
-                element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
-            }
-            
-            if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
-                element = '<video class="video-fluid" width="100%" controls>\n' +
-                    '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
-                    '</video>';
-            }
-            
-            let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
-            
-            if (mp3) {
-                element = '<audio controls>' +
-                    '<source src="'+result.downloadLink+'">' +
-                    '</audio>';
-            }
-            
-            $modalBody.append(element);
+            setTimeout(() => {
+                let element = null;
+
+                if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
+                    element = '<img src="' + result.downloadLink + '" class="img-fluid" />';
+                }
+
+                if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
+                    element = '<video class="video-fluid" width="100%" controls>\n' +
+                        '  <source src="' + result.downloadLink + '" type="video/mp4">\n' +
+                        '</video>';
+                }
+
+                let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
+
+                if (mp3) {
+                    element = '<audio controls>' +
+                        '<source src="'+result.downloadLink+'">' +
+                        '</audio>';
+                }
+
+                $modalBody.append(element);
+            }, 900);
         }
     })
 }
@@ -619,3 +674,247 @@ function endsWithAny(suffixes, string) {
     }
     return false;
 }
+function loadUserGroups() {
+    $.ajax({
+        url: listUserGroups,
+        success: function (result) {
+            result.forEach(group => {
+                addGroupToSubmenu(group);
+            })
+        }
+    });
+}
+
+function addGroupToSubmenu(group) {
+    let groupElement = '<li>\n' +
+        '<a href="#" class="group-toggle justify-content-between overflow-auto" data-id="'+group.id+'">'+group.name+'' +
+        '<button class="btn-primary group-setting" style="float: right; border-radius: 5px" href="#"><i class="fas fa-cog"></i></button>' +
+        '</a>\n' +
+        '</li>';
+    $('#groupsSubmenu').append(groupElement);
+}
+
+$(document).ready(function () {
+    $('#sidebar').on('click', '.group-toggle', function () {
+        let id = $(this).data('id');
+
+        if (id !== 'shared') {
+            if (id === '0') {
+                currentGroup = emptyGuid;
+            } else {
+                currentGroup = id;
+            }
+
+            browseDirectoryFiles(emptyGuid);
+        } else {
+            browseDirectoryFiles(id)
+        }
+        $('#sidebar').removeClass('active');
+        $('.overlay').removeClass('active');
+    });
+    
+    $('#sidebar').on('click', '.group-setting', function () {
+        let id = $(this).parent().data('id');
+
+        window.location.href = "/group/" + id;
+    });
+    
+    $('#addGroupBtn').click(function () {
+        showCreateGroupModal();
+    })
+});
+
+function showCreateGroupModal() {
+    $('#create-group-name').val('');
+    $('#createGroupModal').modal();
+}
+
+function createGroup() {
+    let name = $('#create-group-name').val();
+
+    let data = {
+        Name: name,
+    };
+
+    $.ajax({
+        url: createGroupUrl,
+        method: 'POST',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (group) {
+            window.location.href = "/group/"+group.id;
+        },
+        error: function (result) {
+            alert(result);
+        }
+    });
+}
+
+function showSharedFiles() {
+    currentDir = emptyGuid;
+    currentGroup = emptyGuid;
+
+    $.ajax({
+        url: browseSharedFilesUrl,
+        success: function (result) {
+
+            Object.keys(dirArray).reverse()
+                .forEach(function(index) {
+                    if (index !== emptyGuid && !found) {
+                        delete dirArray[index];
+                    } else {
+                        found = true;
+                    }
+                });
+
+            $('#go-back-button').hide();
+
+            updateDirectoryPath();
+
+            changeFiles(result);
+        },
+        error: function (result) {
+            // TODO: Handle better in the future
+            alert("Failed to load shared files");
+        }
+    })
+}
+
+function showSharingModal(fileId) {
+    
+    $('#file-share-id').val(fileId);
+    
+    $('#file-share-users').empty();
+    
+    $('#file-share-enable-link').hide();
+    $('#file-share-disable-link').hide();
+    
+    $.ajax({
+        url: '/api/file/share/'+fileId,
+        success: function (result) {
+            $('#file-share-link').val(result.link);
+            
+            if (result.link == null) {
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            } else {
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            }
+            
+            result.users.forEach(user => {
+                addUserToSharedUsersList(user);
+            });
+        }
+    });
+    
+    $('#fileSharingModal').modal();
+}
+
+function addUserToSharedUsersList(user) {
+    let html = '<li class="list-group-item d-flex justify-content-between" data-id="'+user.id+'">' +
+                    user.name +
+        '          <button class="btn btn-danger user-remove">Remove</button>' +
+        '       </li>';
+    $('#file-share-users').append(html);
+}
+
+function showShareWithUserModal() {
+    $('#shareWithUserModal').modal();
+}
+
+function shareWithUser() {
+    let fileId = $('#file-share-id').val();
+    let email = $('#file-share-user-email').val();
+    
+    let data = {
+        FileId: fileId,
+        Email: email
+    }
+    
+    $.ajax({
+        url: shareWithUserUrl,
+        type: 'post',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (result) {
+            addUserToSharedUsersList(result);
+            $('#shareWithUserModal').modal('hide');
+        },
+        error: function (result) {
+            alert(result.resultText);
+        }
+    });
+}
+
+$(document).ready(function () {
+    $('#file-share-enable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: enableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val(result);
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+
+    $('#file-share-disable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: disableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val('');
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+    
+    $('#file-share-users').on('click', '.user-remove', function () {
+        let $userElement = $(this).parent();
+        let userId = $userElement.data('id');
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            FileId: fileId,
+            UserId: userId,
+        }
+        
+        $.ajax({
+            url: disableSharingWithUser,
+            type: 'delete',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $userElement.remove();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+});
