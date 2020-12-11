@@ -129,7 +129,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         /// <param name="model">The FileEntity that needs to be deleted</param>
         /// <returns>204 NoContent if the request was successful</returns>
         [Route("delete")]
-        [HttpDelete]
+        [HttpPost]
         public ActionResult Delete(FileEntity model)
         {
             try

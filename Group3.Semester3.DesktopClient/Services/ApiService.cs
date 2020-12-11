@@ -81,6 +81,25 @@ namespace Group3.Semester3.DesktopClient.Services
         /// <param name="name">Name of the folder</param>
         /// <returns></returns>
         public FileEntity CreateFolder(Guid parentId, string name);
+
+        /// <summary>
+        /// Gets the list of groups associated with the current user
+        /// </summary>
+        /// <returns>The list of groups associated with the current user</returns>
+        public List<Group> GetGroups();
+
+        /// <summary>
+        /// Retrieves a list of groups the current user is a member of
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns>The list of groups the current user is a member of</returns>
+        public List<UserModel> GetGroupUsers(Guid groupId);
+
+        /// <summary>
+        /// Removes a group
+        /// </summary>
+        /// <param name="groupId"></param>
+        public void RemoveGroup(Guid groupId);
     }
 
     /// <summary>
@@ -112,6 +131,12 @@ namespace Group3.Semester3.DesktopClient.Services
         private string RenameFileUrl = $"{host}/api/file/rename";
         private string CreateFolderUrl = $"{host}/api/file/create-folder";
         private string GetLinkUrl = $"{host}/api/file/download";
+        private string GetGroupUrl = $"{host}/api/group";
+        private string GetGroupUsersUrl = $"{host}/api/group/get-users";
+        private string RemoveGroupUrl = $"{host}/api/group/delete";
+        private string AddGroupUrl = $"{host}/api/group/create-group";
+        private string AddGroupUserUrl = $"{host}/api/group/add-user/add-user";
+        private string RemoveGroupUserUrl = $"{host}/api/group/remove-user";
         #endregion
 
         protected UserModel _currentUserModel;
@@ -170,33 +195,6 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
-        /// <summary>
-        /// Sends an HTTP DELETE request
-        /// </summary>
-        /// <param name="requestUrl">The URL we want to send the request to</param>
-        /// <param name="id">The Guid of the object to be deleted</param>
-        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
-        protected HttpResponseMessage DeleteRequest(string requestUrl, Guid id)
-        {
-            using var httpClient = new HttpClient();
-
-            if (!string.IsNullOrEmpty(BearerToken))
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
-
-            var content = new StringContent(JsonConvert.SerializeObject(new { id }), System.Text.Encoding.UTF8, "application/json");
-
-            HttpRequestMessage request = new HttpRequestMessage(
-                HttpMethod.Delete,
-                requestUrl
-            );
-
-            request.Content = content;
-
-            var response = httpClient.SendAsync(request);
-            response.Wait();
-
-            return response.Result;
-        }
 
         /// <summary>
         /// Sends an HTTP PUT request
@@ -361,7 +359,7 @@ namespace Group3.Semester3.DesktopClient.Services
         /// <param name="file">A FileEntity object to be deleted</param>
         public void DeleteFile(FileEntity file)
         {
-            var result = DeleteRequest(DeleteFileUrl, file.Id);
+            var result = PostRequest(DeleteFileUrl, file.Id);
 
             if (!result.IsSuccessStatusCode)
                 throw new ApiAuthorizationException("Error communicating with the server");
@@ -441,6 +439,52 @@ namespace Group3.Semester3.DesktopClient.Services
                 throw new ApiAuthorizationException("Error communicating with the server");
 
             return JsonConvert.DeserializeObject<FileEntity>(resultContent);
+        }
+
+        public List<Group> GetGroups()
+        {
+            var response = GetRequest(GetGroupUrl);
+
+            string responseContent;
+
+            {
+                var t = response.Content.ReadAsStringAsync();
+                t.Wait();
+                responseContent = t.Result;
+            }
+
+            if (!response.IsSuccessStatusCode)
+                throw new ApiAuthorizationException("Error communicating with the server");
+
+            List<Group> r = JsonConvert.DeserializeObject<List<Group>>(responseContent);
+            return r;
+        }
+
+        public List<UserModel> GetGroupUsers(Guid groupId)
+        {
+            var response = GetRequest($"{GetGroupUsersUrl}?groupId={groupId}");
+
+            string responseContent;
+
+            {
+                var t = response.Content.ReadAsStringAsync();
+                t.Wait();
+                responseContent = t.Result;
+            }
+
+            if (!response.IsSuccessStatusCode)
+                throw new ApiAuthorizationException("Error communicating with the server");
+
+            List<UserModel> r = JsonConvert.DeserializeObject<List<UserModel>>(responseContent);
+            return r;
+        }
+
+        public void RemoveGroup(Guid groupId)
+        {
+            var response = PostRequest(RemoveGroupUrl, groupId);
+
+            if (!response.IsSuccessStatusCode)
+                throw new ApiAuthorizationException("Error communicating with the server");
         }
     }
 }
