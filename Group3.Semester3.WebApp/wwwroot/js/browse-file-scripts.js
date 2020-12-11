@@ -844,5 +844,77 @@ function shareWithUser() {
         error: function (result) {
             alert(result.resultText);
         }
-    })
+    });
 }
+
+$(document).ready(function () {
+    $('#file-share-enable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: enableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val(result);
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+
+    $('#file-share-disable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: disableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val('');
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+    
+    $('#file-share-users').on('click', '.user-remove', function () {
+        let $userElement = $(this).parent();
+        let userId = $userElement.data('id');
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            FileId: fileId,
+            UserId: userId,
+        }
+        
+        $.ajax({
+            url: disableSharingWithUser,
+            type: 'delete',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $userElement.remove();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+});
