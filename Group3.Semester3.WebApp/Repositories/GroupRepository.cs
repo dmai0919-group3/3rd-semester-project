@@ -20,9 +20,11 @@ namespace Group3.Semester3.WebApp.Repositories
         public IEnumerable<UserModel> GetUsersByGroupId(Guid groupId);
         public Group GetByGroupId(Guid groupId);
         public bool AddUser(AddUserGroupModel model);
+        public bool UpdatePermissions(AddUserGroupModel model);
         public bool RemoveUser(Guid groupId, Guid userId);
         public bool IsUserInGroup(Guid groupId, Guid userId);
         public UserGroupModel GetUserGroupModel(Guid groupId, Guid userId);
+        public UserModel GetUserModel(Guid groupId, Guid userId);
     }
 
     public class GroupRepository : IGroupRepository
@@ -211,6 +213,31 @@ namespace Group3.Semester3.WebApp.Repositories
             return false;
         }
 
+        public bool UpdatePermissions(AddUserGroupModel model)
+        {
+            string query = "UPDATE UsersGroups SET Permissions=@Permissions WHERE GroupId=@GroupId AND UserId=@UserId";
+            
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    int rowsChanged = connection.Execute(query, model);
+
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return false;
+        }
+
         public bool RemoveUser(Guid groupId, Guid userId)
         {
             string query = "DELETE FROM UsersGroups WHERE GroupId=@GroupId AND UserId=@UserId";
@@ -263,6 +290,23 @@ namespace Group3.Semester3.WebApp.Repositories
                 connection.Open();
 
                 var result = connection.QuerySingle<UserGroupModel>(query, parameters);
+
+                return result;
+            }
+        }
+
+        public UserModel GetUserModel(Guid groupId, Guid userId)
+        {
+            string query = "SELECT Users.*, UsersGroups.Permissions as PermissionsNumber FROM Users" +
+            " JOIN UsersGroups ON Users.Id=UsersGroups.UserId WHERE UsersGroups.GroupId=@GroupId AND UsersGroups.UserId=@UserId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { GroupId = groupId, UserId = userId };
+                
+                connection.Open();
+
+                var result = connection.QuerySingle<UserModel>(query, parameters);
 
                 return result;
             }

@@ -20,6 +20,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public IEnumerable<Group> GetUserGroups(UserModel user);
         public IEnumerable<UserModel> GetGroupUsers(UserModel model, Guid groupId);
         public UserModel AddUser(UserModel user, AddUserGroupModel model);
+        public UserModel UpdateUserPermissions(UserModel user, AddUserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
     }
@@ -151,13 +152,37 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 model.UserId = newUser.Id;
 
                 var result = _groupRepository.AddUser(model);
+
+                if (!result)
+                {
+                    throw new ValidationException("Failed to add user");
+                }
                 
-                return newUser;
+                var userModel = _groupRepository.GetUserModel(@group.Id, model.UserId);
+                return userModel;
             }
             else
             {
                 throw new ValidationException("User not found");
             }
+        }
+
+        public UserModel UpdateUserPermissions(UserModel user, AddUserGroupModel model)
+        {
+            var group = _groupRepository.GetByGroupId(model.GroupId);
+
+            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+
+            var result = _groupRepository.UpdatePermissions(model);
+            
+            if (!result)
+            {
+                throw new ValidationException("Failed to update users permission");
+            }
+
+            var affectedUser = _groupRepository.GetUserModel(model.GroupId, model.UserId);
+
+            return affectedUser;
         }
 
         public bool RemoveUser(UserModel user, UserGroupModel model)

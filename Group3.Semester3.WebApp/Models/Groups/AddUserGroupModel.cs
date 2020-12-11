@@ -13,7 +13,7 @@ namespace Group3.Semester3.WebApp.Models.Groups
         public bool HasAdministrate { get; set; }
         public bool HasManage { get; set; }
         public bool HasWrite { get; set; }
-        public bool HasRead { get; set; }
+        public bool HasRead = true;
         
         public short Permissions {
             get 
