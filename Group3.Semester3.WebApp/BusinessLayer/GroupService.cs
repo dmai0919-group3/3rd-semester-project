@@ -19,7 +19,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group GetByGroupId(Guid groupId);
         public IEnumerable<Group> GetUserGroups(UserModel user);
         public IEnumerable<UserModel> GetGroupUsers(UserModel model, Guid groupId);
-        public UserModel AddUser(UserModel user, UserGroupModel model);
+        public UserModel AddUser(UserModel user, AddUserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
 
     }
@@ -52,16 +52,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new Exception("Failed to create group");
             }
-
-            var permissions = new NewUserPermissions()
+            
+            var userGroup = new AddUserGroupModel()
             {
+                GroupId = group.Id, 
+                UserId = user.Id,
                 HasAdministrate = true,
                 HasManage = true,
                 HasRead = true,
                 HasWrite = true
             };
-            
-            var userGroup = new UserGroupModel() { GroupId = group.Id, UserId = user.Id, Permissions = 255 };
 
             _groupRepository.AddUser(userGroup);
 
@@ -132,7 +132,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return parsedGuid;
         }
 
-        public UserModel AddUser(UserModel user, UserGroupModel model)
+        public UserModel AddUser(UserModel user, AddUserGroupModel model)
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 

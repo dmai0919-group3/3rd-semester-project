@@ -19,7 +19,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public IEnumerable<Group> GetByUserId(Guid userId);
         public IEnumerable<UserModel> GetUsersByGroupId(Guid groupId);
         public Group GetByGroupId(Guid groupId);
-        public bool AddUser(UserGroupModel model);
+        public bool AddUser(AddUserGroupModel model);
         public bool RemoveUser(Guid groupId, Guid userId);
         public bool IsUserInGroup(Guid groupId, Guid userId);
         public UserGroupModel GetUserGroupModel(Guid groupId, Guid userId);
@@ -185,10 +185,10 @@ namespace Group3.Semester3.WebApp.Repositories
 
         }
 
-        public bool AddUser(UserGroupModel model)
+        public bool AddUser(AddUserGroupModel model)
         {
             string query = "INSERT INTO UsersGroups (UserId, GroupId, Permissions)" +
-                   " VALUES (@UserId, @GroupId, @PermissionsNumber)";
+                   " VALUES (@UserId, @GroupId, @Permissions)";
             
             using (var connection = new SqlConnection(connectionString))
             {

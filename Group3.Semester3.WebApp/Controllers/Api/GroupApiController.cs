@@ -107,7 +107,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
         [Route("add-user")]
         [HttpPost]
-        public ActionResult AddUser(UserGroupModel model)
+        public ActionResult AddUser(AddUserGroupModel model)
         {
             try
             {
