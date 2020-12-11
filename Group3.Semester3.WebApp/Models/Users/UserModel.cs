@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Group3.Semester3.WebApp.Models.Users
 {
     public class UserModel
-    { 
+    {
         public Guid Id { get; set; }
         [Required]
         [Display(Name = "Email")]
@@ -14,9 +14,5 @@ namespace Group3.Semester3.WebApp.Models.Users
         [Display(Name = "Name")]
         [DataType(DataType.Text)]
         public string Name { get; set; }
-        [Required]
-        [Display(Name = "Activated")]
-        [DataType(DataType.Text)]
-        public bool Activated { get; set; }
     }
 }

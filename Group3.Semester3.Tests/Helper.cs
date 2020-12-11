@@ -19,7 +19,7 @@ namespace Group3.Semester3.WebAppTests
         {
             if (_userService == null)
             {
-                _userService = new UserService(GetUserRepository(), GetEmailService());
+                _userService = new UserService(GetUserRepository());
             }
 
             return _userService;

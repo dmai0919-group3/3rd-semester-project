@@ -108,8 +108,7 @@ namespace Group3.Semester3.WebApp.Repositories
                         Email = result.Email,
                         Name = result.Name,
                         PasswordHash = Convert.FromBase64String(result.PasswordHash),
-                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt),
-                        Activated = result.Activated
+                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt)
                     };
 
                     return user;
@@ -149,8 +148,7 @@ namespace Group3.Semester3.WebApp.Repositories
                         Email = result.Email,
                         Name = result.Name,
                         PasswordHash = Convert.FromBase64String(result.PasswordHash),
-                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt),
-                        Activated = result.Activated
+                        PasswordSalt = Convert.FromBase64String(result.PasswordSalt)
                     };
 
                     return user;
@@ -169,8 +167,8 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the user is saved and false if not.</returns>
         public bool Insert(User user)
         {
-            string query = "INSERT INTO Users (Id, Email, Name, PasswordHash, PasswordSalt)" +
-                " VALUES (@Id, @Email, @Name, @PasswordHash, @PasswordSalt)";
+            string query = "INSERT INTO Users (Id, Email, Name, PasswordHash, PasswordSalt, Activated)" +
+                " VALUES (@Id, @Email, @Name, @PasswordHash, @PasswordSalt, @Activated)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -181,7 +179,8 @@ namespace Group3.Semester3.WebApp.Repositories
                     Email = user.Email,
                     Name = user.Name,
                     PasswordHash = Convert.ToBase64String(user.PasswordHash),
-                    PasswordSalt = Convert.ToBase64String(user.PasswordSalt)
+                    PasswordSalt = Convert.ToBase64String(user.PasswordSalt),
+                    Activated = true
                 };
 
                 try
@@ -204,7 +203,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Update(User user)
         {
-            string query = "UPDATE Users SET Email=@Email, Name=@Name, PasswordHash=@PasswordHash, PasswordSalt=@PasswordSalt, Activated=@Activated WHERE Id=@Id";
+            string query = "UPDATE Users SET Email=@Email, Name=@Name, PasswordHash=@PasswordHash, PasswordSalt=@PasswordSalt WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -214,8 +213,7 @@ namespace Group3.Semester3.WebApp.Repositories
                     Id = user.Id,
                     Email = user.Email,
                     PasswordHash = user.PasswordHash,
-                    PasswordSalt = user.PasswordSalt,
-                    Activated = user.Activated
+                    PasswordSalt = user.PasswordSalt
                 };
 
                 try

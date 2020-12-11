@@ -13,7 +13,5 @@ namespace Group3.Semester3.WebApp.Entities
         public byte[] PasswordHash { get; set; }
         
         public byte[] PasswordSalt { get; set; }
-        
-        public bool Activated { get; set; }
     }
 }
