@@ -38,7 +38,7 @@ namespace Group3.Semester3.DesktopClient.Views
         private ApiService apiService;
         private Switcher switcher;
 
-        private MainWindowModel Model = new Model.MainWindowModel();
+        private MainWindowModel Model;
 
         private BitmapImage IconFolder;
         private BitmapImage IconFolderOpen;
@@ -50,18 +50,17 @@ namespace Group3.Semester3.DesktopClient.Views
 
         Stack<FileEntity> folderStack = new Stack<FileEntity>();
 
-        public FileEntityWrapper SelectedFile { get; set; }
 
         public MainWindow(ApiService apiService, Switcher switcher)
         {
-            DataContext = Model.FileViewList;
 
             this.switcher = switcher;
             this.apiService = apiService;
 
             InitializeComponent();
 
-            // ono
+            Model = DataContext as MainWindowModel;
+
             IconFolder = Resources["IconFolder"] as BitmapImage;
             IconExecutable = Resources["IconExecutable"] as BitmapImage;
             IconText = Resources["IconText"] as BitmapImage;
@@ -72,13 +71,37 @@ namespace Group3.Semester3.DesktopClient.Views
 
             labelUserName.Content = $"{apiService.User.Name} ({apiService.User.Email})".ToUpper();
 
-            UpdateFilePanel(new FileEntity
-            {
-                Name = "Test Set.xml"
-            });
-
+            UpdateGroupList();
             UpdateFileList();
             UpdateProgress();
+        }
+
+        private void UpdateGroupList()
+        {
+            var selectedGroupEntry = Model.GroupList.Where(x => x.Selected).FirstOrDefault();
+
+            Model.GroupList.Clear();
+
+            Model.GroupList.Add(new GroupWrapper
+            {
+                Group = new Group
+                {
+                    Id = Guid.Empty,
+                    Name = "My Files"
+                },
+                Selected = true// selectedGroupEntry?.Group?.Id == Guid.Empty
+            });
+
+            foreach (var group in apiService.GetGroups())
+            {
+                Model.GroupList.Add(new GroupWrapper
+                {
+                    Group = group,
+                    Selected = selectedGroupEntry?.Group?.Id == group.Id
+                });
+            }
+
+            treeViewGroups.Items.Refresh();
         }
 
         private void UpdateFileList(FileEntity rootFolder = null)
@@ -92,7 +115,7 @@ namespace Group3.Semester3.DesktopClient.Views
             if(l.Count > 0 && l[0].ParentId == Guid.Empty)
             {
                 folderStack.Clear();
-                SelectedFile = null;
+                Model.SelectedFile = null;
                 UpdateFilePanel();
             }
 
@@ -199,20 +222,20 @@ namespace Group3.Semester3.DesktopClient.Views
 
         private void MenuItemSave_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) _ = FileSaveAsAsync(SelectedFile.FileEntity);
+            if (Model.SelectedFile?.FileEntity?.IsFolder != true) _ = FileSaveAsAsync(Model.SelectedFile.FileEntity);
         }
 
         private void MenuItemRun_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) _ = FileDownloadAndExecAsync(SelectedFile.FileEntity);
-            if (SelectedFile?.FileEntity?.IsFolder == true) UpdateFileList(SelectedFile.FileEntity);
+            if (Model.SelectedFile?.FileEntity?.IsFolder != true) _ = FileDownloadAndExecAsync(Model.SelectedFile.FileEntity);
+            if (Model.SelectedFile?.FileEntity?.IsFolder == true) UpdateFileList(Model.SelectedFile.FileEntity);
         }
 
         private void MenuItemRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) apiService.DeleteFile(SelectedFile.FileEntity);
+            if (Model.SelectedFile?.FileEntity?.IsFolder != true) apiService.DeleteFile(Model.SelectedFile.FileEntity);
             //TODO 
-            if (SelectedFile?.FileEntity?.IsFolder == true) try { apiService.DeleteFile(SelectedFile.FileEntity); } catch { }
+            if (Model.SelectedFile?.FileEntity?.IsFolder == true) try { apiService.DeleteFile(Model.SelectedFile.FileEntity); } catch { }
 
             if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
             else UpdateFileList();
@@ -220,7 +243,7 @@ namespace Group3.Semester3.DesktopClient.Views
 
         private void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
         {
-            // var result = DialogHost.Show(new String("asdf"));
+            // TODO Show popup
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -236,6 +259,14 @@ namespace Group3.Semester3.DesktopClient.Views
                 else UpdateFileList();
             }
             catch { }
+        }
+
+        private void TreeViewGroups_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            foreach(var item in Model.GroupList)
+            {
+                item.Selected = item.Group.Id == (e.NewValue as GroupWrapper)?.Group?.Id;
+            }
         }
     }
 }

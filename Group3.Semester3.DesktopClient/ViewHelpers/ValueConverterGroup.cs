@@ -36,4 +36,24 @@ namespace Group3.Semester3.DesktopClient.ViewHelpers
             base(Visibility.Visible, Visibility.Collapsed)
         { }
     }
+
+    public sealed class BooleanToBoldConverter : BooleanConverter<FontWeight>
+    {
+        public BooleanToBoldConverter() :
+            base(FontWeights.Bold, FontWeights.Normal)
+        { }
+    }
+
+    public class ZeroGuidToItalicStyleConverter : IValueConverter
+    {
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is Guid && ((Guid)value) == Guid.Empty ? FontStyles.Italic : FontStyles.Normal;
+        }
+
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return Guid.Empty;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-﻿<Window x:Class="Group3.Semester3.DesktopClient.Views.MainWindow"
+﻿<Window x:Name="window" x:Class="Group3.Semester3.DesktopClient.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -16,6 +16,10 @@
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow"
         xmlns:commands="clr-namespace:Group3.Semester3.DesktopClient.Views">
+
+    <Window.DataContext>
+        <local:MainWindowModel/>
+    </Window.DataContext>
 
     <Window.CommandBindings>
         <CommandBinding Command="{x:Static commands:MainWindowCommands.RefreshCommand}" CanExecute="CommandBinding_CanExecute"  Executed="CommandBinding_Executed" />
@@ -38,6 +42,14 @@
             x:Key="InverseBooleanToVisibilityConverter" 
             True="Collapsed" 
             False="Visible" />
+
+        <cc:BooleanToBoldConverter 
+            x:Key="BooleanToBoldConverter" 
+            True="Bold" 
+            False="Normal" />
+
+        <cc:ZeroGuidToItalicStyleConverter
+            x:Key="ItalicOnIdZeroConverter" />
 
         <Style x:Key="FileItemStyle" TargetType="{x:Type ListViewItem}">
             <Setter Property="Margin" Value="18,18,18,18"/>
@@ -93,30 +105,20 @@
             <Button Content="MENUITEM" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="123,0,0,0" Width="105" FontSize="12"/>
         </Grid>
         <Grid Grid.Row="1" Background="#FF474747" x:Name="panelGroupList">
-            <TreeView Margin="0,61,0,0" Foreground="#DDFFFFFF">
-                <TreeViewItem IsExpanded="True">
-                    <TreeViewItem.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Group 1" FontSize="14" />
+            <TreeView Margin="0,61,0,0" Foreground="#DDFFFFFF" 
+                      ItemsSource="{Binding GroupList}" SelectedItemChanged="TreeViewGroups_SelectedItemChanged"
+                      x:Name="treeViewGroups">
+                <!--<TreeView.ItemTemplate FontStyle="{Binding Id, Converter={StaticResource ItalicOnIdZeroConverter}}"/>-->
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Group.Name}" 
+                                       FontStyle="{Binding Group.Id, Converter={StaticResource ItalicOnIdZeroConverter}}"
+                                       FontWeight="{Binding Selected, Converter={StaticResource BooleanToBoldConverter}}"></TextBlock>
                         </StackPanel>
-                    </TreeViewItem.Header>
-                </TreeViewItem>
-                <TreeViewItem IsExpanded="True">
-                    <TreeViewItem.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Group 2" FontSize="14" />
-                        </StackPanel>
-                    </TreeViewItem.Header>
-                </TreeViewItem>
-                <TreeViewItem IsExpanded="True">
-                    <TreeViewItem.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Group 3" FontSize="14" />
-                        </StackPanel>
-                    </TreeViewItem.Header>
-                </TreeViewItem>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
             </TreeView>
-
         </Grid>
         <Grid Grid.Row="2" Grid.ColumnSpan="3" Grid.RowSpan="1" Background="#FFD1D1D1">
             <Grid x:Name="panelProgress">
@@ -138,8 +140,8 @@
                 <RowDefinition Height="173*"/>
             </Grid.RowDefinitions>
             <Label Content="Home /" x:Name="labelPath" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="17"  Foreground="#DD111111" Style="{DynamicResource MaterialDesignLabel}"/>
-            <ListView ItemsSource="{Binding }" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-              SelectedItem="{Binding SelectedFile, RelativeSource={RelativeSource AncestorType=Window}}"
+            <ListView ItemsSource="{Binding FileViewList}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+              SelectedItem="{Binding SelectedFile}"
               ItemContainerStyle="{StaticResource FileItemStyle}"
               SelectionChanged="ListView_SelectionChanged" Grid.Row="1"
               x:Name="listFileListView">
@@ -150,7 +152,7 @@
                 </ListView.ItemsPanel>
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <DockPanel Tag="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+                        <DockPanel Tag="{Binding DataContext, ElementName=window}" >
                             <DockPanel.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                     <MenuItem Header="{Binding SelectedFile.FileEntity.Name}" IsEnabled="False" />
