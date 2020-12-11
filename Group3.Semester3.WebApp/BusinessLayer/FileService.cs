@@ -255,7 +255,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             ParentId = parentGuid,
                             GroupId = groupGuid,
                             IsFolder = false,
-                            Updated = DateTime.Now
+                            Updated = DateTime.Now,
+                            Size = formFile.Length
                         };
 
                         _fileRepository.Insert(file);
