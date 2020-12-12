@@ -26,12 +26,14 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetComments([FromQuery] Guid fileId, [FromQuery] Guid parentId)
+        public async Task<IActionResult> GetComments([FromQuery] string fileId, [FromQuery] string parentId)
         {
+
             try
             {
+                var fileGuid = ParseGuid(fileId);
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var comments = _commentService.GetComments(user, fileId);
+                var comments = _commentService.GetComments(user, fileGuid);
                 return Ok(comments);
             }
             catch (ValidationException exception)
@@ -43,6 +45,19 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest();
             }
         }
-        
+
+        private Guid ParseGuid(string guid)
+        {
+            Guid parsedGuid = Guid.Empty;
+
+            try
+            {
+                parsedGuid = System.Guid.Parse(guid);
+            }
+            catch { }
+
+            return parsedGuid;
+        }
+
     }
 }
