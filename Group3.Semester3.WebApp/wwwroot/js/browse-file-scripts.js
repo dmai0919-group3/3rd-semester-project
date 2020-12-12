@@ -1,4 +1,4 @@
-﻿let emptyGuid = "00000000-0000-0000-0000-000000000000";
+﻿const emptyGuid = "00000000-0000-0000-0000-000000000000";
 
 let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
 
@@ -59,6 +59,15 @@ $(function () {
             }
             
             let standardItems = {
+                sharing: {
+                    name: "Sharing",
+                    callback: function (key, opt) {
+                        let $element = opt.$trigger;
+                        let id = $element.attr('id');
+
+                        showSharingModal(id);
+                    }
+                },
                 move: {
                     name: "Move to folder",
                     callback: function (key, opt) {
@@ -216,6 +225,11 @@ function deleteFile() {
 }
 
 function browseDirectoryFiles(parentId) {
+    
+    if (parentId === 'shared') {
+        showSharedFiles();
+        return ;
+    }
 
     let url = browseFilesUrl;
     
@@ -262,11 +276,11 @@ function browseDirectoryFiles(parentId) {
             // TODO: Handle better in the future
             alert("Failed to load files");
         }
-    })
+    });
 }
 
 const fileMarkup = `
-                <div class="col-md-1 {{classes}} justify-content-center" id="{{fileId}}">
+                <div class="col-sm-3 col-xl-2 {{classes}} justify-content-center" id="{{fileId}}">
                     <div class="col-12 text-center">
                         <img src="{{icon}}" width="80%" />
                     </div>
@@ -684,9 +698,17 @@ $(document).ready(function () {
     $('#sidebar').on('click', '.group-toggle', function () {
         let id = $(this).data('id');
 
-        currentGroup = id;
+        if (id !== 'shared') {
+            if (id === '0') {
+                currentGroup = emptyGuid;
+            } else {
+                currentGroup = id;
+            }
 
-        browseDirectoryFiles(emptyGuid);
+            browseDirectoryFiles(emptyGuid);
+        } else {
+            browseDirectoryFiles(id)
+        }
         $('#sidebar').removeClass('active');
         $('.overlay').removeClass('active');
     });
@@ -726,4 +748,257 @@ function createGroup() {
             alert(result);
         }
     });
+}
+
+function showSharedFiles() {
+    currentDir = emptyGuid;
+    currentGroup = emptyGuid;
+
+    $.ajax({
+        url: browseSharedFilesUrl,
+        success: function (result) {
+
+            Object.keys(dirArray).reverse()
+                .forEach(function(index) {
+                    if (index !== emptyGuid && !found) {
+                        delete dirArray[index];
+                    } else {
+                        found = true;
+                    }
+                });
+
+            $('#go-back-button').hide();
+
+            updateDirectoryPath();
+
+            changeFiles(result);
+        },
+        error: function (result) {
+            // TODO: Handle better in the future
+            alert("Failed to load shared files");
+        }
+    })
+}
+
+function showSharingModal(fileId) {
+    
+    $('#file-share-id').val(fileId);
+    
+    $('#file-share-users').empty();
+    
+    $('#file-share-enable-link').hide();
+    $('#file-share-disable-link').hide();
+    
+    $.ajax({
+        url: '/api/file/share/'+fileId,
+        success: function (result) {
+            $('#file-share-link').val(result.link);
+            
+            if (result.link == null) {
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            } else {
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            }
+            
+            result.users.forEach(user => {
+                addUserToSharedUsersList(user);
+            });
+        }
+    });
+    
+    $('#fileSharingModal').modal();
+}
+
+function addUserToSharedUsersList(user) {
+    let html = '<li class="list-group-item d-flex justify-content-between" data-id="'+user.id+'">' +
+                    user.name +
+        '          <button class="btn btn-danger user-remove">Remove</button>' +
+        '       </li>';
+    $('#file-share-users').append(html);
+}
+
+function showShareWithUserModal() {
+    $('#shareWithUserModal').modal();
+}
+
+function shareWithUser() {
+    let fileId = $('#file-share-id').val();
+    let email = $('#file-share-user-email').val();
+    
+    let data = {
+        FileId: fileId,
+        Email: email
+    }
+    
+    $.ajax({
+        url: shareWithUserUrl,
+        type: 'post',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (result) {
+            addUserToSharedUsersList(result);
+            $('#shareWithUserModal').modal('hide');
+        },
+        error: function (result) {
+            alert(result.resultText);
+        }
+    });
+}
+
+$(document).ready(function () {
+    $('#file-share-enable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: enableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val(result);
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+
+    $('#file-share-disable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: disableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val('');
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+    
+    $('#file-share-users').on('click', '.user-remove', function () {
+        let $userElement = $(this).parent();
+        let userId = $userElement.data('id');
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            FileId: fileId,
+            UserId: userId,
+        }
+        
+        $.ajax({
+            url: disableSharingWithUser,
+            type: 'delete',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $userElement.remove();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+});
+
+// Commenting section
+
+let commentingFileId = null;
+
+let connection = new signalR.HubConnectionBuilder().withUrl("/api/comments").build();
+
+connection.start().catch(function (err) {
+    return console.error(err.toString());
+});
+
+connection.on("NewComment", function (comment, fileId) {
+    if (fileId === commentingFileId) {
+        addCommentToList(comment);
+    } else {
+        // TODO: Maybe send notification later
+        console.log('got comment from other file');
+    }
+});
+
+$(document).ready(function () {
+    
+    $('#send-comment-button').on('click', function () {
+        let $textField = $('#comment-text');
+        let text = $textField.val();
+        
+        let data = {
+            Text: text,
+            FileId: commentingFileId
+        };
+
+        $textField.val('');
+
+        connection.invoke("NewComment", data);
+    });
+
+    $("#file-container").on("click", '.file:not(.folder)', function () {
+        $('#file-comments').empty();
+        
+        let id = this.id;
+        let name = $(this).find('.file-name').text();
+        commentingFileId = id;
+        
+        $('#commenting-file-name').text(name);
+        
+        let data = {
+            fileId: id,
+            parentId: 0,
+        }
+        
+        connectToSignalGroup(id);
+        
+        $.ajax({
+            url: getCommentsUrl,
+            data: data,
+            success: function (result) {
+                result.forEach(comment => {
+                    addCommentToList(comment);
+                });
+            }
+        })
+        
+    });
+});
+
+function addCommentToList(comment) {
+    let element = '<li class="list-group-item">' +
+        '<b>' + comment.username + '</b><br>' +
+        comment.text +
+        '</li>';
+
+    $('#file-comments').append(element);
+}
+
+function connectToSignalGroup(fileId) {
+    try {
+        connection.invoke("AddToGroup", fileId).then(function () {
+            //console.log('Successfully connected to group');
+        });
+    }
+    catch (e) {
+        console.error(e.toString());
+    }
 }

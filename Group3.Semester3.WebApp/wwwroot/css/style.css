@@ -15,3 +15,38 @@ button {
 #directory-path span, .folder {
     cursor: pointer;
 }
+
+#file-container {
+    margin-top: 1em;
+}
+
+.navbar-dark {
+    background-color: #0b3e6f;
+}
+
+.file-name {
+    word-wrap: break-word;
+    line-height: 1.5em;
+    height: 3em;
+    overflow: hidden;
+}
+
+.file-name:hover {
+    position: absolute;
+    overflow: auto;
+    line-height: initial;
+    height: initial;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    z-index: 100;
+}
+
+#file-sidebar {
+    border-left: 2px solid #0b3e6f;
+    min-height: 100vh;
+}
+
+#commenting-file-name {
+    word-wrap: break-word;
+}

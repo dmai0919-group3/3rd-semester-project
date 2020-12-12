@@ -12,5 +12,8 @@ namespace Group3.Semester3.WebApp.Helpers
         public string AzureDefaultContainer { get; set; }
         public string AzureStorageAccount { get; set; }
         public string AzureAccountKey { get; set; }
+        public string SendGridAPIKey { get; set; }
+        public string EmailSenderName { get; set; }
+        public string EmailSenderAddress { get; set; }
     }
 }

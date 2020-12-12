@@ -33,6 +33,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>An IEnumerable containing all FileEntities that match the query</returns>
         /// 
         public IEnumerable<FileEntity> GetByParentId(Guid parentId);
+        public IEnumerable<FileEntity> GetFoldersByParentId(Guid parentId);
         public IEnumerable<FileEntity> GetByGroupId(Guid groupId);
 
         /// <summary>
@@ -59,12 +60,11 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Delete(Guid id);
 
         /// <summary>
-        /// Renames a file in the database
+        /// Updates a file in the database
         /// </summary>
-        /// <param name="id">The Guid of the file to be renamed</param>
-        /// <param name="name">The new name of the file</param>
-        /// <returns>True if the file has been renamed, false if not.</returns>
-        public bool Rename(Guid id, string name);
+        /// <param name="fileEntity">A file</param>
+        /// <returns>True if the file has been updated, false if not.</returns>
+        public bool Update(FileEntity fileEntity);
 
         /// <summary>
         /// Moves a file to a new folder (changes the parentId of the file)
@@ -143,6 +143,22 @@ namespace Group3.Semester3.WebApp.Repositories
             return null;
         }
 
+        public IEnumerable<FileEntity> GetFoldersByParentId(Guid parentId)
+        {
+            string query = "SELECT * FROM Files WHERE ParentId=@ParentId and IsFolder='1'";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { ParentId = parentId };
+
+                connection.Open();
+
+                var result = connection.Query<FileEntity>(query, parameters);
+
+                return result;
+            }
+        }
+
         public IEnumerable<FileEntity> GetByGroupId(Guid groupId)
         {
             string query = "SELECT * FROM Files WHERE groupId=@GroupId";
@@ -175,8 +191,8 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the file has been added false if not</returns>
         public bool Insert(FileEntity fileEntity)
         {
-            string query = "INSERT INTO Files (Id, UserId, GroupId, AzureName, Name, ParentId, IsFolder, Updated)" +
-                   " VALUES (@Id, @UserId, @GroupId, @AzureName, @Name, @ParentId, @IsFolder, @Updated)";
+            string query = "INSERT INTO Files (Id, UserId, GroupId, AzureName, Name, ParentId, IsFolder, Updated, Size)" +
+                   " VALUES (@Id, @UserId, @GroupId, @AzureName, @Name, @ParentId, @IsFolder, @Updated, @Size)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -218,27 +234,19 @@ namespace Group3.Semester3.WebApp.Repositories
         }
         
         /// <summary>
-        /// Renames a file in the database
+        /// Updates a file in the database
         /// </summary>
-        /// <param name="id">The Guid of the file to be renamed</param>
-        /// <param name="name">The new name of the file</param>
-        /// <returns>True if the file has been renamed, false if not.</returns>
-        public bool Rename(Guid id, string name)
+        /// <param name="fileEntity">A file</param>
+        /// <returns>True if the file has been updated, false if not.</returns>
+        public bool Update(FileEntity fileEntity)
         {
-            string query = "UPDATE Files SET Name=@Name, Updated=@Updated WHERE Id=@Id";
+            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared, Size=@Size WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
-                var parameters = new
-                {
-                    Name = name,
-                    Id = id,
-                    Updated = DateTime.Now
-                };
-                
                 connection.Open();
 
-                int rowsChanged = connection.Execute(query, parameters);
+                int rowsChanged = connection.Execute(query, fileEntity);
                 if (rowsChanged > 0)
                 {
                     return true;
@@ -277,13 +285,14 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>An IEnumerable containing all the FileEntities matching the query</returns>
         public IEnumerable<FileEntity> GetByUserIdAndParentId(Guid userId, Guid parentId)
         {
-            string query = "SELECT * FROM Files WHERE UserId=@UserId AND ParentId=@ParentId";
+            string query = "SELECT * FROM Files WHERE UserId=@UserId AND ParentId=@ParentId AND GroupId=@GroupId";
 
             using (var connection = new SqlConnection(connectionString))
             {
                 var parameters = new { 
                     UserId = userId,
-                    ParentId = parentId
+                    ParentId = parentId,
+                    GroupId = Guid.Empty
                 };
 
                 connection.Open();

@@ -107,7 +107,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
         [Route("add-user")]
         [HttpPost]
-        public ActionResult AddUser(UserGroupModel model)
+        public ActionResult AddUser(AddUserGroupModel model)
         {
             try
             {
@@ -120,7 +120,28 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+        
+        [Route("change-permissions")]
+        [HttpPut]
+        public ActionResult ChangeUserPermissions(AddUserGroupModel model)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _groupService.UpdateUserPermissions(user, model);
+
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
             {
                 return BadRequest("System error, please contact Administrator");
             }
@@ -165,7 +186,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch
+            catch (Exception exception)
             {
                 return BadRequest("System error, please contact Administrator");
             }

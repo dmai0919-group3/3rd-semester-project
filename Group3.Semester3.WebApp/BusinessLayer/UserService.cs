@@ -41,7 +41,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="httpContext">The HttpContext of the request received</param>
         /// <returns>A UserModel matching the given identity</returns>
         /// <exception cref="ValidationException">If the user is not found</exception>
-        UserModel GetFromHttpContext(HttpContext httpContext);
+        UserModel GetFromHttpContext(dynamic httpContext);
 
         /// <summary>
         /// Registers a new user
@@ -136,9 +136,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="httpContext">The HttpContext of the request received</param>
         /// <returns>A UserModel matching the given identity</returns>
         /// <exception cref="ValidationException">If the user is not found</exception>
-        public UserModel GetFromHttpContext(HttpContext httpContext)
+        public UserModel GetFromHttpContext(dynamic httpContext)
         {
-            var userId = new Guid(httpContext.User.Identity.Name);
+            var identityString = httpContext.User.Identity.Name;
+            
+            if (identityString == null)
+            {
+                return null;
+            }
+            
+            var userId = new Guid(identityString);
 
             var user = GetById(userId);
             if (user == null)

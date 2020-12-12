@@ -7,6 +7,7 @@ using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.FileSystem;
+using Group3.Semester3.WebApp.Models.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -63,8 +64,10 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         /// <param name="id">The id of a file</param>
         /// <returns>The information of a file (if the user has access to it)</returns>
         [HttpGet("{id}")]
-        public string GetFile(int id)
+        public string GetFileDetails(Guid fileId)
         {
+
+            var file = _fileService.GetById(fileId);
             return "NotImplemented";
         }
 
@@ -216,7 +219,168 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet]
+        [Route("browse-shared")]
+        public IActionResult BrowseSharedFiles()
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntities = _fileService.BrowseSharedFiles(user);
+                return Ok(fileEntities);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest();
+            }
+        }
         
+        [HttpGet]
+        [Route("share/{fileId}")]
+        public IActionResult GetShareInfo(Guid fileId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var fileEntity = _fileService.GetById(fileId);
+
+                var shareInfo = _fileService.GetShareInfo(fileEntity, user);
+                
+                var url = Url.Action("SharedFileLink", "File", new {hash = shareInfo.Item2},  Request.Scheme);
+                var users = shareInfo.Item1;
+
+                return Ok(new {Link = url, Users = users});
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+
+        [Route("share")]
+        [HttpPost]
+        public ActionResult ShareFile(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var hash = _fileService.ShareFile(fileEntity, user);
+
+                var url = Url.Action("SharedFileLink", "File", new {hash = hash},  Request.Scheme);
+                
+                return Ok(url);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+        
+        [Route("share-with")]
+        [HttpPost]
+        public ActionResult ShareFileWith(SharedFile sharedFile)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.ShareFile(sharedFile, user);
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+
+        [Route("share")]
+        [HttpDelete]
+        public ActionResult UnShareFile(SharedFile sharedFileToDelete)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.UnShareFile(sharedFileToDelete, user);
+                if (!result)
+                {
+                    return NotFound();
+                }
+                else return NoContent();
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+        
+        [Route("disable-share-link")]
+        [HttpPost]
+        public ActionResult DisableShareLink(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.DisableShareLink(fileEntity, user);
+                if (!result)
+                {
+                    return NotFound();
+                }
+                else return NoContent();
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+        
+        [Route("disable-sharing")]
+        [HttpPost]
+        public ActionResult DisableSharing(FileEntity fileEntity)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _fileService.DisableSharing(fileEntity, user);
+                if (!result)
+                {
+                    return NotFound();
+                }
+                else return NoContent();
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("System error, please contact administrator.");
+            }
+        }
+
         /// <summary>
         /// GET: api/file/content/{id}
         /// </summary>
