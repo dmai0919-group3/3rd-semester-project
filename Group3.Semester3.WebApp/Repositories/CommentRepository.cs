@@ -26,8 +26,8 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool Insert(Comment comment)
         {
-            string query = "INSERT INTO Comments (Id, FileId, ParentId, Text)" +
-                   " VALUES (@Id, @FileId, @ParentId, @Text)";
+            string query = "INSERT INTO Comments (Id, UserId, FileId, ParentId, Text, Sent)" +
+                   " VALUES (@Id, @UserId, @FileId, @ParentId, @Text, @Sent)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -68,7 +68,9 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public IEnumerable<Comment> GetByFileIdAndParentId(Guid fileId, Guid parentId)
         {
-            string query = "SELECT * FROM Comments WHERE FileId=@FIleId AND ParentId=@ParentId";
+            string query = "SELECT Comments.*, Users.Name AS Username FROM Comments " +
+                "JOIN Users ON Comments.UserId=Users.Id WHERE FileId=@FIleId AND ParentId=@ParentId " + 
+                "ORDER BY Sent ASC";
 
             using (var connection = new SqlConnection(connectionString))
             {

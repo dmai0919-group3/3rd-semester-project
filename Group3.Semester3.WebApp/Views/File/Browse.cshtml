@@ -38,44 +38,50 @@
     
     <!-- Page Content -->
     <div id="content" class="container-fluid">
-        <div class="col-md-10">
-            <div class="row">
-            
-                <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <i class="fas fa-align-justify"></i>
-                </button>
+        <div class="row">
+            <div class="col-md-9">
+                <div class="row">
     
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    New
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
-                    <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+                    <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="fas fa-align-justify"></i>
+                    </button>
+    
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        New
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
+                        <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+                    </div>
+    
+                    <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
+    
+                    <div class="directory-path-container">
+                        <h2>Path: <span id="directory-path">/</span></h2>
+                    </div>
                 </div>
     
-                <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
     
-                <div class="directory-path-container">
-                    <h2>Path: <span id="directory-path">/</span></h2>
-                </div>
+                <div class="row" id="file-container"></div>
             </div>
     
-    
-            <div class="row" id="file-container"></div>
-        </div>
-        
-        <div class="col-md-2" id="file-sidebar">
-            <h3>Comments</h3>
-            <form>
-                <div class="form-group">
-                    <label for="comment-text">Comment:</label>
-                    <input type="text" id="comment-text">
-                </div>
-            </form>
-            <button class="btn btn-primary" id="send-comment-button">Send</button>
-            
-            <div id="file-comments">
+            <div class="col-md-3" id="file-sidebar">
+                <h5 id="commenting-file-name"></h5>
+                <h6>Comments:</h6>
                 
+                <div>
+                    <ul class="list-group list-group-flush" id="file-comments">
+                        
+                    </ul>
+                </div>
+                
+                <form>
+                    <div class="form-group">
+                        <label for="comment-text">New Comment:</label>
+                        <input type="text" id="comment-text" class="form-control">
+                    </div>
+                </form>
+                <button class="btn btn-primary" id="send-comment-button">Send</button>
             </div>
         </div>
     </div>
@@ -98,6 +104,8 @@
     const enableLinkSharing = "@Url.Action("ShareFile", "FileApi")";
     const disableLinkSharing = "@Url.Action("DisableShareLink", "FileApi")";
     const disableSharingWithUser = "@Url.Action("UnShareFile", "FileApi")";
+    
+    const getCommentsUrl = "@Url.Action("GetComments", "CommentApi")";
     
     const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
     const fileIconUrl = "/@Url.Content("Images/file-icon.png")";

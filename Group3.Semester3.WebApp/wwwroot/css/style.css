@@ -44,4 +44,9 @@ button {
 
 #file-sidebar {
     border-left: 2px solid #0b3e6f;
+    min-height: 100vh;
+}
+
+#commenting-file-name {
+    word-wrap: break-word;
 }

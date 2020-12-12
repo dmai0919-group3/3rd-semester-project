@@ -280,7 +280,7 @@ function browseDirectoryFiles(parentId) {
 }
 
 const fileMarkup = `
-                <div class="col-md-1 {{classes}} justify-content-center" id="{{fileId}}">
+                <div class="col-sm-3 col-xl-2 {{classes}} justify-content-center" id="{{fileId}}">
                     <div class="col-12 text-center">
                         <img src="{{icon}}" width="80%" />
                     </div>
@@ -919,27 +919,86 @@ $(document).ready(function () {
     });
 });
 
+// Commenting section
+
+let commentingFileId = null;
+
+let connection = new signalR.HubConnectionBuilder().withUrl("/api/comments").build();
+
+connection.start().catch(function (err) {
+    return console.error(err.toString());
+});
+
+connection.on("NewComment", function (comment, fileId) {
+    if (fileId === commentingFileId) {
+        addCommentToList(comment);
+    } else {
+        // TODO: Maybe send notification later
+        console.log('got comment from other file');
+    }
+});
+
 $(document).ready(function () {
-
-    let connection = new signalR.HubConnectionBuilder().withUrl("/api/comments").build();
-
-    connection.start().then(function () {
-        console.log('connected to hub');
-    }).catch(function (err) {
-        return console.error(err.toString());
-    });
-
-    connection.on("NewComment", function (comment) {
-        console.log(comment);
-    });
     
     $('#send-comment-button').on('click', function () {
-        let text = $('#comment-text').val();
+        let $textField = $('#comment-text');
+        let text = $textField.val();
         
         let data = {
-            Text: text
+            Text: text,
+            FileId: commentingFileId
         };
+
+        $textField.val('');
 
         connection.invoke("NewComment", data);
     });
+
+    $("#file-container").on("click", '.file:not(.folder)', function () {
+        $('#file-comments').empty();
+        
+        let id = this.id;
+        let name = $(this).find('.file-name').text();
+        commentingFileId = id;
+        
+        $('#commenting-file-name').text(name);
+        
+        let data = {
+            fileId: id,
+            parentId: 0,
+        }
+        
+        connectToSignalGroup(id);
+        
+        $.ajax({
+            url: getCommentsUrl,
+            data: data,
+            success: function (result) {
+                result.forEach(comment => {
+                    addCommentToList(comment);
+                });
+            }
+        })
+        
+    });
 });
+
+function addCommentToList(comment) {
+    let element = '<li class="list-group-item">' +
+        '<b>' + comment.username + '</b><br>' +
+        comment.text +
+        '</li>';
+
+    $('#file-comments').append(element);
+}
+
+function connectToSignalGroup(fileId) {
+    try {
+        connection.invoke("AddToGroup", fileId).then(function () {
+            //console.log('Successfully connected to group');
+        });
+    }
+    catch (e) {
+        console.error(e.toString());
+    }
+}

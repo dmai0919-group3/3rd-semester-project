@@ -11,6 +11,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
     {
         public IEnumerable<Comment> GetComments(UserModel user, Guid fileId);
         public Comment CreateComment(UserModel user, Comment comment);
+        public bool AddToGroup(UserModel user, Guid fileId);
     }
     
     public class CommentService : ICommentService
@@ -31,7 +32,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = _fileRepository.GetById(fileId);
             _accessService.hasAccessToFile(user, file, Permissions.Read);
-            var comments = _commentRepository.GetByFileIdAndParentId(fileId, file.ParentId);
+            var comments = _commentRepository.GetByFileIdAndParentId(fileId, Guid.Empty);
             return comments;
         }
 
@@ -42,7 +43,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _accessService.hasAccessToFile(user, file, Permissions.Read);
 
             comment.Id = Guid.NewGuid();
-            
+            comment.Sent = DateTime.Now;
+            comment.UserId = user.Id;
+            comment.Username = user.Name;
+
             if (_commentRepository.Insert(comment))
             {
                 return comment;
@@ -51,6 +55,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new ValidationException("Failed to create comment");
             }
+        }
+
+        public bool AddToGroup(UserModel user, Guid fileId)
+        {
+            var file = _fileRepository.GetById(fileId);
+            
+            _accessService.hasAccessToFile(user, file, Permissions.Read);
+
+            return true;
         }
     }
 }

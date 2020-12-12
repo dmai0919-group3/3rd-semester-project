@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Entities;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -20,13 +21,23 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _userService = userService;
         }
         
-        public async Task NewComment(Comment comment)
+        public async Task NewComment(Comment newComment)
         {
             var user = _userService.GetFromHttpContext(Context);
 
-            comment = _commentService.CreateComment(user, comment);
+            var comment = _commentService.CreateComment(user, newComment);
+            var fileId = comment.FileId.ToString();
             
-            await Clients.All.SendAsync("NewComment", comment);
+            await Clients.Group(fileId).SendAsync("NewComment", comment, fileId, user.Name);
+        }
+
+        public async Task AddToGroup(Guid fileId)
+        {
+            var user = _userService.GetFromHttpContext(Context);
+            if (_commentService.AddToGroup(user, fileId))
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, fileId.ToString());
+            }
         }
     }
 }
