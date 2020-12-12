@@ -25,6 +25,11 @@
     {
       "library": "font-awesome@5.15.1",
       "destination": "wwwroot/lib/font-awesome/"
+    },
+    {
+      "provider": "unpkg",
+      "library": "signalr@2.4.1",
+      "destination": "wwwroot/lib/signalr/"
     }
   ]
 }
