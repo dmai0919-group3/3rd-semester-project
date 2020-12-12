@@ -64,8 +64,10 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         /// <param name="id">The id of a file</param>
         /// <returns>The information of a file (if the user has access to it)</returns>
         [HttpGet("{id}")]
-        public string GetFile(int id)
+        public string GetFileDetails(Guid fileId)
         {
+
+            var file = _fileService.GetById(fileId);
             return "NotImplemented";
         }
 

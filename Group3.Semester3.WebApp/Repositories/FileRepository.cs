@@ -191,8 +191,8 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the file has been added false if not</returns>
         public bool Insert(FileEntity fileEntity)
         {
-            string query = "INSERT INTO Files (Id, UserId, GroupId, AzureName, Name, ParentId, IsFolder, Updated)" +
-                   " VALUES (@Id, @UserId, @GroupId, @AzureName, @Name, @ParentId, @IsFolder, @Updated)";
+            string query = "INSERT INTO Files (Id, UserId, GroupId, AzureName, Name, ParentId, IsFolder, Updated, Size)" +
+                   " VALUES (@Id, @UserId, @GroupId, @AzureName, @Name, @ParentId, @IsFolder, @Updated, @Size)";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -240,7 +240,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the file has been updated, false if not.</returns>
         public bool Update(FileEntity fileEntity)
         {
-            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared WHERE Id=@Id";
+            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared, Size=@Size WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
