@@ -287,13 +287,14 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>An IEnumerable containing all the FileEntities matching the query</returns>
         public IEnumerable<FileEntity> GetByUserIdAndParentId(Guid userId, Guid parentId)
         {
-            string query = "SELECT * FROM Files WHERE UserId=@UserId AND ParentId=@ParentId";
+            string query = "SELECT * FROM Files WHERE UserId=@UserId AND ParentId=@ParentId AND GroupId=@GroupId";
 
             using (var connection = new SqlConnection(connectionString))
             {
                 var parameters = new { 
                     UserId = userId,
-                    ParentId = parentId
+                    ParentId = parentId,
+                    GroupId = Guid.Empty
                 };
 
                 connection.Open();

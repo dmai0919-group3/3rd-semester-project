@@ -1,9 +1,14 @@
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.Entities;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
+    
+    [Authorize(AuthenticationSchemes = (CookieAuthenticationDefaults.AuthenticationScheme + "," + JwtBearerDefaults.AuthenticationScheme))]
     public class CommentHub : Hub
     {
         private ICommentService _commentService;
