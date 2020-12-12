@@ -19,14 +19,12 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     /// <summary>
     /// Interaction logic for Register.xaml
     /// </summary>
-    public partial class Registration : UserControl, ISwitchable
+    public partial class Registration : UserControl
     {
         private ApiService apiService;
-        private Switcher switcher;
 
-        public Registration(ApiService apiService, Switcher switcher)
+        public Registration(ApiService apiService)
         {
-            this.switcher = switcher;
             this.apiService = apiService;
 
             InitializeComponent();

@@ -8,6 +8,7 @@ using Group3.Semester3.DesktopClient.Model;
 using System.IO;
 using System.Net.Http.Headers;
 using Group3.Semester3.WebApp.Entities;
+using System.Security;
 
 namespace Group3.Semester3.DesktopClient.Services
 {
@@ -252,7 +253,7 @@ namespace Group3.Semester3.DesktopClient.Services
         {
 
             var model = new AuthenticateModel() { Email = email, Password = password };
-            var result = this.PostRequest(LoginUrl, model);
+            var result = PostRequest(LoginUrl, model);
 
             string resultContent;
 
@@ -260,6 +261,19 @@ namespace Group3.Semester3.DesktopClient.Services
                 var t = result.Content.ReadAsStringAsync();
                 t.Wait();
                 resultContent = t.Result;
+            }
+
+            if (!result.IsSuccessStatusCode)
+            {
+                try
+                {
+                    string message = JObject.Parse(resultContent).SelectToken("message").ToString();
+                    throw new ApiAuthorizationException(message);
+                }
+                catch
+                {
+                    throw;
+                }
             }
 
             var resultModel = JsonConvert.DeserializeObject<LoginResultModel>(resultContent);

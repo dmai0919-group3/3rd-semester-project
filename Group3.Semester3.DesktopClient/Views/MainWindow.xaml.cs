@@ -36,7 +36,6 @@ namespace Group3.Semester3.DesktopClient.Views
     public partial class MainWindow : Window
     {
         private ApiService apiService;
-        private Switcher switcher;
 
         private MainWindowModel Model;
 
@@ -51,10 +50,9 @@ namespace Group3.Semester3.DesktopClient.Views
         Stack<FileEntity> folderStack = new Stack<FileEntity>();
 
 
-        public MainWindow(ApiService apiService, Switcher switcher)
+        public MainWindow(ApiService apiService)
         {
 
-            this.switcher = switcher;
             this.apiService = apiService;
 
             InitializeComponent();
@@ -267,6 +265,14 @@ namespace Group3.Semester3.DesktopClient.Views
             {
                 item.Selected = item.Group.Id == (e.NewValue as GroupWrapper)?.Group?.Id;
             }
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            NotificationMessage msg = new NotificationMessage();
+            msg.Message = "Hello information";
+
+            await DialogHost.Show(msg, "RootDialog");
         }
     }
 }

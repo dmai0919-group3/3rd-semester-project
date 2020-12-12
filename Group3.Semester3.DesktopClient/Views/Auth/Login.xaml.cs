@@ -1,6 +1,8 @@
-﻿using Group3.Semester3.DesktopClient.Services;
+﻿using Group3.Semester3.DesktopClient.Model;
+using Group3.Semester3.DesktopClient.Services;
 using Group3.Semester3.DesktopClient.ViewHelpers;
 using Group3.Semester3.WebApp.Models.Users;
+using MaterialDesignThemes.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,12 +24,13 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     public partial class Login : Window
     {
         private ApiService apiService;
-        private Switcher switcher;
-        public Login(ApiService apiService, Switcher switcher)
+        private LoginWindowModel Model;
+        public Login(ApiService apiService)
         {
-            this.switcher = switcher;
             this.apiService = apiService;
             InitializeComponent();
+
+            Model = (LoginWindowModel)DataContext;
         }
 
         /// <summary>
@@ -37,14 +40,44 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
         /// </summary>
         /// <param name="sender">Not used</param>
         /// <param name="e">Not used</param>
-        private void btnLogin_Click(object sender, RoutedEventArgs e)
+        private async void btnLogin_Click(object sender, RoutedEventArgs e)
         {
-            string email = emailTextbox.Text;
-            string password = passwordTextbox.Password;
-            apiService.Authorize(email, password);
-            
-            new MainWindow(apiService, switcher).Show();
-            Close();
+            textBoxEmail.Text = textBoxEmail.Text.Trim();
+
+            Model.EmailRequiredPromptShown = textBoxEmail.Text.Length == 0;
+            Model.PasswordRequiredPromptShown = passwordBoxPassword.Password.Length == 0;
+
+            if (Model.PasswordRequiredPromptShown || Model.EmailRequiredPromptShown)
+                return;
+
+            try
+            {
+                apiService.Authorize(
+                    textBoxEmail.Text,
+                    passwordBoxPassword.Password);
+
+                new MainWindow(apiService).Show();
+
+                Close();
+            }
+            catch (ApiService.ApiAuthorizationException ex)
+            {
+                var msg = new ErrorNotificationMessage()
+                {
+                    Message = ex.Message
+                };
+                
+                await DialogHost.Show(msg, "LoginDialog");
+            }
+            catch
+            {
+                var msg = new ErrorNotificationMessage()
+                {
+                    Message = "An unexpected error has occurred"
+                };
+
+                await DialogHost.Show(msg, "LoginDialog");
+            }
         }
 
         /// <summary>
@@ -60,7 +93,6 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
 
         public void UtilizeState(object state)
         {
-            throw new NotImplementedException();
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Group3.Semester3.DesktopClient.Views
             panelFileDetails.Children.Clear();
             if (fileEntity == null) return;
 
-            var detailsPanel = new FileDetailsPanel(apiService, switcher, fileEntity);
+            var detailsPanel = new FileDetailsPanel(apiService, fileEntity);
 
             detailsPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
             detailsPanel.VerticalAlignment = VerticalAlignment.Stretch;

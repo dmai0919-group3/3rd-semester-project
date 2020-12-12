@@ -1,7 +1,7 @@
 ﻿<Application x:Class="Group3.Semester3.DesktopClient.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Group3.Semester3.DesktopClient"
+             xmlns:local="clr-namespace:Group3.Semester3.DesktopClient.Model" 
              Startup="OnStartup"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
     
@@ -12,6 +12,45 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
                 <ResourceDictionary Source="TestDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Dialog for errors -->
+            <DataTemplate DataType="{x:Type local:ErrorNotificationMessage}">
+                <StackPanel Margin="20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Error" Height="48" Width="48" Margin="20, 25, 20, 25"
+                                                 Grid.Column="0" />
+                        <StackPanel Margin="20" Grid.Column="1" MinWidth="300">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" />
+                            <TextBlock Text="{Binding Message}" Margin="0,13,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <Button Content="OK" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"></Button>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- Dialog for errors -->
+            <DataTemplate DataType="{x:Type local:InfoNotificationMessage}">
+                <StackPanel Margin="20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <materialDesign:PackIcon Kind="Information" Height="48" Width="48" Margin="20, 25, 20, 25"
+                                                 Grid.Column="0" />
+                        <StackPanel Margin="20" Grid.Column="1" MinWidth="300">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" />
+                            <TextBlock Text="{Binding Message}" Margin="0,13,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <Button Content="OK" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"></Button>
+                </StackPanel>
+            </DataTemplate>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
