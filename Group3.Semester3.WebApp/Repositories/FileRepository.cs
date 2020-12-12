@@ -240,7 +240,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the file has been updated, false if not.</returns>
         public bool Update(FileEntity fileEntity)
         {
-            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared WHERE Id=@Id";
+            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared, Size=@Size WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {

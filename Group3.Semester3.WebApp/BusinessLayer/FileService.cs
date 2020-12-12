@@ -566,10 +566,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             containerClient.CreateIfNotExists();
             
             file.Updated = DateTime.Now;
-            _fileRepository.Update(file);
+           
 
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
+            file.Size = containerClient.GetBlobClient(file.AzureName).GetProperties().Value.ContentLength;
+
+            _fileRepository.Update(file);
             return file;
         }
 
