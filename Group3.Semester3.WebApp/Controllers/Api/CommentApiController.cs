@@ -17,9 +17,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
     {
 
         [HttpGet]
-        public async Task<IActionResult> GetComments([FromQuery] Guid fileId)
+        public async Task<IActionResult> GetComments([FromQuery] Guid fileId, [FromQuery] Guid parentId)
         {
-            
+            // TODO: Get from service
             return Ok();
         }
         
