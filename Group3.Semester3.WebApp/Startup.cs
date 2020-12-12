@@ -11,8 +11,6 @@ using Microsoft.IdentityModel.Tokens;
 using Group3.Semester3.WebApp.Repositories;
 using Group3.Semester3.WebApp.BusinessLayer;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using System.IO;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Group3.Semester3.WebApp
@@ -81,16 +79,25 @@ namespace Group3.Semester3.WebApp
                     ValidateAudience = false
                 };
             });
+            
+            services.AddSignalR();
 
             // configure DI for application services
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserRepository, UserRepository>();
+            
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IFileRepository, FileRepository>();
+            
             services.AddScoped<IAccessService, AccessService>();
+            
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IGroupService, GroupService>();
+            
             services.AddScoped<ISharedFilesRepository, SharedFilesRepository>();
+            
+            services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -117,6 +124,7 @@ namespace Group3.Semester3.WebApp
             {
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
+                endpoints.MapHub<CommentHub>("/api/comments");
             });
         }
     }

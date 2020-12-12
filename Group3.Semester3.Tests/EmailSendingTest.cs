@@ -22,7 +22,7 @@ namespace Group3.Semester3.WebAppTests
             {
                 Name = "Test User",
                 Email = "testing@ogo-file.space",
-                Activated = true,
+                //Activated = true,
                 Id = Guid.Empty
             };
         }

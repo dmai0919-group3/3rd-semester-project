@@ -39,28 +39,51 @@
     <!-- Page Content -->
     <div id="content" class="container-fluid">
         <div class="row">
-            
-            <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <i class="fas fa-align-justify"></i>
-            </button>
-
-            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                New
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
-                <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+            <div class="col-md-9">
+                <div class="row">
+    
+                    <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="fas fa-align-justify"></i>
+                    </button>
+    
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        New
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item" href="#" onclick="showUploadFileModal()">File</a>
+                        <a class="dropdown-item" href="#" onclick="showCreateFolderModal()">Folder</a>
+                    </div>
+    
+                    <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
+    
+                    <div class="directory-path-container">
+                        <h2>Path: <span id="directory-path">/</span></h2>
+                    </div>
+                </div>
+    
+    
+                <div class="row" id="file-container"></div>
             </div>
-
-            <button class="btn btn-primary" id="go-back-button" onclick="oneDirUp()">Go back</button>
-
-            <div class="directory-path-container">
-                <h2>Path: <span id="directory-path">/</span></h2>
+    
+            <div class="col-md-3" id="file-sidebar">
+                <h5 id="commenting-file-name"></h5>
+                <h6>Comments:</h6>
+                
+                <div>
+                    <ul class="list-group list-group-flush" id="file-comments">
+                        
+                    </ul>
+                </div>
+                
+                <form>
+                    <div class="form-group">
+                        <label for="comment-text">New Comment:</label>
+                        <input type="text" id="comment-text" class="form-control">
+                    </div>
+                </form>
+                <button class="btn btn-primary" id="send-comment-button">Send</button>
             </div>
         </div>
-        
-        
-        <div class="row" id="file-container"></div>
     </div>
 </div>
 
@@ -82,10 +105,13 @@
     const disableLinkSharing = "@Url.Action("DisableShareLink", "FileApi")";
     const disableSharingWithUser = "@Url.Action("UnShareFile", "FileApi")";
     
+    const getCommentsUrl = "@Url.Action("GetComments", "CommentApi")";
+    
     const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
     const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
 </script>
 
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
 <script src="~/js/custom-sidebar.js"></script>
 <script src="~/js/browse-file-scripts.js"></script>
 

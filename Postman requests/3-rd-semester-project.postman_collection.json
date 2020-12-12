@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "78245500-2205-4c9e-b4f2-6a8aa612dbb9",
+		"_postman_id": "67b337e6-353f-41fb-9895-c11a57f8f993",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -940,6 +940,44 @@
 						"api",
 						"User",
 						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get comments",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/comment?fileId=6e7293cc-067b-4b80-bc48-0e1be08c5c43&parentId=0",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"comment"
+					],
+					"query": [
+						{
+							"key": "fileId",
+							"value": "6e7293cc-067b-4b80-bc48-0e1be08c5c43"
+						},
+						{
+							"key": "parentId",
+							"value": "0"
+						}
 					]
 				}
 			},
