@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
 
@@ -40,9 +41,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             _accessService.hasAccessToFile(user, file, Permissions.Read);
 
-            _commentRepository.Insert(comment);
-
-            return comment;
+            comment.Id = Guid.NewGuid();
+            
+            if (_commentRepository.Insert(comment))
+            {
+                return comment;
+            }
+            else
+            {
+                throw new ValidationException("Failed to create comment");
+            }
         }
     }
 }

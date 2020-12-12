@@ -52,11 +52,11 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public IEnumerable<Comment> GetByFileId(Guid fileId)
         {
-            string query = "SELECT * FROM Comments WHERE FileId=@FileId";
+            string query = "SELECT * FROM Comments WHERE FileId=@FileId AND ParentId=@ParentId";
 
             using (var connection = new SqlConnection(connectionString))
             {
-                var parameters = new { FileId = fileId};
+                var parameters = new { FileId = fileId, ParentId = Guid.Empty};
 
                 connection.Open();
 
