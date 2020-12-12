@@ -1,4 +1,5 @@
-﻿using FluentMigrator;
+﻿using System.Data;
+using FluentMigrator;
 
 namespace Group3.Semester3.WebApp.Migrations
 {
@@ -12,7 +13,8 @@ namespace Group3.Semester3.WebApp.Migrations
                 .WithColumn("Hash").AsString().NotNullable();
             Create.ForeignKey()
                 .FromTable("SharedFilesLinks").ForeignColumn("FileId")
-                .ToTable("Files").PrimaryColumn("Id");
+                .ToTable("Files").PrimaryColumn("Id")
+                .OnDeleteOrUpdate(Rule.Cascade);
             ;
         }
 
