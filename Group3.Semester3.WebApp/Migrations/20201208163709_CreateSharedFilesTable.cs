@@ -1,4 +1,5 @@
-﻿using FluentMigrator;
+﻿using System.Data;
+using FluentMigrator;
 
 namespace Group3.Semester3.DesktopClient.Migrations
 {
@@ -9,14 +10,16 @@ namespace Group3.Semester3.DesktopClient.Migrations
         {
             Create.Table("SharedFiles")
                 .WithColumn("FileId").AsGuid().NotNullable()
-                .WithColumn("UserId").AsGuid().NotNullable()
-                ;
+                .WithColumn("UserId").AsGuid().NotNullable();
+            
             Create.ForeignKey()
                 .FromTable("SharedFiles").ForeignColumn("UserId")
-                .ToTable("Users").PrimaryColumn("Id");
+                .ToTable("Users").PrimaryColumn("Id")
+                .OnDeleteOrUpdate(Rule.Cascade);
             Create.ForeignKey()
                 .FromTable("SharedFiles").ForeignColumn("FileId")
-                .ToTable("Files").PrimaryColumn("Id");
+                .ToTable("Files").PrimaryColumn("Id")
+                .OnDeleteOrUpdate(Rule.Cascade);
         }
 
         public override void Down()
