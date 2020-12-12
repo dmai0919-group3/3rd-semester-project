@@ -28,7 +28,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         
         public IEnumerable<Comment> GetComments(UserModel user, Guid fileId)
         {
-            throw new NotImplementedException();
+            var file = _fileRepository.GetById(fileId);
+            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            var comments = _commentRepository.GetByFileIdAndParentId(fileId, file.ParentId);
+            return comments;
         }
 
         public Comment CreateComment(UserModel user, Comment comment)
@@ -37,6 +40,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             _accessService.hasAccessToFile(user, file, Permissions.Read);
 
+            _commentRepository.Insert(comment);
 
             return comment;
         }
