@@ -918,3 +918,28 @@ $(document).ready(function () {
         });
     });
 });
+
+$(document).ready(function () {
+
+    let connection = new signalR.HubConnectionBuilder().withUrl("/api/comments").build();
+
+    connection.start().then(function () {
+        console.log('connected to hub');
+    }).catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    connection.on("NewComment", function (comment) {
+        console.log(comment);
+    });
+    
+    $('#send-comment-button').on('click', function () {
+        let text = $('#comment-text').val();
+        
+        let data = {
+            Text: text
+        };
+
+        connection.invoke("NewComment", data);
+    });
+});

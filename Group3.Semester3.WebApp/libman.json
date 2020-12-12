@@ -28,8 +28,8 @@
     },
     {
       "provider": "unpkg",
-      "library": "signalr@2.4.1",
-      "destination": "wwwroot/lib/signalr/"
+      "library": "@microsoft/signalr@latest",
+      "destination": "wwwroot/lib/microsoft/signalr/"
     }
   ]
 }
