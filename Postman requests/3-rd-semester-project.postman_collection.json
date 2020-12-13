@@ -709,7 +709,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/api/file/download/3c5e6e7e-bbae-4224-91a2-12ad15dc91ae",
+					"raw": "{{host}}/api/file/download/08fa8d5d-ba52-4ec1-882e-4f6a32b34b39?versionId=839985d2-afda-4576-a966-63ec67e85f47",
 					"host": [
 						"{{host}}"
 					],
@@ -717,7 +717,13 @@
 						"api",
 						"file",
 						"download",
-						"3c5e6e7e-bbae-4224-91a2-12ad15dc91ae"
+						"08fa8d5d-ba52-4ec1-882e-4f6a32b34b39"
+					],
+					"query": [
+						{
+							"key": "versionId",
+							"value": "839985d2-afda-4576-a966-63ec67e85f47"
+						}
 					]
 				}
 			},

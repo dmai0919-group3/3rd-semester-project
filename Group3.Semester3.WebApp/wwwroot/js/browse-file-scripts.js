@@ -600,9 +600,11 @@ function editFileSave() {
     });
 }
 
-function initFileDownload(fileId) {
+function initFileDownload(fileId, versionId = "") {
+    let data = {versionId: versionId};
     $.ajax({
         url: "/api/file/download/" + fileId,
+        data: data,
         success: function (result) {
             startFileDownload(result.file, result.downloadLink);
         }
@@ -961,7 +963,7 @@ $(document).ready(function () {
         sidebarFileId = id;
         
         $('#file-sidebar-name').text(name);
-        
+        $('.file-sidebar-element').hide();
     });
     
     $("#file-sidebar-buttons").on('click', 'button', function () {
@@ -1000,6 +1002,12 @@ $(document).ready(function () {
                 addVersionToList(result, true);
             }
         });
+    }).on('click', '.file-version-download', function () {
+        let id = $(this).data('id');
+
+        let fileId = sidebarFileId;
+
+        initFileDownload(fileId, id);
     });
 });
 
@@ -1056,7 +1064,10 @@ function addVersionToList(version, toStart = false) {
     let element = '<li class="list-group-item">' +
         '<b>' + date.toLocaleString() + '</b><br>' +
         version.note +
-        '<div class="row justify-content-end"><button class="btn btn-secondary file-version-revert" data-id="' + version.id + '">Revert</button></div>' +
+        '<div class="row justify-content-end">' +
+        '<button class="btn btn-secondary file-version-revert" data-id="' + version.id + '">Revert</button>' +
+        '<button class="btn btn-primary file-version-download" data-id="' + version.id + '">Download</button>' +
+        '</div>' +
         '</li>';
 
     if (toStart) {

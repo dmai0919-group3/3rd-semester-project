@@ -110,7 +110,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="user">The UserModel of the user who wants to download the file</param>
         /// <returns>A tuple with the FileEntity of the given fileId and a string with the download URL</returns>
         /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
-        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user);
+        public (FileEntity, string) DownloadFile(Guid fileId, string versionId, UserModel user);
 
         /// <summary>
         /// Gets the contents of a PLAINTEXT file.
@@ -309,11 +309,23 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="user">The UserModel of the user who wants to download the file</param>
         /// <returns>A tuple with the FileEntity of the given fileId and a string with the download URL</returns>
         /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
-        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user)
+        public (FileEntity, string) DownloadFile(Guid fileId, string versionId, UserModel user)
         {
             var file = _fileRepository.GetById(fileId);
             
             _accessService.hasAccessToFile(user, file, Permissions.Read);
+
+            var azureName = file.AzureName;
+            
+            var versionGuid = ParseGuid(versionId);
+            if (versionGuid != Guid.Empty)
+            {
+                var version = _fileRepository.GetFileVersion(versionGuid);
+                if (version != null)
+                {
+                    azureName = version.AzureName;
+                }
+            }
             
             BlobContainerClient containerClient =
                 new BlobContainerClient(
@@ -327,7 +339,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 StartsOn = DateTime.UtcNow,
                 ExpiresOn = DateTime.UtcNow.AddHours(24),
                 BlobContainerName = containerClient.Name,
-                BlobName = file.AzureName,
+                BlobName = azureName,
                 Resource = "b",
                 ContentDisposition = new ContentDisposition()
                 {
@@ -343,7 +355,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
 
-            return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
+            return (file, $"{containerClient.GetBlockBlobClient(azureName).Uri}?{sasToken}");
         }
 
         /// <summary>
