@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
@@ -109,7 +110,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="user">The UserModel of the user who wants to download the file</param>
         /// <returns>A tuple with the FileEntity of the given fileId and a string with the download URL</returns>
         /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
-        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user);
+        public (FileEntity, string) DownloadFile(Guid fileId, string versionId, UserModel user);
 
         /// <summary>
         /// Gets the contents of a PLAINTEXT file.
@@ -131,6 +132,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ConcurrencyException">If the file has been changed by another user in the meantime.</exception>
         public FileEntity UpdateFileContents(UpdateFileModel model, UserModel user);
 
+        public IEnumerable<FileVersion> GetFileVersions(Guid fileId, UserModel user);
+
+        public FileVersion RevertFileVersion(FileVersion fileVersion, UserModel user);
     }
 
     public class FileService : IFileService
@@ -238,28 +242,54 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     var blobGuid = Guid.NewGuid();
                     try
                     {
+                        var existingFile = _fileRepository.GetFile(parentGuid, user.Id, groupGuid, formFile.FileName);
+                        
                         await containerClient.UploadBlobAsync(blobGuid.ToString(), formFile.OpenReadStream());
-                        fileEntries.Add(new FileEntry
-                        {
-                            Name = formFile.FileName,
-                            Id = blobGuid,
-                            Parent = new DirectoryEntry { Id = parentGuid }
-                        });
 
-                        var file = new FileEntity()
+                        if (existingFile == null)
                         {
-                            Id = Guid.NewGuid(),
-                            AzureName = blobGuid.ToString(),
-                            Name = formFile.FileName,
-                            UserId = user.Id,
-                            ParentId = parentGuid,
-                            GroupId = groupGuid,
-                            IsFolder = false,
-                            Updated = DateTime.Now,
-                            Size = formFile.Length
-                        };
+                            fileEntries.Add(new FileEntry
+                            {
+                                Name = formFile.FileName,
+                                Id = blobGuid,
+                                Parent = new DirectoryEntry { Id = parentGuid }
+                            });
 
-                        _fileRepository.Insert(file);
+                            var file = new FileEntity()
+                            {
+                                Id = Guid.NewGuid(),
+                                AzureName = blobGuid.ToString(),
+                                Name = formFile.FileName,
+                                UserId = user.Id,
+                                ParentId = parentGuid,
+                                GroupId = groupGuid,
+                                IsFolder = false,
+                                Updated = DateTime.Now,
+                                Size = formFile.Length
+                            };
+
+                            _fileRepository.Insert(file);
+                        }
+                        else
+                        {
+                            var newVersion = new FileVersion()
+                            {
+                                Id = Guid.NewGuid(),
+                                FileId = existingFile.Id,
+                                AzureName = existingFile.AzureName,
+                                Note = "New version uploaded",
+                                Created = DateTime.Now
+                            };
+                            
+                            existingFile.AzureName = blobGuid.ToString();
+                            existingFile.Size = formFile.Length;
+                            existingFile.Updated = DateTime.Now;
+
+                            // TODO: Create transaction later
+                            _fileRepository.Update(existingFile);
+                            _fileRepository.InsertFileVersion(newVersion);
+                        }
+                        
                     }
                     catch (Exception e)
                     {
@@ -279,11 +309,23 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="user">The UserModel of the user who wants to download the file</param>
         /// <returns>A tuple with the FileEntity of the given fileId and a string with the download URL</returns>
         /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
-        public (FileEntity, string) DownloadFile(Guid fileId, UserModel user)
+        public (FileEntity, string) DownloadFile(Guid fileId, string versionId, UserModel user)
         {
             var file = _fileRepository.GetById(fileId);
             
             _accessService.hasAccessToFile(user, file, Permissions.Read);
+
+            var azureName = file.AzureName;
+            
+            var versionGuid = ParseGuid(versionId);
+            if (versionGuid != Guid.Empty)
+            {
+                var version = _fileRepository.GetFileVersion(versionGuid);
+                if (version != null)
+                {
+                    azureName = version.AzureName;
+                }
+            }
             
             BlobContainerClient containerClient =
                 new BlobContainerClient(
@@ -297,7 +339,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 StartsOn = DateTime.UtcNow,
                 ExpiresOn = DateTime.UtcNow.AddHours(24),
                 BlobContainerName = containerClient.Name,
-                BlobName = file.AzureName,
+                BlobName = azureName,
                 Resource = "b",
                 ContentDisposition = new ContentDisposition()
                 {
@@ -313,7 +355,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
 
-            return (file, $"{containerClient.GetBlockBlobClient(file.AzureName).Uri}?{sasToken}");
+            return (file, $"{containerClient.GetBlockBlobClient(azureName).Uri}?{sasToken}");
         }
 
         /// <summary>
@@ -565,15 +607,70 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             containerClient.CreateIfNotExists();
             
+            var newVersion = new FileVersion()
+            {
+                Id = Guid.NewGuid(),
+                FileId = file.Id,
+                AzureName = file.AzureName,
+                Note = "Updated file contents by " + user.Name,
+                Created = DateTime.Now,
+            };
+
+            file.AzureName = Guid.NewGuid().ToString();
             file.Updated = DateTime.Now;
-           
 
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
             file.Size = containerClient.GetBlobClient(file.AzureName).GetProperties().Value.ContentLength;
 
+            // TODO: Create transaction later
             _fileRepository.Update(file);
+            _fileRepository.InsertFileVersion(newVersion);
             return file;
+        }
+
+        public IEnumerable<FileVersion> GetFileVersions(Guid fileId, UserModel user)
+        {
+            var file = _fileRepository.GetById(fileId);
+            
+            _accessService.hasAccessToFile(user, file, Permissions.Read);
+
+            return _fileRepository.GetFileVersions(fileId);
+        }
+
+        public FileVersion RevertFileVersion(FileVersion version, UserModel user)
+        {
+            version = _fileRepository.GetFileVersion(version.Id);
+            
+            var file = _fileRepository.GetById(version.FileId);
+
+            _accessService.hasAccessToFile(user, file, Permissions.Write);
+
+            var containerClient =
+                new BlobContainerClient(
+                    _configuration.GetConnectionString("AzureConnectionString"),
+                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
+
+            containerClient.CreateIfNotExists();
+            
+            var newVersion = new FileVersion()
+            {
+                Id = Guid.NewGuid(),
+                FileId = file.Id,
+                AzureName = file.AzureName,
+                Note = "Reverted file version from " + version.Created.ToString("G"),
+                Created = DateTime.Now,
+            };
+
+            file.Size = containerClient.GetBlobClient(version.AzureName).GetProperties().Value.ContentLength;
+            file.AzureName = version.AzureName;
+            file.Updated = DateTime.Now;
+
+            // TODO: Create transaction later
+            _fileRepository.Update(file);
+            _fileRepository.InsertFileVersion(newVersion);
+
+            return newVersion;
         }
 
         public UserModel ShareFile(SharedFile sharedFile, UserModel currentUser)

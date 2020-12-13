@@ -73,6 +73,15 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <param name="parentId">The Guid of the new parent folder</param>
         /// <returns>True if the parent has changed and false if not.</returns>
         public bool MoveIntofolder(Guid fileId, Guid parentId);
+
+        public bool InsertFileVersion(FileVersion fileVersion);
+        
+        public IEnumerable<FileVersion> GetFileVersions(Guid fileId);
+
+        public FileEntity GetFile(Guid parentId, Guid userId, Guid groupId, string name);
+
+        public FileVersion GetFileVersion(Guid id);
+
     }
     public class FileRepository : IFileRepository
     {
@@ -240,7 +249,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <returns>True if the file has been updated, false if not.</returns>
         public bool Update(FileEntity fileEntity)
         {
-            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared, Size=@Size WHERE Id=@Id";
+            string query = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared, Size=@Size, AzureName=@AzureName WHERE Id=@Id";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -370,6 +379,121 @@ namespace Group3.Semester3.WebApp.Repositories
                 return false;
 
             }
+        }
+
+        public bool InsertFileVersion(FileVersion fileVersion)
+        {
+            string query = "INSERT INTO FileVersions (Id, FileId, AzureName, Note, Created)" +
+                           " VALUES (@Id, @FileId, @AzureName, @Note, @Created)";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    
+                    int rowsChanged = connection.Execute(query, fileVersion);
+
+                    if (rowsChanged > 0)
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    
+                }
+                
+            }
+
+            return false;
+        }
+
+        public IEnumerable<FileVersion> GetFileVersions(Guid fileId)
+        {
+            string query = "SELECT * FROM FileVersions WHERE FileId=@FileId ORDER BY Created DESC";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    FileId = fileId
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<FileVersion>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return new List<FileVersion>();
+        }
+
+        public FileEntity GetFile(Guid parentId, Guid userId, Guid groupId, string name)
+        {
+            string query = "SELECT * FROM Files WHERE GroupId=@GroupId AND ParentId=@ParentId AND UserId=@UserId AND Name=@Name";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    GroupId = groupId,
+                    UserId = userId,
+                    ParentId = parentId,
+                    Name = name
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.QuerySingle<FileEntity>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return null;
+        }
+
+        public FileVersion GetFileVersion(Guid id)
+        {
+            string query = "SELECT * FROM FileVersions WHERE Id=@Id";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    Id = id
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.QuerySingle<FileVersion>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -47,6 +47,14 @@ button {
     min-height: 100vh;
 }
 
-#commenting-file-name {
+#file-sidebar-name {
     word-wrap: break-word;
+}
+
+.file-sidebar-element {
+    display: none;
+}
+
+#file-sidebar-buttons {
+    margin-bottom: 20px;
 }

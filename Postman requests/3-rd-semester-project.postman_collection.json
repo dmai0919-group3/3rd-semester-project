@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "67b337e6-353f-41fb-9895-c11a57f8f993",
+		"_postman_id": "8c04bde3-cdc6-4da1-8e76-6e1011900bb4",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -670,10 +670,7 @@
 						{
 							"key": "files",
 							"type": "file",
-							"src": [
-								"/C:/Users/Erik/Downloads/Question-mark-logo.png",
-								"/C:/Users/Erik/Downloads/aspnet-core-3-registration-login-api-master.zip"
-							]
+							"src": "/C:/Users/Erik/Downloads/test.txt"
 						},
 						{
 							"key": "parentGuid",
@@ -712,7 +709,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/api/file/download/3c5e6e7e-bbae-4224-91a2-12ad15dc91ae",
+					"raw": "{{host}}/api/file/download/08fa8d5d-ba52-4ec1-882e-4f6a32b34b39?versionId=839985d2-afda-4576-a966-63ec67e85f47",
 					"host": [
 						"{{host}}"
 					],
@@ -720,7 +717,13 @@
 						"api",
 						"file",
 						"download",
-						"3c5e6e7e-bbae-4224-91a2-12ad15dc91ae"
+						"08fa8d5d-ba52-4ec1-882e-4f6a32b34b39"
+					],
+					"query": [
+						{
+							"key": "versionId",
+							"value": "839985d2-afda-4576-a966-63ec67e85f47"
+						}
 					]
 				}
 			},
@@ -978,6 +981,79 @@
 							"key": "parentId",
 							"value": "0"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get file versions",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/file/versions?fileId=08fa8d5d-ba52-4ec1-882e-4f6a32b34b39",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"versions"
+					],
+					"query": [
+						{
+							"key": "fileId",
+							"value": "08fa8d5d-ba52-4ec1-882e-4f6a32b34b39"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Revert file version",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Id\": \"839985d2-afda-4576-a966-63ec67e85f47\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/file/revert-version",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"revert-version"
 					]
 				}
 			},
