@@ -438,5 +438,49 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest("System error, please contact Administrator");
             }
         }
+
+        [Route("versions")]
+        [HttpGet]
+        public IActionResult GetFileVersions([FromQuery] Guid fileId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var versions = _fileService.GetFileVersions(fileId, user);
+                
+                return Ok(versions);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("revert-version")]
+        [HttpPost]
+        public IActionResult RevertFile(FileVersion fileVersion)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var version = _fileService.RevertFileVersion(fileVersion, user);
+                
+                return Ok(version);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
     }
 }

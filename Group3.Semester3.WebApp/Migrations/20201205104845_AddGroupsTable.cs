@@ -15,7 +15,7 @@ namespace Group3.Semester3.DesktopClient.Migrations
                 .AddColumn("GroupId").AsGuid().Nullable();
             Create.Table("UsersGroups")
                 .WithColumn("UserId").AsGuid().NotNullable()
-                .WithColumn("GroupId").AsGuid().NotNullable(); 
+                .WithColumn("GroupId").AsGuid().NotNullable();
             Create.ForeignKey()
                 .FromTable("UsersGroups").ForeignColumn("UserId")
                 .ToTable("Users").PrimaryColumn("Id")
