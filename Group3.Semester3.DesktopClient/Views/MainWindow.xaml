@@ -15,7 +15,7 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow"
-        xmlns:commands="clr-namespace:Group3.Semester3.DesktopClient.Views">
+        xmlns:commands="clr-namespace:Group3.Semester3.DesktopClient.Views" Icon="/Views/Auth/icon_big.png">
 
     <Window.DataContext>
         <local:MainWindowModel/>

@@ -80,19 +80,11 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             }
         }
 
-        /// <summary>
-        /// This method is called when the Register button is clicked.
-        /// It calls the Switcher.Switch() and changes the current view to the Registration.
-        /// </summary>
-        /// <param name="sender">Not used</param>
-        /// <param name="e">Not used</param>
-        private void btnRegister_Click(object sender, RoutedEventArgs e)
+        private async void btnRegister_Click(object sender, RoutedEventArgs e)
         {
-            //switcher.Switch(new Registration(apiService, switcher));
+            var dialog = new RegisterWindowParams() { ApiService = apiService };
+            await DialogHost.Show(dialog, "LoginDialog");
         }
 
-        public void UtilizeState(object state)
-        {
-        }
     }
 }

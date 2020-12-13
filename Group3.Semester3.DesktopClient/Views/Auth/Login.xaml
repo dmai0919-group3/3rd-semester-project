@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cc="clr-namespace:Group3.Semester3.DesktopClient.ViewHelpers"
         xmlns:local="clr-namespace:Group3.Semester3.DesktopClient.Model"
+        xmlns:auth="clr-namespace:Group3.Semester3.DesktopClient.Views.Auth"
         mc:Ignorable="d"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
@@ -15,7 +16,7 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="OGO FileSharing" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize" Icon="/Views/Auth/icon_big.png">
 
     <Window.DataContext>
         <local:LoginWindowModel/>
@@ -26,6 +27,13 @@
             x:Key="BooleanToVisibilityConverter" 
             True="Visible" 
             False="Collapsed" />
+
+        <DataTemplate DataType="{x:Type local:RegisterWindowParams}">
+            <StackPanel>
+                <auth:Registration Params="{Binding}"/>
+            </StackPanel>
+        </DataTemplate>
+
     </Window.Resources>
 
     <materialDesign:DialogHost CloseOnClickAway="True" Identifier="LoginDialog">

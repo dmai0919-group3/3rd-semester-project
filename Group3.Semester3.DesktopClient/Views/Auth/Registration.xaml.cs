@@ -1,9 +1,12 @@
-﻿using Group3.Semester3.DesktopClient.Services;
+﻿using Group3.Semester3.DesktopClient.Model;
+using Group3.Semester3.DesktopClient.Services;
 using Group3.Semester3.DesktopClient.ViewHelpers;
 using Group3.Semester3.WebApp.Models.Users;
+using MaterialDesignThemes.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -21,69 +24,111 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
     /// </summary>
     public partial class Registration : UserControl
     {
-        private ApiService apiService;
+        public static readonly DependencyProperty ParamsProperty = DependencyProperty.Register("Params", typeof(RegisterWindowParams), typeof(Registration), new FrameworkPropertyMetadata(new RegisterWindowParams()));
 
-        public Registration(ApiService apiService)
+        public RegisterWindowParams Params
         {
-            this.apiService = apiService;
+            get { return GetValue(ParamsProperty) as RegisterWindowParams; }
+            set { SetValue(ParamsProperty, value); }
+        }
 
+        private ApiService apiService {
+            get => (GetValue(ParamsProperty) as RegisterWindowParams).ApiService;
+        }
+
+        public Registration()
+        {
             InitializeComponent();
         }
 
-        /// <summary>
-        /// This method is called when the Register button is clicked.
-        /// It first checks if the entered password1 and password2 are the same.
-        /// If they are, it calls the ApiService.Register() method and registers a new user.
-        /// If there are any exceptions thrown, it catches them and shows a MessageBox with the message of the Exception catched
-        /// </summary>
-        /// <param name="sender">Not used</param>
-        /// <param name="e">Not used</param>
-        private void btnRegister_Click(object sender, RoutedEventArgs e)
+        private async void btnRegister_Click(object sender, RoutedEventArgs e)
         {
-            if (password1.Password != password2.Password)
+            RegexOptions options = RegexOptions.None;
+            Regex regex = new Regex("[ ]{2,}", options);
+
+            textBoxName.Text = regex.Replace(textBoxName.Text.Trim(), " ");
+            textBoxEmail.Text = textBoxEmail.Text.Replace(" ", "");
+
+
+            EmailRequiredPrompt.Visibility = textBoxEmail.Text.Length == 0 ? Visibility.Visible : Visibility.Hidden;
+            NameRequiredPrompt.Visibility = textBoxName.Text.Length == 0 ? Visibility.Visible : Visibility.Hidden;
+            PasswordRequiredPrompt.Visibility = passwordBoxPassword.Password.Length == 0 ? Visibility.Visible : Visibility.Hidden;
+            PasswordRepeatRequiredPrompt.Visibility = passwordBoxRepeatPassword.Password.Length == 0 ? Visibility.Visible : Visibility.Hidden;
+
+            if (textBoxEmail.Text.Length == 0 ||
+                textBoxName.Text.Length == 0 ||
+                passwordBoxPassword.Password.Length == 0 ||
+                passwordBoxRepeatPassword.Password.Length == 0)
+                return;
+
+            if (passwordBoxPassword.Password != passwordBoxRepeatPassword.Password)
             {
-                MessageBox.Show("The entered passwords don't match.\nPlease try again!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                var msg = new ErrorNotificationMessage()
+                {
+                    Message = "The entered passwords don't match.\nPlease try again!"
+                };
+
+                await DialogHost.Show(msg, "RegisterDialog");
             }
             else
             {
                 RegisterModel registerModel = new RegisterModel();
-                registerModel.Email = email.Text;
-                registerModel.Password = password1.Password;
-                registerModel.Name = name.Text;
+                registerModel.Email = textBoxEmail.Text;
+                registerModel.Password = passwordBoxPassword.Password;
+                registerModel.Name = textBoxName.Text;
 
                 try
                 {
                     UserModel userModel = apiService.Register(registerModel);
-                }
-                catch (Newtonsoft.Json.JsonReaderException)
-                {
-                    MessageBox.Show("Error communicating with the server", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                catch (Exception ex) // This shouldn't be here. We shouldn't print out a generic exception message.
-                {
-                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
 
-                MessageBox.Show("You have successfully registered.\nPlease log in!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                    var msg = new InfoNotificationMessage()
+                    {
+                        Message = "You have successfully registered.\nPlease log in!",
+                        Title = "Success"
+                    };
 
-                //switcher.Switch(new Login(apiService, switcher));
+                    await DialogHost.Show(msg, "RegisterDialog");
+                    DialogHost.Close("LoginDialog");
+
+                }
+                catch (ApiService.ApiAuthorizationException ex)
+                {
+                    var msg = new ErrorNotificationMessage()
+                    {
+                        Message = ex.Message
+                    };
+
+                    await DialogHost.Show(msg, "RegisterDialog");
+                }
+                catch
+                {
+                    var msg = new ErrorNotificationMessage()
+                    {
+                        Message = "An unexpected error has occurred"
+                    };
+
+                    await DialogHost.Show(msg, "RegisterDialog");
+                }
             }
 
         }
 
-        /// <summary>
-        /// This method is called when the Cancel button is clicked. It calls the Switcher.Switch() method and changes the view to Login.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
-            //switcher.Switch(new Login(apiService, switcher));
+            DialogHost.Close("LoginDialog");
         }
 
-        public void UtilizeState(object state)
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            textBoxEmail.Clear();
+            textBoxName.Clear();
+            passwordBoxPassword.Clear();
+            passwordBoxRepeatPassword.Clear();
+
+            EmailRequiredPrompt.Visibility = Visibility.Hidden;
+            NameRequiredPrompt.Visibility = Visibility.Hidden;
+            PasswordRequiredPrompt.Visibility = Visibility.Hidden;
+            PasswordRepeatRequiredPrompt.Visibility = Visibility.Hidden;
         }
     }
 }

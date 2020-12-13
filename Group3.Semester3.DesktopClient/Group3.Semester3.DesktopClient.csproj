@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Views\Auth\icon_big.png" />
+    <None Remove="Views\Auth\icon_small.png" />
     <None Remove="Views\Auth\login_logo.png" />
     <None Remove="Views\baseline_folder_black_48dp.png" />
     <None Remove="Views\baseline_folder_open_black_48dp.png" />
@@ -34,6 +36,8 @@
     <Resource Include="Assets\folder-24px.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>
+    <Resource Include="Views\Auth\icon_big.png" />
+    <Resource Include="Views\Auth\icon_small.png" />
     <Resource Include="Views\Auth\login_logo.png" />
     <Resource Include="Views\baseline_folder_black_48dp.png" />
     <Resource Include="Views\baseline_folder_open_black_48dp.png" />
