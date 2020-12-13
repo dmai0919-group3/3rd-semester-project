@@ -921,7 +921,7 @@ $(document).ready(function () {
 
 // Commenting section
 
-let commentingFileId = null;
+let sidebarFileId = null;
 
 let connection = new signalR.HubConnectionBuilder().withUrl("/api/comments").build();
 
@@ -930,7 +930,7 @@ connection.start().catch(function (err) {
 });
 
 connection.on("NewComment", function (comment, fileId) {
-    if (fileId === commentingFileId) {
+    if (fileId === sidebarFileId) {
         addCommentToList(comment);
     } else {
         // TODO: Maybe send notification later
@@ -946,7 +946,7 @@ $(document).ready(function () {
         
         let data = {
             Text: text,
-            FileId: commentingFileId
+            FileId: sidebarFileId
         };
 
         $textField.val('');
@@ -955,33 +955,92 @@ $(document).ready(function () {
     });
 
     $("#file-container").on("click", '.file:not(.folder)', function () {
-        $('#file-comments').empty();
         
         let id = this.id;
         let name = $(this).find('.file-name').text();
-        commentingFileId = id;
+        sidebarFileId = id;
         
-        $('#commenting-file-name').text(name);
-        
-        let data = {
-            fileId: id,
-            parentId: 0,
-        }
-        
-        connectToSignalGroup(id);
-        
-        $.ajax({
-            url: getCommentsUrl,
-            data: data,
-            success: function (result) {
-                result.forEach(comment => {
-                    addCommentToList(comment);
-                });
-            }
-        })
+        $('#file-sidebar-name').text(name);
         
     });
+    
+    $("#file-sidebar-buttons").on('click', 'button', function () {
+        if (sidebarFileId === null) {
+            return;
+        }
+        switch ($(this).data('id')) {
+            case 'comments': {
+                $('.file-sidebar-element').hide();
+                $('#file-sidebar-comments').show();
+                loadComments();
+                break;
+            }
+            case 'versions': {
+                $('.file-sidebar-element').hide();
+                $('#file-sidebar-versions').show();
+                loadVersions();
+                break;
+            }
+        } 
+    });
+    
+    $('#file-versions').on('click', '.file-version-revert', function () {
+        let id = $(this).data('id');
+
+        let data = {
+            Id: id
+        }
+        
+        $.ajax({
+            url: revertVersionUrl,
+            method: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                addVersionToList(result, true);
+            }
+        });
+    });
 });
+
+function loadComments() {
+    $('#file-comments').empty();
+
+    let data = {
+        fileId: sidebarFileId,
+        parentId: 0,
+    }
+
+    connectToSignalGroup(sidebarFileId);
+
+    $.ajax({
+        url: getCommentsUrl,
+        data: data,
+        success: function (result) {
+            result.forEach(comment => {
+                addCommentToList(comment);
+            });
+        }
+    });
+}
+
+function loadVersions() {
+    $('#file-versions').empty();
+
+    let data = {
+        fileId: sidebarFileId
+    }
+
+    $.ajax({
+        url: getVersionsUrl,
+        data: data,
+        success: function (result) {
+            result.forEach(version => {
+                addVersionToList(version);
+            });
+        }
+    });
+}
 
 function addCommentToList(comment) {
     let element = '<li class="list-group-item">' +
@@ -990,6 +1049,21 @@ function addCommentToList(comment) {
         '</li>';
 
     $('#file-comments').append(element);
+}
+
+function addVersionToList(version, toStart = false) {
+    let date = new Date(version.created);
+    let element = '<li class="list-group-item">' +
+        '<b>' + date.toLocaleString() + '</b><br>' +
+        version.note +
+        '<div class="row justify-content-end"><button class="btn btn-secondary file-version-revert" data-id="' + version.id + '">Revert</button></div>' +
+        '</li>';
+
+    if (toStart) {
+        $('#file-versions').prepend(element);
+    } else {
+        $('#file-versions').append(element);
+    }
 }
 
 function connectToSignalGroup(fileId) {

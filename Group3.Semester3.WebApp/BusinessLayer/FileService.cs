@@ -595,14 +595,25 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             containerClient.CreateIfNotExists();
             
+            var newVersion = new FileVersion()
+            {
+                Id = Guid.NewGuid(),
+                FileId = file.Id,
+                AzureName = file.AzureName,
+                Note = "Updated file contents by " + user.Name,
+                Created = DateTime.Now,
+            };
+
+            file.AzureName = Guid.NewGuid().ToString();
             file.Updated = DateTime.Now;
-           
 
             containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
 
             file.Size = containerClient.GetBlobClient(file.AzureName).GetProperties().Value.ContentLength;
 
+            // TODO: Create transaction later
             _fileRepository.Update(file);
+            _fileRepository.InsertFileVersion(newVersion);
             return file;
         }
 
@@ -617,12 +628,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public FileVersion RevertFileVersion(FileVersion version, UserModel user)
         {
-            var file = _fileRepository.GetById(version.FileId);
-            
-            _accessService.hasAccessToFile(user, file, Permissions.Write);
-
             version = _fileRepository.GetFileVersion(version.Id);
             
+            var file = _fileRepository.GetById(version.FileId);
+
+            _accessService.hasAccessToFile(user, file, Permissions.Write);
+
             var containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -635,7 +646,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 Id = Guid.NewGuid(),
                 FileId = file.Id,
                 AzureName = file.AzureName,
-                Note = "Reverted file version form " + version.Created.ToString("F"),
+                Note = "Reverted file version from " + version.Created.ToString("G"),
                 Created = DateTime.Now,
             };
 
