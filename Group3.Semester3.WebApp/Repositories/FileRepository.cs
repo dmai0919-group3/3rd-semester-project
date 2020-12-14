@@ -82,6 +82,8 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public FileVersion GetFileVersion(Guid id);
 
+        public IEnumerable<FileEntity> GetParents(Guid id);
+
     }
     public class FileRepository : IFileRepository
     {
@@ -490,6 +492,36 @@ namespace Group3.Semester3.WebApp.Repositories
                 catch (Exception e)
                 {
 
+                }
+            }
+
+            return null;
+        }
+
+        public IEnumerable<FileEntity> GetParents(Guid id)
+        {
+            string query = ";WITH CTE AS " +
+                "(SELECT a.Id, a.ParentId, a.Name, a.GroupId FROM Files a WHERE Id = @Id " +
+            "UNION ALL SELECT a.Id, a.ParentId, a.Name, a.GroupId FROM Files a JOIN cte c ON c.ParentId = a.Id ) " +
+            "SELECT *  FROM CTE";
+            
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new
+                {
+                    Id = id
+                };
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query<FileEntity>(query, parameters);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
                 }
             }
 

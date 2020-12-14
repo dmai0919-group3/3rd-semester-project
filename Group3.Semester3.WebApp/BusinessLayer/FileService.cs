@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
@@ -135,6 +136,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public IEnumerable<FileVersion> GetFileVersions(Guid fileId, UserModel user);
 
         public FileVersion RevertFileVersion(FileVersion fileVersion, UserModel user);
+
+        public IEnumerable<FileEntity> GetParents(Guid fileId, UserModel user);
     }
 
     public class FileService : IFileService
@@ -671,6 +674,30 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _fileRepository.InsertFileVersion(newVersion);
 
             return newVersion;
+        }
+
+        public IEnumerable<FileEntity> GetParents(Guid fileId, UserModel user)
+        {
+            if (fileId == Guid.Empty)
+            {
+                throw new ValidationException("File id can not be empty");
+            }
+
+            var file = _fileRepository.GetById(fileId);
+            
+            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            
+            var list = new List<FileEntity>();
+            
+            var parents = _fileRepository.GetParents(fileId);
+            list = parents.ToList();
+            
+            var rootFolder = new FileEntity() { Name = "Home", Id = Guid.Empty, GroupId = file.GroupId };
+
+            list.Add(rootFolder);
+            list.Reverse();
+            
+            return list;
         }
 
         public UserModel ShareFile(SharedFile sharedFile, UserModel currentUser)

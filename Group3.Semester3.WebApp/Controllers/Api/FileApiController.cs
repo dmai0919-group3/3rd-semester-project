@@ -483,5 +483,27 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest("System error, please contact Administrator");
             }
         }
+
+        [Route("get-path/{fileId}")]
+        [HttpGet]
+        public IActionResult GetFilePath(Guid fileId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var path = _fileService.GetParents(fileId, user);
+                
+                return Ok(path);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
     }
 }

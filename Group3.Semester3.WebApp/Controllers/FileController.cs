@@ -30,6 +30,10 @@ namespace Group3.Semester3.WebApp.Controllers
             return View();
         }
 
+        /// <summary>
+        /// GET: file/shared/{hash}
+        /// </summary>
+        /// <returns>A view for anonymous users or redirect for logged in users</returns>
         [Route("shared/{hash}")]
         [HttpGet]
         [AllowAnonymous]
