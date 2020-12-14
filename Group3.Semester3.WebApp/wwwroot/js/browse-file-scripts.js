@@ -968,6 +968,7 @@ $(document).ready(function () {
     
     $("#file-sidebar-buttons").on('click', 'button', function () {
         if (sidebarFileId === null) {
+            alert("Please click on the file to choose it");
             return;
         }
         switch ($(this).data('id')) {

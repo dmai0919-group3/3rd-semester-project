@@ -1058,6 +1058,36 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Get file path",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/file/get-path/584f5e55-3b8a-4121-9295-0cb6e279d7a7",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"file",
+						"get-path",
+						"584f5e55-3b8a-4121-9295-0cb6e279d7a7"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"protocolProfileBehavior": {}
