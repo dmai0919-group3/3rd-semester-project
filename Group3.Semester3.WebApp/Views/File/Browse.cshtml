@@ -66,22 +66,42 @@
             </div>
     
             <div class="col-md-3" id="file-sidebar">
-                <h5 id="commenting-file-name"></h5>
-                <h6>Comments:</h6>
+                <h5 id="file-sidebar-name">No file selected</h5>
                 
-                <div>
-                    <ul class="list-group list-group-flush" id="file-comments">
-                        
-                    </ul>
+                <div class="btn-group" id="file-sidebar-buttons" role="group">
+                  <button type="button" class="btn btn-primary" data-id="comments">Comments <i class="fa fa-arrow-down"></i></button>
+                  <button type="button" class="btn btn-primary" data-id="versions">Versions <i class="fa fa-arrow-down"></i></button>
                 </div>
                 
-                <form>
-                    <div class="form-group">
-                        <label for="comment-text">New Comment:</label>
-                        <input type="text" id="comment-text" class="form-control">
+                <div id="file-sidebar-comments" class="file-sidebar-element">
+                    <h6>Comments:</h6>
+                                    
+                    <div>
+                        <ul class="list-group list-group-flush" id="file-comments">
+                            
+                        </ul>
                     </div>
-                </form>
-                <button class="btn btn-primary" id="send-comment-button">Send</button>
+                    
+                    <form>
+                        <div class="form-group">
+                            <label for="comment-text">New Comment:</label>
+                            <input type="text" id="comment-text" class="form-control">
+                        </div>
+                    </form>
+                    <button class="btn btn-primary" id="send-comment-button">Send</button>
+                </div>
+                
+                <div id="file-sidebar-versions" class="file-sidebar-element">
+                    <h6>Versions:</h6>
+                    
+                    <div>
+                        <ul class="list-group list-group-flush" id="file-versions">
+                            
+                        </ul>
+                    </div>
+                    
+                </div>
+                
             </div>
         </div>
     </div>
@@ -106,6 +126,9 @@
     const disableSharingWithUser = "@Url.Action("UnShareFile", "FileApi")";
     
     const getCommentsUrl = "@Url.Action("GetComments", "CommentApi")";
+    
+    const getVersionsUrl = "@Url.Action("GetFileVersions", "FileApi")";
+    const revertVersionUrl = "@Url.Action("RevertFile", "FileApi")";
     
     const folderIconUrl = "/@Url.Content("Images/folder-icon.png")";
     const fileIconUrl = "/@Url.Content("Images/file-icon.png")";

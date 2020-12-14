@@ -77,15 +77,16 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         /// The returned downloadLink is valid for 24 hours from the moment the request is sent.
         /// </summary>
         /// <param name="fileId">The ID of the file we want to download</param>
+        /// <param name="versionId">If set, download link will point to a previous version of a file</param>
         /// <returns>200 Ok((FileEntity file, string downloadLink)) if the request was successful or 400 BadRequest with the Exception's message if the request failed.</returns>
         [HttpGet]
         [Route("download/{fileId}")]
-        public IActionResult downloadFile(Guid fileId)
+        public IActionResult DownloadFile(Guid fileId, [FromQuery] string versionId = "")
         {
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var result = _fileService.DownloadFile(fileId, user);
+                var result = _fileService.DownloadFile(fileId, versionId, user);
 
                 FileEntity file = result.Item1;
                 string downloadLink = result.Item2; 
@@ -428,6 +429,72 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             catch (ConcurrencyException exception)
             {
                 return Conflict(exception.Message);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("versions")]
+        [HttpGet]
+        public IActionResult GetFileVersions([FromQuery] Guid fileId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var versions = _fileService.GetFileVersions(fileId, user);
+                
+                return Ok(versions);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("revert-version")]
+        [HttpPost]
+        public IActionResult RevertFile(FileVersion fileVersion)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var version = _fileService.RevertFileVersion(fileVersion, user);
+                
+                return Ok(version);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch (Exception exception)
+            {
+                return BadRequest("System error, please contact Administrator");
+            }
+        }
+
+        [Route("get-path/{fileId}")]
+        [HttpGet]
+        public IActionResult GetFilePath(Guid fileId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+
+                var path = _fileService.GetParents(fileId, user);
+                
+                return Ok(path);
             }
             catch (ValidationException exception)
             {
