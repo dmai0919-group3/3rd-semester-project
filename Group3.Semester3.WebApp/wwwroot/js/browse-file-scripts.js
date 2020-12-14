@@ -1064,7 +1064,8 @@ function addVersionToList(version, toStart = false) {
     let element = '<li class="list-group-item">' +
         '<b>' + date.toLocaleString() + '</b><br>' +
         version.note +
-        '<div class="row justify-content-end">' +
+        '<br><span>by <b>' + version.username + '</b></span>' +
+        '<div class="file-version-options">' +
         '<button class="btn btn-secondary file-version-revert" data-id="' + version.id + '">Revert</button>' +
         '<button class="btn btn-primary file-version-download" data-id="' + version.id + '">Download</button>' +
         '</div>' +

@@ -411,7 +411,8 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public IEnumerable<FileVersion> GetFileVersions(Guid fileId)
         {
-            string query = "SELECT * FROM FileVersions WHERE FileId=@FileId ORDER BY Created DESC";
+            string query = "SELECT FileVersions.*, Users.Name AS Username FROM FileVersions " +
+            "JOIN Users ON FileVersions.UserId=Users.Id WHERE FileId=@FileId ORDER BY Created DESC";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -430,7 +431,7 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-
+                    var s = "";
                 }
             }
 

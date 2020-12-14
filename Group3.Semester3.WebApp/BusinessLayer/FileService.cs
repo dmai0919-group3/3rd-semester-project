@@ -277,10 +277,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                                 Id = Guid.NewGuid(),
                                 FileId = existingFile.Id,
                                 AzureName = existingFile.AzureName,
-                                Note = "New version uploaded by " + user.Name,
+                                Note = "New version uploaded",
                                 Created = DateTime.Now,
-                                UserId = user.Id,
-                                Username = user.Name
+                                UserId = user.Id
                             };
                             
                             existingFile.AzureName = blobGuid.ToString();
@@ -614,10 +613,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 Id = Guid.NewGuid(),
                 FileId = file.Id,
                 AzureName = file.AzureName,
-                Note = "Updated file contents by " + user.Name,
+                Note = "Updated file contents",
                 Created = DateTime.Now,
-                UserId = user.Id,
-                Username = user.Name
+                UserId = user.Id
             };
 
             file.AzureName = Guid.NewGuid().ToString();
