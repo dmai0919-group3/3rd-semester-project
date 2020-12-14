@@ -37,18 +37,25 @@ namespace Group3.Semester3.WebApp.Controllers
         [Route("shared/{hash}")]
         [HttpGet]
         [AllowAnonymous]
-        public ActionResult FileShared(string hash)
+        public ActionResult SharedFileLink(string hash)
         {
             var user = _userService.GetFromHttpContext(HttpContext);
 
             var file = _fileService.OpenSharedFileLink(hash, user);
 
+            if (file == null)
+            {
+                return NotFound();
+            }
+            
             if (user != null)
             {
                 return RedirectToAction("Browse");
             }
-
+            
+            
             ViewBag.File = file;
+            ViewBag.DownloadLink = _fileService.GenerateDownloadLink(file);
             
             return View();
         }

@@ -669,13 +669,6 @@ $(document).ready(function () {
     })
 })
 
-function endsWithAny(suffixes, string) {
-    for (let suffix of suffixes) {
-        if(string.endsWith(suffix))
-            return true;
-    }
-    return false;
-}
 function loadUserGroups() {
     $.ajax({
         url: listUserGroups,

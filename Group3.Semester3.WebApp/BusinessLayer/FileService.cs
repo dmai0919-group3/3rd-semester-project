@@ -103,15 +103,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file.</exception>
         /// <exception cref="ValidationException">If there were some errors while moving the file.</exception>
         public bool MoveIntoFolder(FileEntity model, UserModel user);
-        
+
         /// <summary>
         /// Generates a SAS URI for a given file
         /// </summary>
         /// <param name="fileId">The Guid of the file the user want to download</param>
+        /// <param name="versionId">If we want to download different version of a file</param>
         /// <param name="user">The UserModel of the user who wants to download the file</param>
         /// <returns>A tuple with the FileEntity of the given fileId and a string with the download URL</returns>
         /// <exception cref="ValidationException">AccessService.hasAccess() throws this exception if the user doesn't have access to download the file</exception>
         public (FileEntity, string) DownloadFile(Guid fileId, string versionId, UserModel user);
+        
+        public string GenerateDownloadLink(FileEntity file, string azureName = null);
 
         /// <summary>
         /// Gets the contents of a PLAINTEXT file.
@@ -331,6 +334,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     azureName = version.AzureName;
                 }
             }
+
+            var link = GenerateDownloadLink(file, azureName);
+
+            return (file, link);
+        }
+
+        public string GenerateDownloadLink(FileEntity file, string azureName = null)
+        {
+            if (string.IsNullOrEmpty(azureName))
+            {
+                azureName = file.AzureName;
+            }
             
             BlobContainerClient containerClient =
                 new BlobContainerClient(
@@ -360,7 +375,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
 
-            return (file, $"{containerClient.GetBlockBlobClient(azureName).Uri}?{sasToken}");
+            return $"{containerClient.GetBlockBlobClient(azureName).Uri}?{sasToken}";
         }
 
         /// <summary>
@@ -786,6 +801,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 fileHash = Convert.ToBase64String(hashedBytes);
             }
 
+            fileHash = RemoveSpecialCharacters(fileHash);
+
             var sharedFileLink = new SharedFileLink() { FileId = file.Id, Hash = fileHash};
             var fileShareExisting = _sharedFilesRepository.GetByLink(fileHash);
             
@@ -903,6 +920,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             _accessService.hasAccessToFile(currentUser, file, Permissions.Write);
             
             return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
+        }
+        
+        private static string RemoveSpecialCharacters(string str) {
+            var sb = new StringBuilder();
+            foreach (char c in str) {
+                if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
         }
     }
 }

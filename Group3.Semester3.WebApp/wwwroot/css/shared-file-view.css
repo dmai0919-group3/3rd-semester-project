@@ -1,0 +1,12 @@
+#file-name {
+    position:absolute; 
+    margin:15px; 
+    bottom:30%;
+}
+
+#file-options {
+    position: absolute; 
+    left: 40%; 
+    right: 40%; 
+    bottom: 20%
+}

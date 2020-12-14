@@ -6,6 +6,7 @@
     Layout = "~/Views/Shared/_AuthLayout.cshtml";
     
     FileEntity file = ViewBag.File;
+    var downloadLink = ViewBag.DownloadLink;
 }
 
 
@@ -15,23 +16,69 @@
 
 
         <div class="row" style="text-align:center">
-            <h2 style="position:absolute; margin:15px; bottom:30%;">@file.Name</h2>
+            <h2 id="file-name">@file.Name</h2>
         </div>
 
-        <div class="row" style="position: absolute; left: 40%; right: 40%; bottom: 20%">
+        <div class="row" id="file-options">
 
-            <button class="btn btn-primary" id="view-file.button" onclick="previewFile()" style="margin: 14px">Preview file</button>
+            <button class="btn btn-primary" onclick="previewFile()" style="margin: 14px">Preview file</button>
 
-            <button class="btn btn-primary" id="view-file.button" onclick="startFileDownload()" style="margin: 14px">Download file</button>
+            <button class="btn btn-primary" onclick="startFileDownload()" style="margin: 14px">Download file</button>
 
         </div>
 
     </div>
 </div>
 
-
 <script>
-   const fileIconUrl = "/@Url.Content("Images/file-icon.png")";
+
+$(document).ready(function () {
+    
+})
+
+function previewFile() {
+    let fileName = "@file.Name";
+    let downloadLink = "@downloadLink"
+    
+    
+    $('#filePreviewModal').modal();
+    
+    $modalBody = $('#filePreviewModal .modal-body');
+    $('#preview-file-name').text(fileName);
+    $modalBody.empty();
+    
+    let element = null;
+
+    if (endsWithAny(['.png', '.jpg', '.jpeg'], fileName)) {
+        element = '<img src="' + downloadLink + '" class="img-fluid" />';
+    }
+
+    if (endsWithAny(['.mp4', '.avi', '.webm'], fileName)) {
+        element = '<video class="video-fluid" width="100%" controls>\n' +
+            '  <source src="' + downloadLink + '" type="video/mp4">\n' +
+            '</video>';
+    }
+
+    let mp3 = endsWithAny(['.mp3', '.waw'], fileName);
+
+    if (mp3) {
+        element = '<audio controls>' +
+            '<source src="'+ downloadLink +'">' +
+            '</audio>';
+    }
+    
+    if (element == null) {
+        $('#filePreviewModal').modal('hide');
+        alert("Can not preview this type of file");
+    }
+    
+    $modalBody.append(element);
+   
+}
+
+function startFileDownload() {
+    $('#downloadFileModal').modal();
+}
 </script>
 
 @*
@@ -49,9 +96,10 @@
             </div>
             <div class="modal-body">
                 <p>Your file is ready to download</p>
+                <a href="@downloadLink" download="@file.Name" id="downloadLink">Click here to download</a>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="cancel-download">Cancel</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
