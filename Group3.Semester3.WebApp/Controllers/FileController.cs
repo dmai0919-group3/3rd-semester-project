@@ -43,14 +43,21 @@ namespace Group3.Semester3.WebApp.Controllers
 
             var file = _fileService.OpenSharedFileLink(hash, user);
 
+            if (file == null)
+            {
+                return NotFound();
+            }
+            
             if (user != null)
             {
                 return RedirectToAction("Browse");
             }
-
-            ViewBag.File = file;
             
-            return null;
+            
+            ViewBag.File = file;
+            ViewBag.DownloadLink = _fileService.GenerateDownloadLink(file);
+            
+            return View();
         }
 
     }
