@@ -277,8 +277,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                                 Id = Guid.NewGuid(),
                                 FileId = existingFile.Id,
                                 AzureName = existingFile.AzureName,
-                                Note = "New version uploaded",
-                                Created = DateTime.Now
+                                Note = "New version uploaded by" + user.Name,
+                                Created = DateTime.Now,
+                                UserId = user.Id,
+                                Username = user.Name
                             };
                             
                             existingFile.AzureName = blobGuid.ToString();
@@ -614,6 +616,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 AzureName = file.AzureName,
                 Note = "Updated file contents by " + user.Name,
                 Created = DateTime.Now,
+                UserId = user.Id,
+                Username = user.Name
             };
 
             file.AzureName = Guid.NewGuid().ToString();
@@ -660,6 +664,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 AzureName = file.AzureName,
                 Note = "Reverted file version from " + version.Created.ToString("G"),
                 Created = DateTime.Now,
+                UserId = user.Id,
+                Username = user.Name
             };
 
             file.Size = containerClient.GetBlobClient(version.AzureName).GetProperties().Value.ContentLength;

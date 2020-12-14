@@ -384,7 +384,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool InsertFileVersion(FileVersion fileVersion)
         {
             string query = "INSERT INTO FileVersions (Id, FileId, AzureName, Note, Created)" +
-                           " VALUES (@Id, @FileId, @AzureName, @Note, @Created)";
+                           " VALUES (@Id, @FileId, @AzureName, @Note, @Created, @UserId)";
 
             using (var connection = new SqlConnection(connectionString))
             {
