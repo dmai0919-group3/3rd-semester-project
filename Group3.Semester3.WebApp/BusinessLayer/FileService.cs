@@ -251,16 +251,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                         if (existingFile == null)
                         {
+                            var newFileId = Guid.NewGuid();
+                            
                             fileEntries.Add(new FileEntry
                             {
                                 Name = formFile.FileName,
-                                Id = blobGuid,
+                                Id = newFileId,
                                 Parent = new DirectoryEntry { Id = parentGuid }
                             });
 
                             var file = new FileEntity()
                             {
-                                Id = Guid.NewGuid(),
+                                Id = newFileId,
                                 AzureName = blobGuid.ToString(),
                                 Name = formFile.FileName,
                                 UserId = user.Id,
