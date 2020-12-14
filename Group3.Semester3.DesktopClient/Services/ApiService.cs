@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Http.Headers;
 using Group3.Semester3.WebApp.Entities;
 using System.Security;
+using Group3.Semester3.WebApp.Models.FileSystem;
 
 namespace Group3.Semester3.DesktopClient.Services
 {
@@ -78,10 +79,11 @@ namespace Group3.Semester3.DesktopClient.Services
         /// <summary>
         /// Creates a new folder
         /// </summary>
-        /// <param name="parentId">Parent id of a folder</param>
+        /// <param name="parentId">Id of the parent folder</param>
         /// <param name="name">Name of the folder</param>
+        /// <param name="groupId">Id of the parent group</param>
         /// <returns></returns>
-        public FileEntity CreateFolder(Guid parentId, string name);
+        public FileEntity CreateFolder(string name, Guid parentId, Guid groupId);
 
         /// <summary>
         /// Gets the list of groups associated with the current user
@@ -153,12 +155,6 @@ namespace Group3.Semester3.DesktopClient.Services
             get => _currentLogin;
         }
 
-        /// <summary>
-        /// Sends an HTTP POST request
-        /// </summary>
-        /// <param name="requestUrl">The URL where we want to send the request</param>
-        /// <param name="parameter">Object to be serialized into a JSON string and sent as the content of the request</param>
-        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
         protected HttpResponseMessage PostRequest(string requestUrl, object parameter = null)
         {
             using var httpClient = new HttpClient();
@@ -174,12 +170,6 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
-        /// <summary>
-        /// Sends an HTTP GET request
-        /// </summary>
-        /// <param name="requestUrl">The URL where we want to send the request</param>
-        /// <param name="parameters">The part of the request in the URL after the question mark (?). Example: "key=value&key=value..." </param>
-        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
         protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
         {
             using var httpClient = new HttpClient();
@@ -196,13 +186,6 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
-
-        /// <summary>
-        /// Sends an HTTP PUT request
-        /// </summary>
-        /// <param name="requestUrl">The URL we want to send a request to</param>
-        /// <param name="parameter">bject to be serialized into a JSON string and sent as the content of the request</param>
-        /// <returns>An HttpResonseMessage containing the response from the API in JSON format</returns>
         protected HttpResponseMessage PutRequest(string requestUrl, object parameter)
         {
             using var httpClient = new HttpClient();
@@ -218,11 +201,6 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
-        /// <summary>
-        /// Gets the currently logged in user through the API via the BearerToken
-        /// </summary>
-        /// <returns>UserModel object containing the details of the currently logged in user</returns>
-        /// <exception cref="ApiAuthorizationException">If the user is not logged in or if there were an error communicating with the server.</exception>
         private UserModel CurrentUser()
         {
             var result = this.GetRequest(CurrentUserUrl);
@@ -243,12 +221,6 @@ namespace Group3.Semester3.DesktopClient.Services
             return JsonConvert.DeserializeObject<UserModel>(resultContent);
         }
 
-
-        /// <summary>
-        /// Authorizes a user (logs them in) and saves their token in the BearerToken variable
-        /// </summary>
-        /// <param name="email">The Email Address of the user</param>
-        /// <param name="password">The Password of the user</param>
         public void Authorize(string email, string password)
         {
 
@@ -284,12 +256,6 @@ namespace Group3.Semester3.DesktopClient.Services
             _currentUserModel = CurrentUser();
         }
 
-        /// <summary>
-        /// Creates a new user in the system and gets the UserModel of the newly registered user.
-        /// </summary>
-        /// <param name="model">A RegisterModel containing the details of the new user</param>
-        /// <returns>The UserModel of the newly registered user</returns>
-        /// <exception cref="ApiAuthorizationException">If there were some errors communicating with the API server</exception>
         public UserModel Register(RegisterModel model)
         {
             var result = this.PostRequest(RegisterUrl, model);
@@ -314,11 +280,6 @@ namespace Group3.Semester3.DesktopClient.Services
             return JsonConvert.DeserializeObject<UserModel>(resultContent);
         }
 
-        /// <summary>
-        /// Upload a file / multiple files through the API
-        /// </summary>
-        /// <param name="files">A list of FileToUpload objects</param>
-        /// <param name="parentId">The Guid of the parent folder of null if the files to be uploaded are in the root directory</param>
         public void UploadFiles(List<FileToUpload> files, System.Guid parentId)
         {
             var content = new MultipartFormDataContent();
@@ -346,10 +307,6 @@ namespace Group3.Semester3.DesktopClient.Services
 
         }
 
-        /// <summary>
-        /// Gets a list of all files accessible by the user
-        /// </summary>
-        /// <returns>A List containing FileEntity's which can be accessed by the user</returns>
         public List<FileEntity> FileList(Guid parentId = new Guid(), Guid groupId = new Guid())
         {
             var result = GetRequest(BrowseFilesUrl, $"?groupId={groupId}&parentId={parentId}");
@@ -367,24 +324,22 @@ namespace Group3.Semester3.DesktopClient.Services
             return JsonConvert.DeserializeObject<List<FileEntity>>(resultContent);
         }
 
-        /// <summary>
-        /// Deletes a file
-        /// </summary>
-        /// <param name="file">A FileEntity object to be deleted</param>
         public void DeleteFile(FileEntity file)
         {
-            var result = PostRequest(DeleteFileUrl, file.Id);
+            var result = PostRequest(DeleteFileUrl, file);
+
+            string resultContent;
+
+            {
+                var t = result.Content.ReadAsStringAsync();
+                t.Wait();
+                resultContent = t.Result;
+            }
 
             if (!result.IsSuccessStatusCode)
                 throw new ApiAuthorizationException("Error communicating with the server");
         }
 
-        /// <summary>
-        /// Renames a file to a given new name
-        /// </summary>
-        /// <param name="file">A FileEntity object to be renamed</param>
-        /// <param name="name">The new name of the file</param>
-        /// <returns>A FileEntity object with the new name</returns>
         public FileEntity RenameFile(FileEntity file, string name)
         {
             FileEntity renamedFile = new FileEntity();
@@ -428,16 +383,14 @@ namespace Group3.Semester3.DesktopClient.Services
             
         }
 
-        /// <summary>
-        /// Creates a folder with a given name and parent
-        /// </summary>
-        /// <param name="parentId">The Guid of the parent folder or null if the new folder is in the root directory</param>
-        /// <param name="name">The name of the new folder</param>
-        /// <returns>A FileEntity corresponding to the newly created folder</returns>
-        /// <exception cref="Exception">If there were some errors communicating with the server</exception>
-        public FileEntity CreateFolder(Guid parentId, string name)
+        public FileEntity CreateFolder(string name, Guid parentId = new Guid(), Guid groupId = new Guid())
         {
-            var content = new FileEntity() { Name = name, ParentId = parentId };
+            var content = new CreateFolderModel()
+            {
+                Name = name,
+                ParentId = parentId,
+                GroupId = groupId
+            };
 
             var result = PostRequest(CreateFolderUrl, content);
 

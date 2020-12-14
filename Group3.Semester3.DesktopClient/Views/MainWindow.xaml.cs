@@ -47,12 +47,15 @@ namespace Group3.Semester3.DesktopClient.Views
         private BitmapImage IconImage;
         private BitmapImage IconExecutable;
 
+        private string CommandCreateFolder = "CreateFolder";
+        private string CommandRemoveFile = "RemoveFile";
+        private string CommandRenameFile = "RenameFile";
+
         Stack<FileEntity> folderStack = new Stack<FileEntity>();
 
 
         public MainWindow(ApiService apiService)
         {
-
             this.apiService = apiService;
 
             InitializeComponent();
@@ -108,9 +111,11 @@ namespace Group3.Semester3.DesktopClient.Views
 
             FileEntity upFolder = null;
 
-            var l = (rootFolder == null) ? apiService.FileList() : apiService.FileList(rootFolder.Id);
+            var l = (rootFolder == null) ? 
+                apiService.FileList(groupId: Model.SelectedGroup.Id) : 
+                apiService.FileList(rootFolder.Id, Model.SelectedGroup.Id);
 
-            if(l.Count > 0 && l[0].ParentId == Guid.Empty)
+            if (l.Count > 0 && l[0].ParentId == Guid.Empty)
             {
                 folderStack.Clear();
                 Model.SelectedFile = null;
@@ -129,13 +134,17 @@ namespace Group3.Semester3.DesktopClient.Views
                 var e = new FileEntityWrapper
                 {
                     Icon = IconFolderOpen,
-                    FileEntity = upFolder
+                    FileEntity = upFolder,
+                    Dummy = true
                 };
                 Model.FileViewList.Add(e);
             }
 
             {
-                string name = "Home";
+                string name;
+                if (Model.SelectedGroup.Id != Guid.Empty) name = Model.SelectedGroup.Name;
+                else name = "Home";
+
                 foreach (var x in folderStack.Reverse())
                 {
                     name += $" / {x.Name}";
@@ -145,7 +154,8 @@ namespace Group3.Semester3.DesktopClient.Views
 
             foreach (FileEntity f in l.Where(x => x.IsFolder).OrderBy(x => x.Name))
             {
-                Model.FileViewList.Add(new FileEntityWrapper { 
+                Model.FileViewList.Add(new FileEntityWrapper
+                {
                     FileEntity = f,
                     Icon = IconFolder
                 });
@@ -185,7 +195,7 @@ namespace Group3.Semester3.DesktopClient.Views
                 Model.FileViewList.Add(e);
             }
 
-            if(upFolder != null) upFolder.Name = "[UP]";
+            if (upFolder != null) upFolder.Name = "[UP]";
 
             listFileListView.Items.Refresh();
         }
@@ -229,19 +239,99 @@ namespace Group3.Semester3.DesktopClient.Views
             if (Model.SelectedFile?.FileEntity?.IsFolder == true) UpdateFileList(Model.SelectedFile.FileEntity);
         }
 
-        private void MenuItemRemove_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (Model.SelectedFile?.FileEntity?.IsFolder != true) apiService.DeleteFile(Model.SelectedFile.FileEntity);
-            //TODO 
-            if (Model.SelectedFile?.FileEntity?.IsFolder == true) try { apiService.DeleteFile(Model.SelectedFile.FileEntity); } catch { }
+            var prompt = new YesNoPrompt()
+            {
+                Title = $"Remove {(Model.SelectedFile.FileEntity.IsFolder ? "folder" : "file")}",
+                Message = "Are you sure you want to remove the " +
+                    (Model.SelectedFile.FileEntity.IsFolder ? "folder " : "file ") +
+                    Model.SelectedFile.FileEntity.Name + "?",
+                ButtonText = "Remove",
+                ButtonCommand = CommandRemoveFile
+            };
+
+            bool success = false;
+            string message = "An unexpected error has occurred";
+
+            DialogClosingEventHandler h = (e, args) =>
+            {
+                if ((string)args.Parameter != CommandRemoveFile)
+                {
+                    success = true;
+                    return;
+                }
+
+                try
+                {
+                    apiService.DeleteFile(Model.SelectedFile.FileEntity);
+                    success = true;
+                }
+                catch (ApiService.ApiAuthorizationException ex)
+                {
+                    message = ex.Message;
+                }
+                catch { }
+            };
+
+            await DialogHost.Show(prompt, "RootDialog", h);
+
+            if (!success)
+            {
+                _ = DialogHost.Show(new ErrorNotificationMessage() { Message = message });
+            }
 
             if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
             else UpdateFileList();
         }
 
-        private void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
         {
-            // TODO Show popup
+            TextPrompt prompt = new TextPrompt()
+            {
+                Title = "Create new folder",
+                Message = "Enter the name of the folder",
+                ButtonText = "Create folder",
+                ButtonCommand = CommandCreateFolder
+            };
+
+            bool success = false;
+            string message = "An unexpected error has occurred";
+
+            DialogClosingEventHandler h = (e, args) =>
+            {
+                if ((string)args.Parameter != CommandCreateFolder)
+                {
+                    success = true;
+                    return;
+                }
+
+                try
+                {
+                    apiService.CreateFolder(
+                        prompt.Text,
+                        folderStack.Count > 0 ? folderStack.Peek().Id : Guid.Empty,
+                        Model.SelectedGroup.Id);
+                    success = true;
+                }
+                catch (ApiService.ApiAuthorizationException ex)
+                {
+                    message = ex.Message;
+                }
+                catch { }
+            };
+
+            await DialogHost.Show(prompt, "RootDialog", h);
+
+            if (!success)
+            {
+                _ = DialogHost.Show(new ErrorNotificationMessage() { Message = message });
+            }
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
+
+
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -261,18 +351,73 @@ namespace Group3.Semester3.DesktopClient.Views
 
         private void TreeViewGroups_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            foreach(var item in Model.GroupList)
+            foreach (var item in Model.GroupList)
             {
                 item.Selected = item.Group.Id == (e.NewValue as GroupWrapper)?.Group?.Id;
             }
+
+            if (Model.GroupList.Count(x => x.Selected) == 0) Model.GroupList[0].Selected = true;
+
+            Model.SelectedGroup = Model.GroupList.Where(x => x.Selected).First().Group;
+
+            folderStack.Clear();
+            UpdateFileList();
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            NotificationMessage msg = new NotificationMessage();
+            TextPrompt msg = new TextPrompt();
             msg.Message = "Hello information";
 
             await DialogHost.Show(msg, "RootDialog");
+
+            await DialogHost.Show(new InfoNotificationMessage() { Message = msg.Text }, "RootDialog");
+        }
+
+        private async void MenuItemRename_Click(object sender, RoutedEventArgs e)
+        {
+            var prompt = new TextPrompt()
+            {
+                Title = $"Rename {(Model.SelectedFile.FileEntity.IsFolder ? "folder" : "file")}",
+                Message = "What should the new name of the " +
+                    (Model.SelectedFile.FileEntity.IsFolder ? "folder " : "file ") +
+                    Model.SelectedFile.FileEntity.Name + " be?",
+                ButtonText = "Rename",
+                ButtonCommand = CommandRenameFile
+            };
+
+            bool success = false;
+            string message = "An unexpected error has occurred";
+
+            DialogClosingEventHandler h = (e, args) =>
+            {
+                if ((string)args.Parameter != CommandRenameFile)
+                {
+                    success = true;
+                    return;
+                }
+
+                try
+                {
+                    apiService.RenameFile(Model.SelectedFile.FileEntity, prompt.Text);
+                    success = true;
+                }
+                catch (ApiService.ApiAuthorizationException ex)
+                {
+                    message = ex.Message;
+                }
+                catch { }
+            };
+
+            await DialogHost.Show(prompt, "RootDialog", h);
+
+            if (!success)
+            {
+                _ = DialogHost.Show(new ErrorNotificationMessage() { Message = message });
+            }
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
         }
     }
 }

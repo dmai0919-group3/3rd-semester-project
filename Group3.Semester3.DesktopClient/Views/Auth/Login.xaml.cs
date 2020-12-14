@@ -27,10 +27,20 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
         private LoginWindowModel Model;
         public Login(ApiService apiService)
         {
+
             this.apiService = apiService;
             InitializeComponent();
 
             Model = (LoginWindowModel)DataContext;
+
+#if false
+            apiService.Authorize("erik@erik.sk", "123");
+            new MainWindow(apiService).Show();
+        }
+
+        public new void Show() {
+
+#endif
         }
 
         /// <summary>

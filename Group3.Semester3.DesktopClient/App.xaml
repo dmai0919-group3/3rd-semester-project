@@ -13,6 +13,45 @@
                 <ResourceDictionary Source="TestDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+
+            <!-- Text prompt dialog -->
+            <DataTemplate DataType="{x:Type local:TextPrompt}">
+                <StackPanel Margin="20,2,20,20">
+                    <Grid>
+                        <StackPanel Margin="20" MinWidth="300">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" />
+                            <TextBlock Text="{Binding Message}" Margin="0,12,0,0"/>
+                            <TextBox Text="{Binding Text}" Margin="0,12,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <Button Content="{Binding ButtonText}" Foreground="White"
+                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" CommandParameter="{Binding ButtonCommand}"></Button>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- Text prompt dialog -->
+            <DataTemplate DataType="{x:Type local:YesNoPrompt}">
+                <StackPanel Margin="20,2,20,20">
+                    <Grid>
+                        <StackPanel Margin="20" MinWidth="300">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource MaterialDesignHeadline6TextBlock}" />
+                            <TextBlock Text="{Binding Message}" Margin="0,12,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="{Binding CancelButtonText}" Foreground="White" Grid.Column="0" Margin="10 0"
+                                Style="{StaticResource MaterialDesignFlatLightBgButton}"
+                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" CommandParameter="{Binding CancelButtonCommand}"></Button>
+                        <Button Content="{Binding ButtonText}" Foreground="White" Grid.Column="1" Margin="10 0"
+                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}" CommandParameter="{Binding ButtonCommand}"></Button>
+                    </Grid>
+                </StackPanel>
+            </DataTemplate>
+
             <!-- Dialog for errors -->
             <DataTemplate DataType="{x:Type local:ErrorNotificationMessage}">
                 <StackPanel Margin="20">
@@ -28,7 +67,8 @@
                             <TextBlock Text="{Binding Message}" Margin="0,13,0,0"/>
                         </StackPanel>
                     </Grid>
-                    <Button Content="OK" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"></Button>
+                    <Button Content="{Binding ButtonText}" Foreground="White"
+                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"></Button>
                 </StackPanel>
             </DataTemplate>
 
@@ -47,7 +87,8 @@
                             <TextBlock Text="{Binding Message}" Margin="0,13,0,0"/>
                         </StackPanel>
                     </Grid>
-                    <Button Content="OK" Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"></Button>
+                    <Button Content="{Binding ButtonText}" Foreground="White"
+                            Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"></Button>
                 </StackPanel>
             </DataTemplate>
 

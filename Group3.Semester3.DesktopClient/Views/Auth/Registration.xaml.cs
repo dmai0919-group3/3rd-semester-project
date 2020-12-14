@@ -49,7 +49,6 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
             textBoxName.Text = regex.Replace(textBoxName.Text.Trim(), " ");
             textBoxEmail.Text = textBoxEmail.Text.Replace(" ", "");
 
-
             EmailRequiredPrompt.Visibility = textBoxEmail.Text.Length == 0 ? Visibility.Visible : Visibility.Hidden;
             NameRequiredPrompt.Visibility = textBoxName.Text.Length == 0 ? Visibility.Visible : Visibility.Hidden;
             PasswordRequiredPrompt.Visibility = passwordBoxPassword.Password.Length == 0 ? Visibility.Visible : Visibility.Hidden;

@@ -23,7 +23,7 @@
 
     <Window.CommandBindings>
         <CommandBinding Command="{x:Static commands:MainWindowCommands.RefreshCommand}" 
-                        CanExecute="CommandBinding_CanExecute"  Executed="CommandBinding_Executed" />
+                        CanExecute="CommandBinding_CanExecute" Executed="CommandBinding_Executed" />
     </Window.CommandBindings>
 
     <Window.InputBindings>
@@ -134,7 +134,6 @@
                         <HierarchicalDataTemplate>
                             <StackPanel>
                                 <TextBlock Text="{Binding Group.Name}" 
-                                           FontStyle="{Binding Group.Id, Converter={StaticResource ItalicOnIdZeroConverter}}"
                                            FontWeight="{Binding Selected, Converter={StaticResource BooleanToBoldConverter}}"></TextBlock>
                             </StackPanel>
                         </HierarchicalDataTemplate>
@@ -184,10 +183,11 @@
                                         <MenuItem Header="Open" Click="MenuItemRun_Click" />
                                         <MenuItem Header="Save File As..." Visibility="{Binding SelectedFile.FileEntity.IsFolder, Converter={StaticResource InverseBooleanToVisibilityConverter}}" Click="MenuItemSave_Click"/>
                                         <Separator Visibility="{Binding SelectedFile.FileEntity.IsFolder, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                        <MenuItem Header="Rename" Click="MenuItemRename_Click" Visibility="{Binding SelectedFile.Dummy, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                                         <MenuItem Header="Copy" Visibility="{Binding SelectedFile.FileEntity.IsFolder, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                                         <MenuItem Header="Cut" Visibility="{Binding SelectedFile.FileEntity.IsFolder, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                                         <MenuItem Header="Paste" Visibility="{Binding SelectedFile.FileEntity.IsFolder, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
-                                        <MenuItem Header="Remove" Click="MenuItemRemove_Click"/>
+                                        <MenuItem Header="Remove" Click="MenuItemRemove_Click" Visibility="{Binding SelectedFile.Dummy, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                                     </ContextMenu>
                                 </DockPanel.ContextMenu>
                                 <TextBlock DockPanel.Dock="Bottom" HorizontalAlignment="Center" Text="{Binding FileEntity.Name}"/>

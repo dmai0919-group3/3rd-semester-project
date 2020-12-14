@@ -415,8 +415,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model)
         {
 
-            var parentGuid = ParseGuid(model.ParentId);
-            var groupGuid = ParseGuid(model.GroupId);
+            var parentGuid = model.ParentId;
+            var groupGuid = model.GroupId;
             
             // Check if user has access to a group
             if (groupGuid != Guid.Empty)
