@@ -18,10 +18,11 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool Insert(SharedFile sharedFile);
         public bool InsertWithLink(SharedFileLink sharedFileLink);
         public bool DeleteShareLinkByFileId(Guid fileId);
-        public bool DeleteByFileIdFromSharedForAll(Guid fileId);
-        public bool DeleteByFileIdFromSharedForOne(SharedFile sharedFile);
+        public bool DeleteForAll(Guid fileId);
+        public bool DeleteBySharedFile(SharedFile sharedFile);
         public bool IsSharedWithUser(Guid fileId, Guid userId);
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId);
+        public string GetHashByFileId(Guid fileId);
 
     }
     public class SharedFilesRepository : ISharedFilesRepository
@@ -59,11 +60,18 @@ namespace Group3.Semester3.WebApp.Repositories
             {
                 var parameters = new { Hash = hash };
 
-                connection.Open();
+                try
+                {
+                    connection.Open();
 
-                var result = connection.QueryFirst<FileEntity>(query, parameters);
+                    var result = connection.QuerySingle<FileEntity>(query, parameters);
 
-                return result;
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
             }
         }
 
@@ -86,7 +94,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
             return false;
         }
-        public bool DeleteByFileIdFromSharedForAll(Guid fileId)
+        public bool DeleteForAll(Guid fileId)
         {
             string query = "DELETE FROM SharedFiles WHERE FileId=@FileId";
 
@@ -124,7 +132,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId)
         {
-            string query = "SELECT Users.*FROM Users JOIN SharedFiles ON Users.Id = SharedFiles.FileId WHERE SharedFiles.FileId = @FileId";
+            string query = "SELECT Users.* FROM Users JOIN SharedFiles ON Users.Id = SharedFiles.UserId WHERE SharedFiles.FileId = @FileId";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -140,12 +148,32 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
+                    return new List<UserModel>();
                 }
-                throw new NotImplementedException();
             }
         }
 
-        public bool DeleteByFileIdFromSharedForOne(SharedFile sharedFile)
+        public string GetHashByFileId(Guid fileId)
+        {
+            string query = "SELECT * FROM SharedFilesLinks WHERE FileId=@FileId";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    var result = connection.QuerySingle(query, new {FileId = fileId});
+                    
+                    return result.Hash;
+                }
+                catch (Exception e)
+                {
+                    return "";
+                }
+            }
+        }
+
+        public bool DeleteBySharedFile(SharedFile sharedFile)
         {
             string query = "DELETE FROM SharedFiles WHERE FileId=@FileId AND UserId=@UserId";
 
@@ -166,7 +194,7 @@ namespace Group3.Semester3.WebApp.Repositories
 
         public bool InsertWithLink(SharedFileLink sharedFileLink)
         {
-            string query = "INSERT INTO SharedFilesLinkS (FileId, Hash)" +
+            string query = "INSERT INTO SharedFilesLinks (FileId, Hash)" +
                    " VALUES (@FileId, @Hash)";
 
             using (var connection = new SqlConnection(connectionString))

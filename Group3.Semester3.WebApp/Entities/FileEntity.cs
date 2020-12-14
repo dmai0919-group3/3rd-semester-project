@@ -16,5 +16,6 @@ namespace Group3.Semester3.WebApp.Entities
         public bool IsFolder { get; set; }
         public bool IsShared { get; set; }
         public DateTime Updated { get; set; }
+        public long Size { get; set; }
     }
 }

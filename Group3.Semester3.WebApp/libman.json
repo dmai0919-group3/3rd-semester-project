@@ -25,6 +25,11 @@
     {
       "library": "font-awesome@5.15.1",
       "destination": "wwwroot/lib/font-awesome/"
+    },
+    {
+      "provider": "unpkg",
+      "library": "@microsoft/signalr@latest",
+      "destination": "wwwroot/lib/microsoft/signalr/"
     }
   ]
 }

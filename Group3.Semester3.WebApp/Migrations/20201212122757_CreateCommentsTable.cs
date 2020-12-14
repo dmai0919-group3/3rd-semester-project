@@ -3,24 +3,25 @@ using FluentMigrator;
 
 namespace Group3.Semester3.WebApp.Migrations
 {
-    [Migration(20201209123550)]
-    public class CreateShareFileLinksTable : Migration
+    [Migration(20201212122757)]
+    public class CreateCommentsTable : Migration
     {
         public override void Up()
         {
-            Create.Table("SharedFilesLinks")
+            Create.Table("Comments")
+                .WithColumn("Id").AsGuid().PrimaryKey()
                 .WithColumn("FileId").AsGuid().NotNullable()
-                .WithColumn("Hash").AsString().NotNullable();
+                .WithColumn("ParentId").AsGuid().NotNullable()
+                .WithColumn("Text").AsString().NotNullable();
             Create.ForeignKey()
-                .FromTable("SharedFilesLinks").ForeignColumn("FileId")
+                .FromTable("Comments").ForeignColumn("FileId")
                 .ToTable("Files").PrimaryColumn("Id")
                 .OnDeleteOrUpdate(Rule.Cascade);
-            ;
         }
 
         public override void Down()
         {
-            Delete.Table("SharedFilesLinks");
+            Delete.Table("Comments");
         }
     }
 }

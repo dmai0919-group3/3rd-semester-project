@@ -10,10 +10,11 @@ namespace Group3.Semester3.WebAppTests
 
         private static IUserService _userService;
         private static IFileService _fileService;
+        private static IEmailService _emailService;
         private static IUserRepository _userRepository;
         private static IFileRepository _fileRepository;
         private static IConfiguration _configuration;
-        
+
         public static IUserService GetUserService()
         {
             if (_userService == null)
@@ -42,6 +43,15 @@ namespace Group3.Semester3.WebAppTests
             }
 
             return _fileService;
+        }
+
+        public static IEmailService GetEmailService()
+        {
+            if (_emailService == null)
+            {
+                _emailService = new EmailService(ConfigurationRoot());
+            }
+            return _emailService;
         }
 
         public static IFileRepository GetFileRepository()

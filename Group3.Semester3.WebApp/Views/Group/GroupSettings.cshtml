@@ -8,7 +8,10 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <h3 id="group-name">@group.Name <i class="fa fa-edit" onclick="showRenameGroupModal()" style="cursor: pointer;"></i></h3>
+        <h3 id="group-name">
+            <span>@group.Name</span>
+            <i class="fa fa-edit" id="group-rename-button" onclick="showRenameGroupModal()" style="cursor: pointer;"></i>
+        </h3>
     </div>
     <div class="row">
         <p class="col-12">Users:</p>
@@ -16,7 +19,7 @@
         </ul> 
     </div>
     <div class="row justify-content-center" style="margin-top: 1em">
-        <button class="btn btn-primary" onclick="showAddUserModal()">Add user</button>
+        <button class="btn btn-primary" id="add-user-button" onclick="showAddUserModal()">Add user</button>
     </div>
 </div>
 
@@ -24,16 +27,33 @@
 <script>
     let currentGroupId = "@group.Id";
     let currentUserId = "@currentUser.Id";
+    let currentUser = null;
+    let users = [];
     
     let getGroupUsersUrl = "@Url.Action("GetGroupUsers", "GroupApi", new {groupId = group.Id})";
     let addUserToGroupUrl = "@Url.Action("AddUser", "GroupApi")";
     let removeUserUrl = "@Url.Action("RemoveUser", "GroupApi")";
     let renameGroupUrl = "@Url.Action("Rename", "GroupApi")";
+    let changePermissionsUrl = "@Url.Action("ChangeUserPermissions", "GroupApi")";
     
     $(document).ready(function () {
+        $('#add-user-button').hide();
+        $('#group-rename-button').hide();
+        
         $.ajax({
             url: getGroupUsersUrl,
             success: function (result) {
+                currentUser = result.find(user => {
+                    return user.id === currentUserId;
+                });
+                
+                if (currentUser.permissions.hasAdministrate) {
+                    $('#add-user-button').show();
+                    $('#group-rename-button').show();
+                }
+                
+                users = result;
+                
                 result.forEach(user => {
                     addUserToList(user);
                 });
@@ -44,30 +64,66 @@
         });
         $('#user-list').on('click', '.user-remove', function () {
             removeUser(this);
-        })
+        }).on('click', '.edit-permissions', function () {
+            let id = $(this).parent().parent().data('id');
+            
+            let user = users.find(user => {
+               return user.id === id;
+            });
+            
+            showChangePermissionsModal(user);
+        });
     });
     
     function addUserToList(user) {
+        let administrate = currentUser.permissions.hasAdministrate;
         let $item = '<li class="list-group-item d-flex justify-content-between align-items-center" data-id="' + user.id + '">'+
                      user.name +
-                     (user.id !== currentUserId ? ' <button class="btn btn-danger user-remove">Remove</button>' 
-                     : '<button class="btn btn-danger user-remove">Leave group</button>')+
+                     (user.id === currentUserId ? '<button class="btn btn-danger user-remove">Leave group</button>' : 
+                     (administrate ? '<div><button class="btn btn-primary edit-permissions">Edit permissions</button>' +
+                      '<button class="btn btn-danger user-remove">Remove</button></div>' : ''))+
                      '</li>';
         $("#user-list").append($item);
     }
     
     function showAddUserModal() {
         $('#add-user-email').val('');
+        $('#add-user-permissions').empty();
+        
+        let permissions = Object.keys(currentUser.permissions);
+        
+        permissions = permissions.filter(value => {
+           return value.includes('has'); 
+        });
+        
+        permissions.forEach(permission => {
+            let name = permission.replace('has', '');
+            if (permission === 'hasRead') {
+                return ;
+            }
+            let element = '<div class="form-check">\n'+
+                           '  <input class="form-check-input" type="checkbox" ' +
+                            'name="'+permission+'" id="'+permission+'">'+
+                           '  <label class="form-check-label" for="'+permission+'">'+
+                            name +
+                           '  </label>'+
+                           '</div>';
+            $('#add-user-permissions').append(element);
+        });
+        
         $('#addUserModal').modal();
     }
     
     function addUser() {
         let email = $('#add-user-email').val();
         
-        let data = {
-            Email: email,
-            GroupId: currentGroupId
-        };
+        let data = {};
+        $("#add-user-form").serializeArray().map(function(x){
+            data[x.name] = true;
+        }); 
+        
+        data.Email = email;
+        data.GroupId = currentGroupId;
         
         $.ajax({
             url: addUserToGroupUrl,
@@ -75,7 +131,10 @@
             data: JSON.stringify(data),
             contentType: "application/json",
             success: function (user) {
+                users.push(user);
                 addUserToList(user);
+                
+                $('#addUserModal').modal('hide');
             },
             error: function (result) {
                 alert(result.responseText);
@@ -84,7 +143,7 @@
     }
     
     function removeUser(element) {
-        let userId = $(element).parent().data('id');
+        let userId = $(element).parent().parent().data('id');
         
         let data = {
             UserId: userId,
@@ -95,11 +154,16 @@
             method: 'DELETE',
             data: JSON.stringify(data),
             contentType: "application/json",
-            success: function (user) {
+            success: function () {
                 if (userId === currentUserId) {
                     window.location.href = "/file/browse"; 
                 }
-                $(element).parent().remove();
+                
+                users = users.filter(user => {
+                    return user.id !== userId;
+                });
+                
+                $(element).parent().parent().remove();
             },
             error: function (result) {
                 alert(result.responseText);
@@ -108,7 +172,7 @@
     }
     
     function showRenameGroupModal() {
-        let groupName = $('#group-name').text();
+        let groupName = $('#group-name').find('span').text();
         
         $('#rename-group-name').val(groupName);
         
@@ -129,7 +193,7 @@
             data: JSON.stringify(data),
             contentType: "application/json",
             success: function (group) {
-                $('#group-name').text(group.name);
+                $('#group-name').find('span').text(group.name);
                 $('#renameGroupModal').modal('hide');
             },
             error: function (result) {
@@ -137,6 +201,70 @@
             }
         });
     }
+    
+    function showChangePermissionsModal(user) {
+        $('#change-users-permissions-id').val(user.id);
+        $('#change-user-permissions-name').text(user.name);
+        $('#change-users-permissions').empty();
+        
+        let permissions = Object.keys(user.permissions);
+        
+        permissions = permissions.filter(value => {
+           return value.includes('has'); 
+        });
+        
+        permissions.forEach(permission => {
+            let name = permission.replace('has', '');
+            if (permission === 'hasRead') {
+                return ;
+            }
+            let is = user.permissions[permission];
+            
+            let element = '<div class="form-check">\n'+
+                           '  <input class="form-check-input" type="checkbox" ' +
+                            'name="'+permission+'" id="'+permission+'" '+ (is ? 'checked' : '') +'>'+
+                           '  <label class="form-check-label" for="'+permission+'">'+
+                            name +
+                           '  </label>'+
+                           '</div>';
+            $('#change-users-permissions').append(element);
+        });
+        
+        $('#changePermissionsModal').modal();
+    }
+    
+    function changeUserPermissions() {
+         let id = $('#change-users-permissions-id').val();
+                 
+         let data = {};
+         $("#change-permissions-form").serializeArray().map(function(x){
+             data[x.name] = true;
+         }); 
+         
+         data.UserId = id;
+         data.GroupId = currentGroupId;
+         
+         $.ajax({
+             url: changePermissionsUrl,
+             method: 'PUT',
+             data: JSON.stringify(data),
+             contentType: "application/json",
+             success: function (user) {
+                 
+                 users = users.filter(object => {
+                     return object.id !== user.id;
+                 });
+                 
+                 users.push(user);
+                 
+                 $('#changePermissionsModal').modal('hide');
+             },
+             error: function (result) {
+                 alert(result.responseText);
+             }
+         });
+    }
+    
 </script>
 
 <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -149,15 +277,43 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form>
+                <form id="add-user-form">
                     <div class="form-group">
                         <label for="add-user-email" class="col-form-label">User email:</label>
                         <input type="email" class="form-control" id="add-user-email">
+                    </div>
+                    <div class="form-group" id="add-user-permissions">
+                        
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" onclick="addUser()">Add</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePermissionsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change permissions of <span id="change-user-permissions-name"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="change-permissions-form">
+                    <input type="hidden" id="change-users-permissions-id">
+                    <div class="form-group" id="change-users-permissions">
+
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="changeUserPermissions()">Change</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
         </div>

@@ -59,6 +59,15 @@ $(function () {
             }
             
             let standardItems = {
+                sharing: {
+                    name: "Sharing",
+                    callback: function (key, opt) {
+                        let $element = opt.$trigger;
+                        let id = $element.attr('id');
+
+                        showSharingModal(id);
+                    }
+                },
                 move: {
                     name: "Move to folder",
                     callback: function (key, opt) {
@@ -271,7 +280,7 @@ function browseDirectoryFiles(parentId) {
 }
 
 const fileMarkup = `
-                <div class="col-md-1 {{classes}} justify-content-center" id="{{fileId}}">
+                <div class="col-sm-3 col-xl-2 {{classes}} justify-content-center" id="{{fileId}}">
                     <div class="col-12 text-center">
                         <img src="{{icon}}" width="80%" />
                     </div>
@@ -591,9 +600,11 @@ function editFileSave() {
     });
 }
 
-function initFileDownload(fileId) {
+function initFileDownload(fileId, versionId = "") {
+    let data = {versionId: versionId};
     $.ajax({
         url: "/api/file/download/" + fileId,
+        data: data,
         success: function (result) {
             startFileDownload(result.file, result.downloadLink);
         }
@@ -690,7 +701,11 @@ $(document).ready(function () {
         let id = $(this).data('id');
 
         if (id !== 'shared') {
-            currentGroup = id;
+            if (id === '0') {
+                currentGroup = emptyGuid;
+            } else {
+                currentGroup = id;
+            }
 
             browseDirectoryFiles(emptyGuid);
         } else {
@@ -765,4 +780,311 @@ function showSharedFiles() {
             alert("Failed to load shared files");
         }
     })
+}
+
+function showSharingModal(fileId) {
+    
+    $('#file-share-id').val(fileId);
+    
+    $('#file-share-users').empty();
+    
+    $('#file-share-enable-link').hide();
+    $('#file-share-disable-link').hide();
+    
+    $.ajax({
+        url: '/api/file/share/'+fileId,
+        success: function (result) {
+            $('#file-share-link').val(result.link);
+            
+            if (result.link == null) {
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            } else {
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            }
+            
+            result.users.forEach(user => {
+                addUserToSharedUsersList(user);
+            });
+        }
+    });
+    
+    $('#fileSharingModal').modal();
+}
+
+function addUserToSharedUsersList(user) {
+    let html = '<li class="list-group-item d-flex justify-content-between" data-id="'+user.id+'">' +
+                    user.name +
+        '          <button class="btn btn-danger user-remove">Remove</button>' +
+        '       </li>';
+    $('#file-share-users').append(html);
+}
+
+function showShareWithUserModal() {
+    $('#shareWithUserModal').modal();
+}
+
+function shareWithUser() {
+    let fileId = $('#file-share-id').val();
+    let email = $('#file-share-user-email').val();
+    
+    let data = {
+        FileId: fileId,
+        Email: email
+    }
+    
+    $.ajax({
+        url: shareWithUserUrl,
+        type: 'post',
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (result) {
+            addUserToSharedUsersList(result);
+            $('#shareWithUserModal').modal('hide');
+        },
+        error: function (result) {
+            alert(result.resultText);
+        }
+    });
+}
+
+$(document).ready(function () {
+    $('#file-share-enable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: enableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val(result);
+                $('#file-share-enable-link').hide();
+                $('#file-share-disable-link').show();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+
+    $('#file-share-disable-link').on('click', function () {
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            Id: fileId
+        }
+
+        $.ajax({
+            url: disableLinkSharing,
+            type: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $('#file-share-link').val('');
+                $('#file-share-enable-link').show();
+                $('#file-share-disable-link').hide();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+    
+    $('#file-share-users').on('click', '.user-remove', function () {
+        let $userElement = $(this).parent();
+        let userId = $userElement.data('id');
+        let fileId = $('#file-share-id').val();
+
+        let data = {
+            FileId: fileId,
+            UserId: userId,
+        }
+        
+        $.ajax({
+            url: disableSharingWithUser,
+            type: 'delete',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                $userElement.remove();
+            },
+            error: function (result) {
+                alert(result.resultText);
+            }
+        });
+    });
+});
+
+// Commenting section
+
+let sidebarFileId = null;
+
+let connection = new signalR.HubConnectionBuilder().withUrl("/api/comments").build();
+
+connection.start().catch(function (err) {
+    return console.error(err.toString());
+});
+
+connection.on("NewComment", function (comment, fileId) {
+    if (fileId === sidebarFileId) {
+        addCommentToList(comment);
+    } else {
+        // TODO: Maybe send notification later
+        console.log('got comment from other file');
+    }
+});
+
+$(document).ready(function () {
+    
+    $('#send-comment-button').on('click', function () {
+        let $textField = $('#comment-text');
+        let text = $textField.val();
+        
+        let data = {
+            Text: text,
+            FileId: sidebarFileId
+        };
+
+        $textField.val('');
+
+        connection.invoke("NewComment", data);
+    });
+
+    $("#file-container").on("click", '.file:not(.folder)', function () {
+        
+        let id = this.id;
+        let name = $(this).find('.file-name').text();
+        sidebarFileId = id;
+        
+        $('#file-sidebar-name').text(name);
+        $('.file-sidebar-element').hide();
+    });
+    
+    $("#file-sidebar-buttons").on('click', 'button', function () {
+        if (sidebarFileId === null) {
+            alert("Please click on the file to choose it");
+            return;
+        }
+        switch ($(this).data('id')) {
+            case 'comments': {
+                $('.file-sidebar-element').hide();
+                $('#file-sidebar-comments').show();
+                loadComments();
+                break;
+            }
+            case 'versions': {
+                $('.file-sidebar-element').hide();
+                $('#file-sidebar-versions').show();
+                loadVersions();
+                break;
+            }
+        } 
+    });
+    
+    $('#file-versions').on('click', '.file-version-revert', function () {
+        let id = $(this).data('id');
+
+        let data = {
+            Id: id
+        }
+        
+        $.ajax({
+            url: revertVersionUrl,
+            method: 'post',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (result) {
+                addVersionToList(result, true);
+            }
+        });
+    }).on('click', '.file-version-download', function () {
+        let id = $(this).data('id');
+
+        let fileId = sidebarFileId;
+
+        initFileDownload(fileId, id);
+    });
+});
+
+function loadComments() {
+    $('#file-comments').empty();
+
+    let data = {
+        fileId: sidebarFileId,
+        parentId: 0,
+    }
+
+    connectToSignalGroup(sidebarFileId);
+
+    $.ajax({
+        url: getCommentsUrl,
+        data: data,
+        success: function (result) {
+            result.forEach(comment => {
+                addCommentToList(comment);
+            });
+        }
+    });
+}
+
+function loadVersions() {
+    $('#file-versions').empty();
+
+    let data = {
+        fileId: sidebarFileId
+    }
+
+    $.ajax({
+        url: getVersionsUrl,
+        data: data,
+        success: function (result) {
+            result.forEach(version => {
+                addVersionToList(version);
+            });
+        }
+    });
+}
+
+function addCommentToList(comment) {
+    let element = '<li class="list-group-item">' +
+        '<b>' + comment.username + '</b><br>' +
+        comment.text +
+        '</li>';
+
+    $('#file-comments').append(element);
+}
+
+function addVersionToList(version, toStart = false) {
+    let date = new Date(version.created);
+    let element = '<li class="list-group-item">' +
+        '<b>' + date.toLocaleString() + '</b><br>' +
+        version.note +
+        '<div class="row justify-content-end">' +
+        '<button class="btn btn-secondary file-version-revert" data-id="' + version.id + '">Revert</button>' +
+        '<button class="btn btn-primary file-version-download" data-id="' + version.id + '">Download</button>' +
+        '</div>' +
+        '</li>';
+
+    if (toStart) {
+        $('#file-versions').prepend(element);
+    } else {
+        $('#file-versions').append(element);
+    }
+}
+
+function connectToSignalGroup(fileId) {
+    try {
+        connection.invoke("AddToGroup", fileId).then(function () {
+            //console.log('Successfully connected to group');
+        });
+    }
+    catch (e) {
+        console.error(e.toString());
+    }
 }
