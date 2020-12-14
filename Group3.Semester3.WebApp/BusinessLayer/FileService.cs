@@ -277,7 +277,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                                 Id = Guid.NewGuid(),
                                 FileId = existingFile.Id,
                                 AzureName = existingFile.AzureName,
-                                Note = "New version uploaded by" + user.Name,
+                                Note = "New version uploaded by " + user.Name,
                                 Created = DateTime.Now,
                                 UserId = user.Id,
                                 Username = user.Name
