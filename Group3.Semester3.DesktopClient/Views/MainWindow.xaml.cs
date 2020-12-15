@@ -111,8 +111,8 @@ namespace Group3.Semester3.DesktopClient.Views
 
             FileEntity upFolder = null;
 
-            var l = (rootFolder == null) ? 
-                apiService.FileList(groupId: Model.SelectedGroup.Id) : 
+            var l = (rootFolder == null) ?
+                apiService.FileList(groupId: Model.SelectedGroup.Id) :
                 apiService.FileList(rootFolder.Id, Model.SelectedGroup.Id);
 
             if (l.Count > 0 && l[0].ParentId == Guid.Empty)
@@ -418,6 +418,63 @@ namespace Group3.Semester3.DesktopClient.Views
 
             if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
             else UpdateFileList();
+        }
+
+        private void UploadPanel_Drop(object sender, DragEventArgs e)
+        {
+            if (!((DialogHost)GetValue(ContentProperty)).IsOpen ||
+            !(((DialogHost)GetValue(ContentProperty)).DialogContent is UploadPopup)) return;
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                List<FileToUpload> l = new List<FileToUpload>();
+
+                foreach (var filename in files)
+                {
+                    l.Add(new FileToUpload
+                    {
+                        Name = System.IO.Path.GetFileName(filename),
+                        Path = filename
+                    });
+                }
+
+                Guid parent = Guid.Empty;
+                if (folderStack.Count > 0) parent = folderStack.Peek().Id;
+
+                apiService.UploadFiles(l, parent);
+            }
+
+            if (((DialogHost)GetValue(ContentProperty)).IsOpen &&
+            ((DialogHost)GetValue(ContentProperty)).DialogContent is UploadPopup)
+            {
+                DialogHost.Close("RootDialog");
+            }
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
+        }
+
+        private async void window_DragOver(object sender, DragEventArgs e)
+        {
+            if (((DialogHost)GetValue(ContentProperty)).IsOpen) return;
+
+            await DialogHost.Show(new UploadPopup()
+            {
+                Title = "Drop your files here",
+                Message = "Drag and drop files here you'd like to upload!"
+            },
+            "RootDialog");
+        }
+
+        private void window_DragLeave(object sender, MouseEventArgs e)
+        {
+            if (((DialogHost)GetValue(ContentProperty)).IsOpen &&
+                ((DialogHost)GetValue(ContentProperty)).DialogContent is UploadPopup )
+            {
+                DialogHost.Close("RootDialog");
+            }
         }
     }
 }

@@ -85,6 +85,35 @@ namespace Group3.Semester3.DesktopClient.Views
             }
         }
 
+        //private async Task FileUploadAsync(FileEntity root, string filePath, string uploadName)
+        //{
+        //    Microsoft.Win32.SaveFileDialog dialog = new Microsoft.Win32.SaveFileDialog();
+        //    dialog.Title = "Save file as...";
+        //    dialog.FileName = file.Name;
+        //    if (dialog.ShowDialog() == true)
+        //    {
+        //        using WebClient client = new WebClient();
+
+        //        var task = new Model.MainWindowModel.DownloadTask
+        //        {
+        //            Abort = () => client?.CancelAsync(),
+        //            Message = file.Name
+        //        };
+        //        Model.Tasks.Add(task);
+
+        //        client.DownloadProgressChanged += (o, e) =>
+        //        {
+        //            task.ProgressPercentage = e.ProgressPercentage;
+        //            task.Size = e.TotalBytesToReceive;
+        //            UpdateProgress();
+        //        };
+
+        //        await client.DownloadFileTaskAsync(new Uri(apiService.GetDownloadLink(file.Id).downloadLink), dialog.FileName);
+        //        Model.Tasks.Remove(task);
+        //        UpdateProgress();
+        //    }
+        //}
+
         private void UpdateProgress()
         {
             panelProgress.Visibility = (Model.Tasks.Count > 0) ? Visibility.Visible : Visibility.Hidden;

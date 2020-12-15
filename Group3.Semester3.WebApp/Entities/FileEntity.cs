@@ -17,5 +17,10 @@ namespace Group3.Semester3.WebApp.Entities
         public bool IsShared { get; set; }
         public DateTime Updated { get; set; }
         public long Size { get; set; }
+
+        public FileEntity()
+        {
+
+        }
     }
 }

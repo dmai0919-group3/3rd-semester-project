@@ -10,6 +10,11 @@ using System.Windows.Media.Imaging;
 
 namespace Group3.Semester3.DesktopClient.Model
 {
+    public class UploadPopup : NotificationMessage
+    {
+        public string[] Files { get; set; }
+    }
+
     public class MainWindowModel
     {
         public class FileEntityWrapper
