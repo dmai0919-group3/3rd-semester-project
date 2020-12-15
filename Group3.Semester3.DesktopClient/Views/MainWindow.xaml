@@ -14,7 +14,7 @@
         TextOptions.TextRenderingMode="Auto"        
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="Dashboard" Height="450" Width="800" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow"
+        Title="OGO Filesharing" Height="600" Width="1200" WindowStartupLocation="CenterScreen" WindowStyle="SingleBorderWindow"
         xmlns:commands="clr-namespace:Group3.Semester3.DesktopClient.Views" Icon="/Views/Auth/icon_big.png"
         DragEnter="window_DragOver"
         AllowDrop="True"
