@@ -2,15 +2,12 @@
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Groups;
-using Group3.Semester3.WebApp.Models.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Group3.Semester3.WebApp.Helpers;
 
 namespace Group3.Semester3.WebApp.Controllers.Api
 {
@@ -120,9 +117,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
         
@@ -141,9 +138,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -167,7 +164,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -186,9 +183,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
     }

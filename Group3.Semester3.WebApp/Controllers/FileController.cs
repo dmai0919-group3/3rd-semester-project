@@ -9,8 +9,8 @@ namespace Group3.Semester3.WebApp.Controllers
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class FileController : Controller
     {
-        private IFileService _fileService;
-        private IUserService _userService;
+        private readonly IFileService _fileService;
+        private readonly IUserService _userService;
 
         public FileController(IFileService fileService, IUserService userService)
         {
