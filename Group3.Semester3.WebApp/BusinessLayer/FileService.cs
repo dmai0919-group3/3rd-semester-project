@@ -294,9 +294,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             existingFile.Size = formFile.Length;
                             existingFile.Updated = DateTime.Now;
 
-                            // TODO: Create transaction later
-                            _fileRepository.Update(existingFile);
-                            _fileRepository.InsertFileVersion(newVersion);
+                            var success = _fileRepository.UpdateFileAndCreateNewVersion(existingFile, newVersion);
+
+                            if (!success)
+                            {
+                                await containerClient.GetBlobClient(blobGuid.ToString()).DeleteAsync();
+                            }
                         }
                         
                     }
@@ -640,14 +643,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             file.AzureName = Guid.NewGuid().ToString();
             file.Updated = DateTime.Now;
+            file.Size = contentStream.Length;
 
-            containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
-
-            file.Size = containerClient.GetBlobClient(file.AzureName).GetProperties().Value.ContentLength;
-
-            // TODO: Create transaction later
-            _fileRepository.Update(file);
-            _fileRepository.InsertFileVersion(newVersion);
+            var success = _fileRepository.UpdateFileAndCreateNewVersion(file, newVersion);
+            
+            if (success)
+            {
+                containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
+            }
+            else
+            {
+                throw new ValidationException("Failed to update a file");
+            }
+            
             return file;
         }
 
@@ -690,10 +698,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             file.AzureName = version.AzureName;
             file.Updated = DateTime.Now;
 
-            // TODO: Create transaction later
-            _fileRepository.Update(file);
-            _fileRepository.InsertFileVersion(newVersion);
+            var success =_fileRepository.UpdateFileAndCreateNewVersion(file, newVersion);
 
+            if (!success)
+            {
+                throw new ValidationException("Failed to revert file version");
+            }
+            
             return newVersion;
         }
 
