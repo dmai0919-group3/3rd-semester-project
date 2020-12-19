@@ -227,11 +227,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (groupGuid != Guid.Empty)
             {
                 var group = _groupRepository.GetByGroupId(groupGuid);
-                _accessService.hasAccessToGroup(user, group);
+                _accessService.hasAccessToGroup(user, group, Permissions.Write);
             }
 
-            // Check if user owns parent folder
-            if (!parentGuid.Equals(Guid.Empty))
+            // Check if user has access to parent folder
+            if (parentGuid != Guid.Empty)
             {
                 var parent = GetById(parentGuid);
                 _accessService.hasAccessToFile(user, parent, Permissions.Write);
@@ -409,6 +409,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 
                 containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
             }
+            else
+            {
+                // TODO: Check for children and recursively delete
+            }
             
             var result = _fileRepository.Delete(fileId);
 
@@ -497,7 +501,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
 
             // Check if user owns parent folder
-            if (!parentGuid.Equals(Guid.Empty))
+            if (parentGuid != Guid.Empty)
             {
                 var parent = GetById(parentGuid);
                 _accessService.hasAccessToFile(user, parent, Permissions.Write);
@@ -519,9 +523,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (!created)
             {
-                throw new Exception("Failed to create folder");
+                throw new ValidationException("Failed to create folder");
             }
-
 
             return folder;
         }
@@ -552,7 +555,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             var file = GetById(model.Id);
             _accessService.hasAccessToFile(user, file, Permissions.Write);
-            var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);
+            var result = _fileRepository.MoveIntoFolder(model.Id, model.ParentId);
             if (!result)
             {
                 throw new ValidationException("File has not been moved, try again.");
@@ -768,20 +771,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 file.IsShared = true;
                 _fileRepository.Update(file);
             }
-            
-            if (file.IsFolder)
-            {
-                var children = _fileRepository.GetFoldersByParentId(file.Id);
-                foreach (var child in children)
-                {
-                    if (child.IsFolder)
-                    {
-                        var childShared = new SharedFile() {FileId = child.Id, UserId = sharedFile.UserId};
-                        ShareFile(childShared, currentUser);
-                    }
-                }
-            }
-            
+
             var isShared = _sharedFilesRepository.IsSharedWithUser(file.Id, sharedFile.UserId);
             
             var userModel = new UserModel() {Id = user.Id, Email = user.Email, Name = user.Name};

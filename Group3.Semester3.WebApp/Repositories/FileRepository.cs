@@ -72,7 +72,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <param name="fileId">The Guid of the file</param>
         /// <param name="parentId">The Guid of the new parent folder</param>
         /// <returns>True if the parent has changed and false if not.</returns>
-        public bool MoveIntofolder(Guid fileId, Guid parentId);
+        public bool MoveIntoFolder(Guid fileId, Guid parentId);
 
         public IEnumerable<FileVersion> GetFileVersions(Guid fileId);
 
@@ -353,7 +353,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <param name="fileId">The Guid of the file</param>
         /// <param name="parentId">The Guid of the new parent folder</param>
         /// <returns>True if the parent has changed and false if not.</returns>
-        public bool MoveIntofolder(Guid fileId, Guid parentId)
+        public bool MoveIntoFolder(Guid fileId, Guid parentId)
         {
             string query = "UPDATE Files SET ParentId=@ParentId WHERE Id=@Id";
 
