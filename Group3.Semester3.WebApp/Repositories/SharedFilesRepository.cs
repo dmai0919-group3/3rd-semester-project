@@ -38,11 +38,12 @@ namespace Group3.Semester3.WebApp.Repositories
         public IEnumerable<FileEntity> GetByUserId(Guid userId)
         {
             
-            string query = "SELECT Files.* FROM SharedFiles JOIN Files ON (Files.Id = SharedFiles.FileId) WHERE SharedFiles.UserId = @UserId";
+            string query = "SELECT Files.* FROM SharedFiles JOIN Files ON (Files.Id = SharedFiles.FileId) "+
+                           "WHERE SharedFiles.UserId = @UserId AND Files.ParentId = @ParentId";
 
             using (var connection = new SqlConnection(connectionString))
             {
-                var parameters = new { UserId = userId };
+                var parameters = new { UserId = userId, ParentId = Guid.Empty };
 
                 connection.Open();
 
