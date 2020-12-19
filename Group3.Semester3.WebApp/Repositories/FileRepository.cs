@@ -534,7 +534,7 @@ namespace Group3.Semester3.WebApp.Repositories
                     {
                         transaction.Rollback();
                     }
-                    catch (Exception e)
+                    catch
                     {
                     }
                 }

@@ -196,5 +196,26 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 return BadRequest(Messages.SystemError);
             }
         }
+        
+        [Route("get-permissions")]
+        [HttpGet]
+        public ActionResult GetGroupUser([FromQuery] string groupId, [FromQuery] string userId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _groupService.GetUser(user, groupId, userId);
+
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
+            }
+        }
     }
 }
