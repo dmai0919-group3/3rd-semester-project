@@ -268,7 +268,6 @@ function browseDirectoryFiles(parentId) {
                 Object.keys(dirArray).reverse()
                     .forEach(function(index) {
                         if (index !== parentId && !found) {
-                            console.log(index);
                             delete dirArray[index];
                         } else {
                             found = true;
@@ -283,7 +282,7 @@ function browseDirectoryFiles(parentId) {
 
             currentDir = parentId;
             
-            if (currentDir != emptyGuid) {
+            if (currentDir !== emptyGuid && currentDir !== 'shared') {
                 $('#go-back-button').show();
             } else {
                 $('#go-back-button').hide();
@@ -292,6 +291,14 @@ function browseDirectoryFiles(parentId) {
             updateDirectoryPath();
             
             currentUser = result.user;
+            
+            if (currentUser.permissions.hasWrite) {
+                $('#dropdownMenuButton').show();
+            } else {
+                $('#dropdownMenuButton').hide();
+            }
+            
+            
             changeFiles(result.files);
         },
         error: function (result) {
