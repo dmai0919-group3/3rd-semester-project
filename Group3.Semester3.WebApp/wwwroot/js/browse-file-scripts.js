@@ -545,7 +545,6 @@ function moveFile(id, parentId) {
 
                 $("#moveFileModal").modal("hide");
             } else {
-                // TODO: Handle better in the future
                 alert("Failed to move a file");
             }
         },
@@ -608,7 +607,7 @@ function editFileSave() {
         statusCode: {
             200: function (result) {
 
-                alert("File updated!");
+                alert("File updated!", "Success");
                 $("#editFileModal").modal("hide");
             },
             400: function (result) {
