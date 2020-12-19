@@ -100,9 +100,14 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                     model.ParentId,
                     model.Files);
                 return Ok(generatedEntries);
-            } catch (Exception exception)
+            }
+            catch (ValidationException exception)
             {
                 return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -125,9 +130,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 }
                 else return NoContent();
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -146,9 +155,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var result = _fileService.RenameFile(model.Id, user, model.Name);
                 return Ok(result);
             }
-            catch(Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 

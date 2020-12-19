@@ -40,7 +40,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -58,9 +58,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 }
                 else return NoContent();
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -75,9 +79,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var result = _groupService.RenameGroup(model.Id, user, model.Name);
                 return Ok(result);
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -98,7 +106,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 

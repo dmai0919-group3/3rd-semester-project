@@ -112,9 +112,20 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [HttpGet]
         public IActionResult Current()
         {
-            var user = _userService.GetFromHttpContext(HttpContext);
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
 
-            return Ok(user);
+                return Ok(user);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
+            }
         }
 
         /// <summary>
