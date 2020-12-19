@@ -179,8 +179,7 @@ function renameFile() {
             $fileNameElement.text(fileName);
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to rename a file");
+            alert(result.responseText);
         }
     });
 
@@ -218,8 +217,7 @@ function deleteFile() {
             $('#' + fileId).remove();
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to delete a file");
+            alert(result.responseText);
         }
     });
 }
@@ -273,8 +271,7 @@ function browseDirectoryFiles(parentId) {
             changeFiles(result);
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to load files");
+            alert(result.responseText);
         }
     });
 }
@@ -325,8 +322,7 @@ function createFolder() {
             $("#createFolderModal").modal("hide");
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to create a folder");
+            alert(result.responseText);
         }
     });
 }
@@ -523,8 +519,7 @@ function moveFile(id, parentId) {
             }
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert(result);
+            alert(result.responseText);
         }
     });
 }
@@ -555,7 +550,7 @@ function showEditFileModal(key, opt)
             $('#editFileModal').modal();
         },
         error: function (result) {
-            alert(result);
+            alert(result.responseText);
         }
     });
     
@@ -586,7 +581,7 @@ function editFileSave() {
                 $("#editFileModal").modal("hide");
             },
             400: function (result) {
-                alert(result);
+                alert(result.responseText);
             },
             409: function (result) {
                 $('#overwriteEditModal').modal();
@@ -607,6 +602,9 @@ function initFileDownload(fileId, versionId = "") {
         data: data,
         success: function (result) {
             startFileDownload(result.file, result.downloadLink);
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     })
 }
@@ -659,6 +657,9 @@ function previewFile(fileId, fileName) {
 
                 $modalBody.append(element);
             }, 900);
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     })
 }
@@ -676,6 +677,9 @@ function loadUserGroups() {
             result.forEach(group => {
                 addGroupToSubmenu(group);
             })
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     });
 }
@@ -740,7 +744,7 @@ function createGroup() {
             window.location.href = "/group/"+group.id;
         },
         error: function (result) {
-            alert(result);
+            alert(result.responseText);
         }
     });
 }
@@ -769,8 +773,7 @@ function showSharedFiles() {
             changeFiles(result);
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to load shared files");
+            alert(result.responseText);
         }
     })
 }
@@ -837,7 +840,7 @@ function shareWithUser() {
             $('#shareWithUserModal').modal('hide');
         },
         error: function (result) {
-            alert(result.resultText);
+            alert(result.responseText);
         }
     });
 }
@@ -861,7 +864,7 @@ $(document).ready(function () {
                 $('#file-share-disable-link').show();
             },
             error: function (result) {
-                alert(result.resultText);
+                alert(result.responseText);
             }
         });
     });
@@ -884,7 +887,7 @@ $(document).ready(function () {
                 $('#file-share-disable-link').hide();
             },
             error: function (result) {
-                alert(result.resultText);
+                alert(result.responseText);
             }
         });
     });
@@ -908,7 +911,7 @@ $(document).ready(function () {
                 $userElement.remove();
             },
             error: function (result) {
-                alert(result.resultText);
+                alert(result.responseText);
             }
         });
     });
@@ -927,9 +930,6 @@ connection.start().catch(function (err) {
 connection.on("NewComment", function (comment, fileId) {
     if (fileId === sidebarFileId) {
         addCommentToList(comment);
-    } else {
-        // TODO: Maybe send notification later
-        console.log('got comment from other file');
     }
 });
 
@@ -994,6 +994,9 @@ $(document).ready(function () {
             contentType: "application/json",
             success: function (result) {
                 addVersionToList(result, true);
+            },
+            error: function (result) {
+                alert(result.responseText);
             }
         });
     }).on('click', '.file-version-download', function () {
@@ -1022,6 +1025,9 @@ function loadComments() {
             result.forEach(comment => {
                 addCommentToList(comment);
             });
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     });
 }
@@ -1040,6 +1046,9 @@ function loadVersions() {
             result.forEach(version => {
                 addVersionToList(version);
             });
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     });
 }
