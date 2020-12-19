@@ -1,7 +1,6 @@
 using System;
-using System.Threading.Tasks;
 using Group3.Semester3.WebApp.BusinessLayer;
-using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,8 +15,8 @@ namespace Group3.Semester3.WebApp.Controllers.Api
     [Authorize(AuthenticationSchemes = (CookieAuthenticationDefaults.AuthenticationScheme + "," + JwtBearerDefaults.AuthenticationScheme))]
     public class CommentApiController : ControllerBase
     {
-        private IUserService _userService;
-        private ICommentService _commentService;
+        private readonly IUserService _userService;
+        private readonly ICommentService _commentService;
 
         public CommentApiController(IUserService userService, ICommentService commentService)
         {
@@ -26,7 +25,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetComments([FromQuery] string fileId, [FromQuery] string parentId)
+        public IActionResult GetComments([FromQuery] string fileId, [FromQuery] string parentId)
         {
 
             try
@@ -40,21 +39,24 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest();
+                return BadRequest(Messages.SystemError);
             }
         }
 
         private Guid ParseGuid(string guid)
         {
-            Guid parsedGuid = Guid.Empty;
+            var parsedGuid = Guid.Empty;
 
             try
             {
-                parsedGuid = System.Guid.Parse(guid);
+                parsedGuid = Guid.Parse(guid);
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
 
             return parsedGuid;
         }

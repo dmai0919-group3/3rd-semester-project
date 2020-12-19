@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.FileSystem;
-using Group3.Semester3.WebApp.Models.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Group3.Semester3.WebApp.Controllers.Api
 {
@@ -24,8 +17,8 @@ namespace Group3.Semester3.WebApp.Controllers.Api
     [Authorize(AuthenticationSchemes = (CookieAuthenticationDefaults.AuthenticationScheme + "," + JwtBearerDefaults.AuthenticationScheme))]
     public class FileApiController : ControllerBase
     {
-        private IFileService _fileService;
-        private IUserService _userService;
+        private readonly IFileService _fileService;
+        private readonly IUserService _userService;
 
         public FileApiController(IFileService fileService, IUserService userService)
         {
@@ -51,24 +44,10 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest();
+                return BadRequest(Messages.SystemError);
             }
-        }
-
-        /// <summary>
-        /// GET: api/file/{id}
-        /// TODO Return certain file information (only if user has access to the file)
-        /// </summary>
-        /// <param name="id">The id of a file</param>
-        /// <returns>The information of a file (if the user has access to it)</returns>
-        [HttpGet("{id}")]
-        public string GetFileDetails(Guid fileId)
-        {
-
-            var file = _fileService.GetById(fileId);
-            return "NotImplemented";
         }
 
         /// <summary>
@@ -88,8 +67,8 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var user = _userService.GetFromHttpContext(HttpContext);
                 var result = _fileService.DownloadFile(fileId, versionId, user);
 
-                FileEntity file = result.Item1;
-                string downloadLink = result.Item2; 
+                var file = result.Item1;
+                var downloadLink = result.Item2; 
 
                 return Ok(new {file, downloadLink});
             }
@@ -97,9 +76,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest(e.Message);
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -115,7 +94,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         {
             try
             {
-                List<Models.FileSystem.FileEntry> generatedEntries = await _fileService.UploadFile(
+                var generatedEntries = await _fileService.UploadFile(
                     _userService.GetFromHttpContext(HttpContext),
                     model.GroupId,
                     model.ParentId,
@@ -193,9 +172,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -215,9 +194,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var result = _fileService.MoveIntoFolder(model, user);
                 return Ok(result);
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -235,9 +218,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest();
+                return BadRequest(Messages.SystemError);
             }
         }
         
@@ -261,9 +244,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest("System error, please contact administrator.");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -276,7 +259,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var user = _userService.GetFromHttpContext(HttpContext);
                 var hash = _fileService.ShareFile(fileEntity, user);
 
-                var url = Url.Action("SharedFileLink", "File", new {hash = hash},  Request.Scheme);
+                var url = Url.Action("SharedFileLink", "File", new {hash},  Request.Scheme);
                 
                 return Ok(url);
             }
@@ -284,9 +267,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest("System error, please contact administrator.");
+                return BadRequest(Messages.SystemError);
             }
         }
         
@@ -304,9 +287,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest("System error, please contact administrator.");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -328,9 +311,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest("System error, please contact administrator.");
+                return BadRequest(Messages.SystemError);
             }
         }
         
@@ -352,9 +335,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest("System error, please contact administrator.");
+                return BadRequest(Messages.SystemError);
             }
         }
         
@@ -376,9 +359,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception e)
+            catch
             {
-                return BadRequest("System error, please contact administrator.");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -403,9 +386,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -434,9 +417,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -456,9 +439,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -478,9 +461,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch 
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -500,9 +483,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch 
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
     }

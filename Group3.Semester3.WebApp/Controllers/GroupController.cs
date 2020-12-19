@@ -10,8 +10,8 @@ namespace Group3.Semester3.WebApp.Controllers
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class GroupController : Controller
     {
-        private IGroupService _groupService;
-        private IUserService _userService;
+        private readonly IGroupService _groupService;
+        private readonly IUserService _userService;
         
         public GroupController(IGroupService groupService, IUserService userService)
         {
