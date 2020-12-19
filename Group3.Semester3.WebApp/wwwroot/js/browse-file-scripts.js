@@ -5,6 +5,10 @@ let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
 let currentDir = emptyGuid;
 let currentGroup = emptyGuid;
 
+let browsingSharedFiles = false;
+
+let currentUser = null;
+
 let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
 
 $(function () {
@@ -58,40 +62,54 @@ $(function () {
                 Object.assign(items, download);
             }
             
-            let standardItems = {
-                sharing: {
-                    name: "Sharing",
-                    callback: function (key, opt) {
-                        let $element = opt.$trigger;
-                        let id = $element.attr('id');
+            if (currentGroup === emptyGuid && currentUser.permissions.hasAdministrate) {
+                let sharing = {
+                    sharing: {
+                        name: "Sharing",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
 
-                        showSharingModal(id);
-                    }
-                },
-                move: {
-                    name: "Move to folder",
-                    callback: function (key, opt) {
-                        let $element = opt.$trigger;
-                        let id = $element.attr('id');
-
-                        showMoveFileModal(id);
-                    }
-                },
-                rename: {
-                    name: "Rename",
-                    callback: function (key, opt) {
-                        showRenameFileModal(key, opt);
-                    }
-                },
-                delete: {
-                    name: "Delete",
-                    callback: function (key, opt) {
-                        showDeleteFileModal(key, opt);
+                            showSharingModal(id);
+                        }
                     }
                 }
+                Object.assign(items, sharing);
             }
             
-            Object.assign(items, standardItems);
+            if (currentUser.permissions.hasManage) {
+                let move = {
+                    move: {
+                        name: "Move to folder",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+
+                            showMoveFileModal(id);
+                        }
+                    }
+                }
+                Object.assign(items, move);
+            }
+            
+            if (currentUser.permissions.hasWrite) {
+                let standardItems = {
+                    rename: {
+                        name: "Rename",
+                        callback: function (key, opt) {
+                            showRenameFileModal(key, opt);
+                        }
+                    },
+                    delete: {
+                        name: "Delete",
+                        callback: function (key, opt) {
+                            showDeleteFileModal(key, opt);
+                        }
+                    }
+                }
+
+                Object.assign(items, standardItems);
+            }
             
             return {items: items};
         }
@@ -223,13 +241,16 @@ function deleteFile() {
 }
 
 function browseDirectoryFiles(parentId) {
-    
     if (parentId === 'shared') {
-        showSharedFiles();
-        return ;
+        browsingSharedFiles = true;
+        currentGroup = emptyGuid;
     }
 
     let url = browseFilesUrl;
+    
+    if (browsingSharedFiles) {
+        url = browseSharedFilesUrl;
+    }
     
     let data = {
         parentId: parentId,
@@ -254,8 +275,10 @@ function browseDirectoryFiles(parentId) {
                         }
                     });
             } else {
-                let name = $("#"+parentId).find(".file-name").text();
-                dirArray[parentId] = name;
+                if (parentId !== 'shared') {
+                    let name = $("#"+parentId).find(".file-name").text();
+                    dirArray[parentId] = name;
+                }
             }
 
             currentDir = parentId;
@@ -268,7 +291,8 @@ function browseDirectoryFiles(parentId) {
             
             updateDirectoryPath();
             
-            changeFiles(result);
+            currentUser = result.user;
+            changeFiles(result.files);
         },
         error: function (result) {
             alert(result.responseText);
@@ -703,9 +727,12 @@ $(document).ready(function () {
             } else {
                 currentGroup = id;
             }
-
+            
+            browsingSharedFiles = false;
             browseDirectoryFiles(emptyGuid);
         } else {
+            
+            browsingSharedFiles = true;
             browseDirectoryFiles(id)
         }
         $('#sidebar').removeClass('active');
