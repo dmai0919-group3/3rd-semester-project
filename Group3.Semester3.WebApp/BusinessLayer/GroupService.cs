@@ -22,6 +22,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public UserModel AddUser(UserModel user, AddUserGroupModel model);
         public UserModel UpdateUserPermissions(UserModel user, AddUserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
+        public UserModel GetUser(UserModel currentUser, string groupId, string userId);
 
     }
     public class GroupService : IGroupService
@@ -158,7 +159,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     throw new ValidationException("Failed to add user");
                 }
                 
-                var userModel = _groupRepository.GetUserModel(@group.Id, model.UserId);
+                var userModel = _groupRepository.GetUserModel(group.Id, model.UserId);
                 return userModel;
             }
             else
@@ -195,6 +196,33 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             
             return _groupRepository.RemoveUser(group.Id, model.UserId);
+        }
+
+        public UserModel GetUser(UserModel currentUser, string groupId, string userId)
+        {
+            var groupGuid = ParseGuid(groupId);
+            var userGuid = ParseGuid(userId);
+            
+            var group = _groupRepository.GetByGroupId(groupGuid);
+
+            _accessService.hasAccessToGroup(currentUser, group);
+
+            if (userGuid == Guid.Empty)
+            {
+                userGuid = currentUser.Id;
+            }
+            
+            var userModel = new UserModel() {Id = userGuid};
+
+            if (IsPartOfGroup(userModel, group))
+            {
+                var user = _groupRepository.GetUserModel(groupGuid, userGuid);
+                return user;
+            }
+            else
+            {
+                throw new ValidationException("User is not part of this group");
+            }
         }
 
         public bool IsPartOfGroup(UserModel user, Group group)

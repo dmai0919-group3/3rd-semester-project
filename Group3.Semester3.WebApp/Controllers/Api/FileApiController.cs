@@ -37,8 +37,12 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.BrowseFiles(user, groupId, parentId);
-                return Ok(fileEntities);
+                var (userModel, files) = _fileService.BrowseFiles(user, groupId, parentId);
+                
+                return Ok(new {
+                    user = userModel,
+                    files = files
+                });
             }
             catch (ValidationException exception)
             {
@@ -219,13 +223,17 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
         [HttpGet]
         [Route("browse-shared")]
-        public IActionResult BrowseSharedFiles()
+        public IActionResult BrowseSharedFiles([FromQuery] string parentId)
         {
             try
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
-                var fileEntities = _fileService.BrowseSharedFiles(user);
-                return Ok(fileEntities);
+                var (userModel, files) = _fileService.BrowseSharedFiles(user, parentId);
+                return Ok(new
+                {
+                    user = userModel,
+                    files = files
+                });
             }
             catch (ValidationException exception)
             {
