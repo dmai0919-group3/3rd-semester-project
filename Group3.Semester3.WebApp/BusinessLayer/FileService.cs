@@ -554,7 +554,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("Can not move file into itself");
             }
             var file = GetById(model.Id);
-            _accessService.HasAccessToFile(user, file, Permissions.Write);
+            _accessService.HasAccessToFile(user, file, Permissions.Manage);
             var result = _fileRepository.MoveIntoFolder(model.Id, model.ParentId);
             if (!result)
             {
