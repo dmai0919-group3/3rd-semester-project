@@ -110,15 +110,18 @@
 
 <script>
     const browseFilesUrl = "@Url.Action("BrowseFiles", "FileApi")";
+    const browseSharedFilesUrl = "@Url.Action("BrowseSharedFiles", "FileApi")";
+    
     const renameUrl = "@Url.Action("Rename", "FileApi")";
     const deleteUrl = "@Url.Action("Delete", "FileApi")";
+    
     const createFolderUrl = "@Url.Action("CreateFolder", "FileApi")";
     const uploadFilesUrl = "@Url.Action("UploadFiles", "FileApi")";
     const moveFileUrl = "@Url.Action("MoveIntoFolder", "FileApi")";
     const updateFileUrl = "@Url.Action("SetFileContents", "FileApi")";
     const listUserGroups = "@Url.Action("Index", "GroupApi")";
     const createGroupUrl = "@Url.Action("CreateGroup", "GroupApi")";
-    const browseSharedFilesUrl = "@Url.Action("BrowseSharedFiles", "FileApi")";
+    const getUserGroupPermissionsUrl = "@Url.Action("GetGroupUser", "GroupApi")";
     
     const shareWithUserUrl = "@Url.Action("ShareFileWith", "FileApi")";
     const enableLinkSharing = "@Url.Action("ShareFile", "FileApi")";

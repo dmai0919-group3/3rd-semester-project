@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.BusinessLayer;
@@ -19,7 +17,7 @@ namespace Group3.Semester3.WebApp.Controllers
     public class UserController : Controller
     {
         // defining a user service through interface to flawlessly access the db
-        private IUserService _userService;
+        private readonly IUserService _userService;
 
         public UserController(IUserService userService)
         {
@@ -54,11 +52,11 @@ namespace Group3.Semester3.WebApp.Controllers
 
                 var claims = new List<Claim>
                 {
-                  new Claim(ClaimTypes.Name, result.Id.ToString())
+                    new Claim(ClaimTypes.Name, result.Id.ToString())
                 };
 
                 var claimsIdentity = new ClaimsIdentity(
-                  claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var authProperties = new AuthenticationProperties();
 
                 await HttpContext.SignInAsync(
@@ -67,12 +65,17 @@ namespace Group3.Semester3.WebApp.Controllers
                     authProperties
                 );
 
-                addMessage("User logged in successfully");
+                AddMessage("User logged in successfully");
                 return RedirectToAction("Dashboard");
             }
             catch (ValidationException e)
             {
-                addMessage(e.Message);
+                AddMessage(e.Message);
+                return View();
+            }
+            catch
+            {
+                AddMessage(Messages.SystemError);
                 return View();
             }
         }
@@ -101,12 +104,12 @@ namespace Group3.Semester3.WebApp.Controllers
         {
             try
             {
-                var result = _userService.Register(model);
-                addMessage("User registered successfully");    
+                _userService.Register(model);
+                AddMessage("User registered successfully");
             }
             catch (ValidationException e)
             {
-                addMessage(e.Message);
+                AddMessage(e.Message);
             }
 
             return View();
@@ -120,12 +123,12 @@ namespace Group3.Semester3.WebApp.Controllers
         public ActionResult Dashboard()
         {
             try {
-            var user = _userService.GetFromHttpContext(HttpContext);
-            ViewBag.User = user;
+                var user = _userService.GetFromHttpContext(HttpContext);
+                ViewBag.User = user;
             }
             catch(ValidationException e)
             {
-                addMessage(e.Message);
+                AddMessage(e.Message);
             }
             return View();
         }
@@ -153,11 +156,11 @@ namespace Group3.Semester3.WebApp.Controllers
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
                 _userService.Update(newUser, user);
-                addMessage("User updated successfully");
+                AddMessage("User updated successfully");
             }
             catch (ValidationException e)
             {
-                addMessage(e.Message);
+                AddMessage(e.Message);
             }
             
             return RedirectToAction("Dashboard");
@@ -167,7 +170,7 @@ namespace Group3.Semester3.WebApp.Controllers
         /// Adds a new message to the Messenger
         /// </summary>
         /// <param name="message">The message to be added to the Messenger</param>
-        protected void addMessage(string message)
+        private void AddMessage(string message)
         {
             Messenger.addMessage(message);
         }

@@ -69,7 +69,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 return;
             }
             
-            if (!user.Id.Equals(file.UserId))
+            if (user.Id != file.UserId)
             {
                 // TODO: Replace with custom shared user permission
                 if ((1 & accessLevelRequired) != 0)
@@ -83,13 +83,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     }
                     else
                     {
-                        // Check if parent folder is shared
-                        // This is because files are not shared in the folder tree, only folders
-                        if (!file.IsFolder && file.ParentId != Guid.Empty)
+                        // Check if some of the parent folders are shared
+                        // This is because files are not shared in the folder tree, only one main parent folder
+                        if (file.ParentId != Guid.Empty)
                         {
-                            var parent = _fileRepository.GetById(file.ParentId);
+                            var parents = _fileRepository.GetParents(file.Id);
 
-                            if (_sharedFilesRepository.IsSharedWithUser(parent.Id, user.Id))
+                            if (_sharedFilesRepository.IsSharedWithUser(parents, user.Id))
                             {
                                 return;
                             }

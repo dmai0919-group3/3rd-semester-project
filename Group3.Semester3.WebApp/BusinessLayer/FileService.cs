@@ -44,7 +44,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="groupId">The Guid of group or String.Empty if browsed files do not belong to a group</param>
         /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
         /// <returns>An IEnumerable<FileEntity> which contains the FileEntities that can be accessed by the user.</returns>
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string groupId, string parentId);
+        public (UserModel user, IEnumerable<FileEntity> files) BrowseFiles(UserModel currentUser, string groupId, string parentId);
 
         /// <summary>
         /// Renames a file
@@ -90,7 +90,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool UnShareFile(SharedFile sharedFile, UserModel currentUser);
         public bool DisableShareLink(FileEntity sharedFile, UserModel currentUser);
         public bool DisableSharing(FileEntity sharedFile, UserModel currentUser);
-        public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser);
+        public (UserModel user, IEnumerable<FileEntity> files) BrowseSharedFiles(UserModel currentUser, string parentId);
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser);
         public (IEnumerable<UserModel>, string) GetShareInfo(FileEntity fileEntity, UserModel currentUser);
 
@@ -171,7 +171,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="groupId">The Guid of the group or String.Empty if the listed files belong only to user.</param>
         /// <param name="parentId">The Guid of the parent folder or String.Empty if the parent is the root directory.</param>
         /// <returns>An IEnumerable<FileEntity> which contains the FileEntities that can be accessed by the user.</returns>
-        public IEnumerable<FileEntity> BrowseFiles(UserModel currentUser, string groupId, string parentId)
+        public (UserModel user, IEnumerable<FileEntity> files) BrowseFiles(UserModel currentUser, string groupId, string parentId)
         {
             var parentGuid = ParseGuid(parentId);
             var groupGuid = ParseGuid(groupId);
@@ -184,12 +184,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 
                 _accessService.hasAccessToGroup(currentUser, group);
                 fileList = _fileRepository.GetByGroupIdAndParentId(groupGuid, parentGuid);
+                currentUser = _groupRepository.GetUserModel(group.Id, currentUser.Id);
             }
             else
             {
                 if (parentGuid != Guid.Empty)
                 {
                     var file = GetById(parentGuid);
+                    
                     _accessService.hasAccessToFile(currentUser, file, Permissions.Read);
                     fileList = _fileRepository.GetByParentId(parentGuid);
                 }
@@ -197,9 +199,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 {
                     fileList = _fileRepository.GetByUserIdAndParentId(currentUser.Id, parentGuid);
                 }
+                
+                // All permissions to own files
+                currentUser.PermissionsNumber = short.MaxValue;
             }
 
-            return fileList;
+            return (currentUser, fileList);
         }
 
         /// <summary>
@@ -222,11 +227,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (groupGuid != Guid.Empty)
             {
                 var group = _groupRepository.GetByGroupId(groupGuid);
-                _accessService.hasAccessToGroup(user, group);
+                _accessService.hasAccessToGroup(user, group, Permissions.Write);
             }
 
-            // Check if user owns parent folder
-            if (!parentGuid.Equals(Guid.Empty))
+            // Check if user has access to parent folder
+            if (parentGuid != Guid.Empty)
             {
                 var parent = GetById(parentGuid);
                 _accessService.hasAccessToFile(user, parent, Permissions.Write);
@@ -294,9 +299,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                             existingFile.Size = formFile.Length;
                             existingFile.Updated = DateTime.Now;
 
-                            // TODO: Create transaction later
-                            _fileRepository.Update(existingFile);
-                            _fileRepository.InsertFileVersion(newVersion);
+                            var success = _fileRepository.UpdateFileAndCreateNewVersion(existingFile, newVersion);
+
+                            if (!success)
+                            {
+                                await containerClient.GetBlobClient(blobGuid.ToString()).DeleteAsync();
+                            }
                         }
                         
                     }
@@ -401,6 +409,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 
                 containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
             }
+            else
+            {
+                // TODO: Check for children and recursively delete
+            }
             
             var result = _fileRepository.Delete(fileId);
 
@@ -489,7 +501,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
 
             // Check if user owns parent folder
-            if (!parentGuid.Equals(Guid.Empty))
+            if (parentGuid != Guid.Empty)
             {
                 var parent = GetById(parentGuid);
                 _accessService.hasAccessToFile(user, parent, Permissions.Write);
@@ -511,9 +523,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (!created)
             {
-                throw new Exception("Failed to create folder");
+                throw new ValidationException("Failed to create folder");
             }
-
 
             return folder;
         }
@@ -544,7 +555,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             var file = GetById(model.Id);
             _accessService.hasAccessToFile(user, file, Permissions.Write);
-            var result = _fileRepository.MoveIntofolder(model.Id, model.ParentId);
+            var result = _fileRepository.MoveIntoFolder(model.Id, model.ParentId);
             if (!result)
             {
                 throw new ValidationException("File has not been moved, try again.");
@@ -640,14 +651,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             file.AzureName = Guid.NewGuid().ToString();
             file.Updated = DateTime.Now;
+            file.Size = contentStream.Length;
 
-            containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
-
-            file.Size = containerClient.GetBlobClient(file.AzureName).GetProperties().Value.ContentLength;
-
-            // TODO: Create transaction later
-            _fileRepository.Update(file);
-            _fileRepository.InsertFileVersion(newVersion);
+            var success = _fileRepository.UpdateFileAndCreateNewVersion(file, newVersion);
+            
+            if (success)
+            {
+                containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
+            }
+            else
+            {
+                throw new ValidationException("Failed to update a file");
+            }
+            
             return file;
         }
 
@@ -690,10 +706,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             file.AzureName = version.AzureName;
             file.Updated = DateTime.Now;
 
-            // TODO: Create transaction later
-            _fileRepository.Update(file);
-            _fileRepository.InsertFileVersion(newVersion);
+            var success =_fileRepository.UpdateFileAndCreateNewVersion(file, newVersion);
 
+            if (!success)
+            {
+                throw new ValidationException("Failed to revert file version");
+            }
+            
             return newVersion;
         }
 
@@ -752,20 +771,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 file.IsShared = true;
                 _fileRepository.Update(file);
             }
-            
-            if (file.IsFolder)
-            {
-                var children = _fileRepository.GetFoldersByParentId(file.Id);
-                foreach (var child in children)
-                {
-                    if (child.IsFolder)
-                    {
-                        var childShared = new SharedFile() {FileId = child.Id, UserId = sharedFile.UserId};
-                        ShareFile(childShared, currentUser);
-                    }
-                }
-            }
-            
+
             var isShared = _sharedFilesRepository.IsSharedWithUser(file.Id, sharedFile.UserId);
             
             var userModel = new UserModel() {Id = user.Id, Email = user.Email, Name = user.Name};
@@ -908,13 +914,27 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             return true;
         }
 
-        public IEnumerable<FileEntity> BrowseSharedFiles(UserModel currentUser)
+        public (UserModel, IEnumerable<FileEntity>) BrowseSharedFiles(UserModel currentUser, string parentId)
         {
-            IEnumerable<FileEntity> fileList = null;
+            var parentGuid = ParseGuid(parentId);
 
-            fileList = _sharedFilesRepository.GetByUserId(currentUser.Id);
+            IEnumerable<FileEntity> fileList;
+            
+            if (parentGuid != Guid.Empty)
+            {
+                var file = _fileRepository.GetById(parentGuid);
+                _accessService.hasAccessToFile(currentUser, file, Permissions.Read);
+                fileList = _fileRepository.GetByParentId(parentGuid);
+            }
+            else
+            {
+                fileList = _sharedFilesRepository.GetByUserId(currentUser.Id);
+            }
+            
+            // TODO: In the future implement custom permission for shared files
+            currentUser.PermissionsNumber = 1;
 
-            return fileList;
+            return (currentUser, fileList);
         }
 
         public IEnumerable<UserModel> SharedWithList(FileEntity fileEntity, UserModel currentUser)

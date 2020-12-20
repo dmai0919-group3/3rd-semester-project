@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "8c04bde3-cdc6-4da1-8e76-6e1011900bb4",
+		"_postman_id": "f9646aa6-ab80-45a7-82d2-06322df520d8",
 		"name": "3-rd-semester-project",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -61,6 +61,45 @@
 								"group",
 								"get-users",
 								"0cfae666-af7c-4308-b5de-f8b734df889f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Permissions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/api/group/get-permissions?groupId=139abd83-876c-45a2-a317-ad8663ee98ec&userId=95c2acb0-f074-4327-bcd7-f147246a414c",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"group",
+								"get-permissions"
+							],
+							"query": [
+								{
+									"key": "groupId",
+									"value": "139abd83-876c-45a2-a317-ad8663ee98ec"
+								},
+								{
+									"key": "userId",
+									"value": "95c2acb0-f074-4327-bcd7-f147246a414c"
+								}
 							]
 						}
 					},
@@ -328,7 +367,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{host}}/api/file/browse-shared",
+							"raw": "{{host}}/api/file/browse-shared?parentId=8dc551a4-fa64-487d-a208-c915735de31b",
 							"host": [
 								"{{host}}"
 							],
@@ -336,6 +375,12 @@
 								"api",
 								"file",
 								"browse-shared"
+							],
+							"query": [
+								{
+									"key": "parentId",
+									"value": "8dc551a4-fa64-487d-a208-c915735de31b"
+								}
 							]
 						}
 					},
@@ -745,7 +790,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{host}}/api/file/browse",
+					"raw": "{{host}}/api/file/browse?parentId=46c72b26-c61e-4154-8db3-6d317fa196ed",
 					"host": [
 						"{{host}}"
 					],
@@ -753,6 +798,17 @@
 						"api",
 						"file",
 						"browse"
+					],
+					"query": [
+						{
+							"key": "parentId",
+							"value": "46c72b26-c61e-4154-8db3-6d317fa196ed"
+						},
+						{
+							"key": "groupId",
+							"value": "139abd83-876c-45a2-a317-ad8663ee98ec",
+							"disabled": true
+						}
 					]
 				}
 			},

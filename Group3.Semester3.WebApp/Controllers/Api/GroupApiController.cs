@@ -2,15 +2,12 @@
 using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Groups;
-using Group3.Semester3.WebApp.Models.Users;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Group3.Semester3.WebApp.Helpers;
 
 namespace Group3.Semester3.WebApp.Controllers.Api
 {
@@ -43,7 +40,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -61,9 +58,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 }
                 else return NoContent();
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -78,9 +79,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var result = _groupService.RenameGroup(model.Id, user, model.Name);
                 return Ok(result);
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -101,7 +106,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -120,9 +125,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
         
@@ -141,9 +146,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -167,7 +172,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -186,9 +191,30 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             {
                 return BadRequest(exception.Message);
             }
-            catch (Exception exception)
+            catch
             {
-                return BadRequest("System error, please contact Administrator");
+                return BadRequest(Messages.SystemError);
+            }
+        }
+        
+        [Route("get-permissions")]
+        [HttpGet]
+        public ActionResult GetGroupUser([FromQuery] string groupId, [FromQuery] string userId)
+        {
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
+                var result = _groupService.GetUser(user, groupId, userId);
+
+                return Ok(result);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
     }

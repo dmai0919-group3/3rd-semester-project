@@ -5,10 +5,10 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.BusinessLayer;
+using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Group3.Semester3.WebApp.Controllers.Api
@@ -18,7 +18,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
     [Authorize]
     public class UserApiController : ControllerBase
     {
-        private IUserService _userService;
+        private readonly IUserService _userService;
         private readonly AppSettings _appSettings;
 
         public UserApiController(IUserService userService, IOptions<AppSettings> appSettings)
@@ -47,12 +47,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
-                    Subject = new ClaimsIdentity(new Claim[]
+                    Subject = new ClaimsIdentity(new []
                     {
                         new Claim(ClaimTypes.Name, user.Id.ToString())
                     }),
                     Expires = DateTime.UtcNow.AddDays(7),
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                        SecurityAlgorithms.HmacSha256Signature)
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var tokenString = tokenHandler.WriteToken(token);
@@ -66,9 +67,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
                 return Ok(loginResult);
             }
-            catch (Exception exception)
+            catch (ValidationException exception)
             {
-                return BadRequest(new { message = exception.Message });
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -89,10 +94,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
 
                 return Ok(user);
             }
-            catch (Exception ex)
+            catch (ValidationException exception)
             {
-                // return error message if there was an exception
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
 
@@ -104,9 +112,20 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         [HttpGet]
         public IActionResult Current()
         {
-            var user = _userService.GetFromHttpContext(HttpContext);
+            try
+            {
+                var user = _userService.GetFromHttpContext(HttpContext);
 
-            return Ok(user);
+                return Ok(user);
+            }
+            catch (ValidationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
+            }
         }
 
         /// <summary>
@@ -114,7 +133,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         /// </summary>
         [Route("update")]
         [HttpPost]
-        public ActionResult updateUser(UserUpdateModel userParam)
+        public ActionResult UpdateUser(UserUpdateModel userParam)
         {
             try
             {
@@ -122,9 +141,13 @@ namespace Group3.Semester3.WebApp.Controllers.Api
                 var result = _userService.Update(userParam, currentUser);
                 return Ok(result);
             }
-            catch (Exception e)
+            catch (ValidationException exception)
             {
-                return BadRequest(e.Message);
+                return BadRequest(exception.Message);
+            }
+            catch
+            {
+                return BadRequest(Messages.SystemError);
             }
         }
     }
