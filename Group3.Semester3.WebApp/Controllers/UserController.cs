@@ -65,7 +65,7 @@ namespace Group3.Semester3.WebApp.Controllers
                     authProperties
                 );
 
-                AddMessage("User logged in successfully");
+                AddMessage(Messages.LoginSuccessful);
                 return RedirectToAction("Dashboard");
             }
             catch (ValidationException e)
@@ -105,7 +105,7 @@ namespace Group3.Semester3.WebApp.Controllers
             try
             {
                 _userService.Register(model);
-                AddMessage("User registered successfully");
+                AddMessage(Messages.RegistrationSuccessful);
             }
             catch (ValidationException e)
             {
@@ -156,7 +156,7 @@ namespace Group3.Semester3.WebApp.Controllers
             {
                 var user = _userService.GetFromHttpContext(HttpContext);
                 _userService.Update(newUser, user);
-                AddMessage("User updated successfully");
+                AddMessage(Messages.UserUpdateSuccessful);
             }
             catch (ValidationException e)
             {

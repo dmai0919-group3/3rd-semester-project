@@ -46,5 +46,8 @@ namespace Group3.Semester3.WebApp.Helpers
         public const string PasswordNull = "Password cannot be null";
         public const string PasswordHashLenghtInvalid = "Invalid length of password hash (64 bytes expected)";
         public const string PasswordSaltLenghtInvalid = "Invalid length of password salt (128 bytes expected)";
+        public const string LoginSuccessful = "User logged in successfully";
+        public const string RegistrationSuccessful = "User registered successfully";
+        public const string UserUpdateSuccessful = "User updated successfully";
     }
 }
