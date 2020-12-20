@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
-    // interface for a User service
     public interface IUserService
     {
         /// <summary>
@@ -71,7 +70,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
     public class UserService : IUserService
     {
-        // getting an instance of a user repository to be able to communicate with the db layer
         private IUserRepository _userRepository;
 
         public UserService(IUserRepository userRepository)
@@ -169,8 +167,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             var dbUser = _userRepository.GetByEmail(model.Email);
 
-            // TODO: how to validate this so that we prevent hacker from knowing this 
-            // email is in db and bruteforcing? *Mogens said this in sprint 1*
             if (dbUser != null)
                 throw new ValidationException("User with email " + model.Email + " is already registered");
 

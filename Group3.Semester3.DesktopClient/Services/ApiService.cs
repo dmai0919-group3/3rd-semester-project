@@ -46,7 +46,6 @@ namespace Group3.Semester3.DesktopClient.Services
 
         /// <summary>
         /// Pushes a set of files to the database
-        /// TODO It shouldn't return bool. Make it return a list of generated FileEntities instead.
         /// TODO Make it asynchronous and use callbacks to not make everything hang when there's an upload.
         /// </summary>
         /// <param name="files">List of files to upload</param>

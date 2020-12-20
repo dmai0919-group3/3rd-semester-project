@@ -41,33 +41,36 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public Group CreateGroup(UserModel user, CreateGroupModel model)
         {
-
-            var group = new Group()
+            if(!string.IsNullOrEmpty(model.Name))
             {
-                Id = Guid.NewGuid(),
-                Name = model.Name,
-            };
+                var group = new Group()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = model.Name,
+                };
 
-            var created = _groupRepository.Insert(group);
+                var created = _groupRepository.Insert(group);
 
-            if (!created)
-            {
-                throw new Exception("Failed to create group");
+                if (!created)
+                {
+                    throw new Exception("Failed to create a group.");
+                }
+
+                var userGroup = new AddUserGroupModel()
+                {
+                    GroupId = group.Id,
+                    UserId = user.Id,
+                    HasAdministrate = true,
+                    HasManage = true,
+                    HasRead = true,
+                    HasWrite = true
+                };
+
+                _groupRepository.AddUser(userGroup);
+
+                return group;
             }
-            
-            var userGroup = new AddUserGroupModel()
-            {
-                GroupId = group.Id, 
-                UserId = user.Id,
-                HasAdministrate = true,
-                HasManage = true,
-                HasRead = true,
-                HasWrite = true
-            };
-
-            _groupRepository.AddUser(userGroup);
-
-            return group;
+            else throw new ValidationException("Group name cannot be empty.");
         }
 
         public bool DeleteGroup(Guid groupId, UserModel user)
@@ -85,14 +88,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public Group RenameGroup(Guid groupId, UserModel user, string name)
         {
-            var group = GetByGroupId(groupId);
-            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
-            var result = _groupRepository.Rename(groupId, name);
-            if (!result)
+            if (!string.IsNullOrEmpty(name))
             {
-                throw new ValidationException("Group non-existent or not renamed.");
+                var group = GetByGroupId(groupId);
+                _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
+                var result = _groupRepository.Rename(groupId, name);
+                if (!result)
+                {
+                    throw new ValidationException("Group non-existent or not renamed.");
+                }
+                else return GetByGroupId(groupId);
             }
-            else return GetByGroupId(groupId);
+            else throw new ValidationException("Group name cannot be empty.");
+
         }
 
         public Group GetByGroupId(Guid groupId)
@@ -147,7 +155,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (IsPartOfGroup(newUser, group))
                 {
-                    throw new ValidationException("User is already part of the group");
+                    throw new ValidationException("User is already part of the group.");
                 }
 
                 model.UserId = newUser.Id;
@@ -156,7 +164,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (!result)
                 {
-                    throw new ValidationException("Failed to add user");
+                    throw new ValidationException("Failed to add a user.");
                 }
                 
                 var userModel = _groupRepository.GetUserModel(group.Id, model.UserId);
@@ -164,7 +172,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                throw new ValidationException("User not found");
+                throw new ValidationException("User not found.");
             }
         }
 
@@ -178,7 +186,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             if (!result)
             {
-                throw new ValidationException("Failed to update users permission");
+                throw new ValidationException("Failed to update user's permissions.");
             }
 
             var affectedUser = _groupRepository.GetUserModel(model.GroupId, model.UserId);
@@ -221,7 +229,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                throw new ValidationException("User is not part of this group");
+                throw new ValidationException("User is not part of this group.");
             }
         }
 

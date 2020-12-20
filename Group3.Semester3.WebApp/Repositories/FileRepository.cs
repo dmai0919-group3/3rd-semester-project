@@ -401,7 +401,6 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-                    var s = "";
                 }
             }
 

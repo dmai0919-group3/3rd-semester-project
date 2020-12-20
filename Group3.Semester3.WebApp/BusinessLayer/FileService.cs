@@ -165,7 +165,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         /// <summary>
         /// Gets the files owned by a given user in a given folder
-        /// TODO Why is the parentId a string instead of Guid?
         /// </summary>
         /// <param name="currentUser">The user whose files we are checking</param>
         /// <param name="groupId">The Guid of the group or String.Empty if the listed files belong only to user.</param>
@@ -218,7 +217,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ValidationException">If there were no files chosen</exception>
         public async Task<List<FileEntry>> UploadFile(UserModel user, string groupId, string parentId, List<IFormFile> files)
         {
-            //long size = files.Sum(f => f.Length);
 
             var parentGuid = ParseGuid(parentId);
             var groupGuid = ParseGuid(groupId);
@@ -310,7 +308,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     }
                     catch (Exception e)
                     {
-                        // TODO generate error
                     }
                 }
                 else throw new ValidationException("No files chosen.");
@@ -434,15 +431,20 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ValidationException">If the file doesn't exist or if there were some errors while renaming the file.</exception>
         public FileEntity RenameFile(Guid fileId, UserModel user, string name)
         {
-            var file = GetById(fileId);
-            _accessService.HasAccessToFile(user, file, Permissions.Write);
-            file.Name = name;
-            var result = _fileRepository.Update(file);
-            if (!result)
+            if(!string.IsNullOrEmpty(name))
             {
-                throw new ValidationException("File non-existent or not renamed.");
+                var file = GetById(fileId);
+                _accessService.HasAccessToFile(user, file, Permissions.Write);
+                file.Name = name;
+                var result = _fileRepository.Update(file);
+                if (!result)
+                {
+                    throw new ValidationException("File non-existent or not renamed.");
+                }
+                else return GetById(fileId);
             }
-            else return GetById(fileId);
+            
+            else throw new ValidationException("File name cannot be empty.");
         }
 
         /// <summary>
@@ -489,44 +491,48 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="Exception">If there were come errors while creating the folder.</exception>
         public FileEntity CreateFolder(UserModel user, CreateFolderModel model)
         {
-
-            var parentGuid = model.ParentId;
-            var groupGuid = model.GroupId;
-            
-            // Check if user has access to a group
-            if (groupGuid != Guid.Empty)
+            if(!string.IsNullOrEmpty(model.Name))
             {
-                var group = _groupRepository.GetByGroupId(groupGuid);
-                _accessService.HasAccessToGroup(user, group);
+                var parentGuid = model.ParentId;
+                var groupGuid = model.GroupId;
+
+                // Check if user has access to a group
+                if (groupGuid != Guid.Empty)
+                {
+                    var group = _groupRepository.GetByGroupId(groupGuid);
+                    _accessService.HasAccessToGroup(user, group);
+                }
+
+                // Check if user owns parent folder
+                if (parentGuid != Guid.Empty)
+                {
+                    var parent = GetById(parentGuid);
+                    _accessService.HasAccessToFile(user, parent, Permissions.Write);
+                }
+
+                var folder = new FileEntity()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = model.Name,
+                    AzureName = null,
+                    UserId = user.Id,
+                    ParentId = parentGuid,
+                    GroupId = groupGuid,
+                    Updated = DateTime.Now,
+                    IsFolder = true
+                };
+
+                var created = _fileRepository.Insert(folder);
+
+                if (!created)
+                {
+                    throw new ValidationException("Failed to create folder");
+                }
+
+                return folder;
             }
+            else throw new ValidationException("Folder name cannot be empty");
 
-            // Check if user owns parent folder
-            if (parentGuid != Guid.Empty)
-            {
-                var parent = GetById(parentGuid);
-                _accessService.HasAccessToFile(user, parent, Permissions.Write);
-            }
-
-            var folder = new FileEntity()
-            {
-                Id = Guid.NewGuid(),
-                Name = model.Name,
-                AzureName = null,
-                UserId = user.Id,
-                ParentId = parentGuid,
-                GroupId = groupGuid,
-                Updated = DateTime.Now,
-                IsFolder = true
-            };
-
-            var created = _fileRepository.Insert(folder);
-
-            if (!created)
-            {
-                throw new ValidationException("Failed to create folder");
-            }
-
-            return folder;
         }
 
         public (IEnumerable<UserModel>, string) GetShareInfo(FileEntity fileEntity, UserModel currentUser)
@@ -930,8 +936,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 fileList = _sharedFilesRepository.GetByUserId(currentUser.Id);
             }
-            
-            // TODO: In the future implement custom permission for shared files
             currentUser.PermissionsNumber = 1;
 
             return (currentUser, fileList);

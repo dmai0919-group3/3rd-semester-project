@@ -55,7 +55,6 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
             catch
             {
-                // ignored
             }
 
             return parsedGuid;

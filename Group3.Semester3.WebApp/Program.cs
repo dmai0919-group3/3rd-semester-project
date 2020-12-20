@@ -49,7 +49,6 @@ namespace Group3.Semester3.WebApp
         private static IServiceProvider CreateServices()
         {
 
-            // TODO: This connectionString retrieval is ugly, find better way
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false)
                 .AddJsonFile("appsettings.Development.json", optional: true)
