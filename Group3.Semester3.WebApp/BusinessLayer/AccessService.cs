@@ -1,4 +1,5 @@
 ﻿using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
@@ -58,12 +59,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (userGroup == null)
                 {
-                    throw new ValidationException("Operation Forbidden");
+                    throw new ValidationException(Messages.OperationForbidden);
                 }
                 
                 if ((userGroup.Permissions & accessLevelRequired) == 0)
                 {
-                    throw new ValidationException("Operation Forbidden");
+                    throw new ValidationException(Messages.OperationForbidden);
                 }
                 
                 return;
@@ -97,7 +98,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     }
                 }
                 
-                throw new ValidationException("Operation forbidden.");
+                throw new ValidationException(Messages.OperationForbidden);
             }
         }
         
@@ -107,12 +108,12 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             if (userGroupModel == null)
             {
-                throw new ValidationException("Operation forbidden.");
+                throw new ValidationException(Messages.OperationForbidden);
             }
             
             if ((userGroupModel.Permissions & accessLevelRequired) == 0)
             {
-                throw new ValidationException("Operation forbidden.");
+                throw new ValidationException(Messages.OperationForbidden);
             }
         }
     }

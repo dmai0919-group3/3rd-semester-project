@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
@@ -53,7 +54,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                throw new ValidationException("Failed to create comment");
+                throw new ValidationException(Messages.FailedToCreateComment);
             }
         }
 
