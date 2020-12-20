@@ -182,7 +182,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 var group = _groupRepository.GetByGroupId(groupGuid);
                 
-                _accessService.hasAccessToGroup(currentUser, group);
+                _accessService.HasAccessToGroup(currentUser, group);
                 fileList = _fileRepository.GetByGroupIdAndParentId(groupGuid, parentGuid);
                 currentUser = _groupRepository.GetUserModel(group.Id, currentUser.Id);
             }
@@ -192,7 +192,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 {
                     var file = GetById(parentGuid);
                     
-                    _accessService.hasAccessToFile(currentUser, file, Permissions.Read);
+                    _accessService.HasAccessToFile(currentUser, file, Permissions.Read);
                     fileList = _fileRepository.GetByParentId(parentGuid);
                 }
                 else
@@ -227,14 +227,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (groupGuid != Guid.Empty)
             {
                 var group = _groupRepository.GetByGroupId(groupGuid);
-                _accessService.hasAccessToGroup(user, group, Permissions.Write);
+                _accessService.HasAccessToGroup(user, group, Permissions.Write);
             }
 
             // Check if user has access to parent folder
             if (parentGuid != Guid.Empty)
             {
                 var parent = GetById(parentGuid);
-                _accessService.hasAccessToFile(user, parent, Permissions.Write);
+                _accessService.HasAccessToFile(user, parent, Permissions.Write);
             }
 
             List<FileEntry> fileEntries = new List<FileEntry>();
@@ -330,7 +330,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = _fileRepository.GetById(fileId);
             
-            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            _accessService.HasAccessToFile(user, file, Permissions.Read);
 
             var azureName = file.AzureName;
             
@@ -398,7 +398,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
 
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccessToFile(user, file, Permissions.Write);
+            _accessService.HasAccessToFile(user, file, Permissions.Write);
             
             if (!file.IsFolder)
             {
@@ -435,7 +435,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public FileEntity RenameFile(Guid fileId, UserModel user, string name)
         {
             var file = GetById(fileId);
-            _accessService.hasAccessToFile(user, file, Permissions.Write);
+            _accessService.HasAccessToFile(user, file, Permissions.Write);
             file.Name = name;
             var result = _fileRepository.Update(file);
             if (!result)
@@ -497,14 +497,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (groupGuid != Guid.Empty)
             {
                 var group = _groupRepository.GetByGroupId(groupGuid);
-                _accessService.hasAccessToGroup(user, group);
+                _accessService.HasAccessToGroup(user, group);
             }
 
             // Check if user owns parent folder
             if (parentGuid != Guid.Empty)
             {
                 var parent = GetById(parentGuid);
-                _accessService.hasAccessToFile(user, parent, Permissions.Write);
+                _accessService.HasAccessToFile(user, parent, Permissions.Write);
             }
 
             var folder = new FileEntity()
@@ -531,7 +531,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public (IEnumerable<UserModel>, string) GetShareInfo(FileEntity fileEntity, UserModel currentUser)
         {
-            _accessService.hasAccessToFile(currentUser, fileEntity, Permissions.Administrate);
+            _accessService.HasAccessToFile(currentUser, fileEntity, Permissions.Administrate);
 
             string link = _sharedFilesRepository.GetHashByFileId(fileEntity.Id);
             var userList = _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
@@ -554,7 +554,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ValidationException("Can not move file into itself");
             }
             var file = GetById(model.Id);
-            _accessService.hasAccessToFile(user, file, Permissions.Write);
+            _accessService.HasAccessToFile(user, file, Permissions.Write);
             var result = _fileRepository.MoveIntoFolder(model.Id, model.ParentId);
             if (!result)
             {
@@ -576,7 +576,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var fileId = ParseGuid(id);
 
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            _accessService.HasAccessToFile(user, file, Permissions.Read);
             var containerClient =
                 new BlobContainerClient(
                     _configuration.GetConnectionString("AzureConnectionString"),
@@ -617,7 +617,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 throw new ConcurrencyException("File was deleted by another user");
             }
             
-            _accessService.hasAccessToFile(user, file, Permissions.Write);
+            _accessService.HasAccessToFile(user, file, Permissions.Write);
 
             if (!model.Overwrite)
             {
@@ -671,7 +671,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = _fileRepository.GetById(fileId);
             
-            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            _accessService.HasAccessToFile(user, file, Permissions.Read);
 
             return _fileRepository.GetFileVersions(fileId);
         }
@@ -682,7 +682,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             var file = _fileRepository.GetById(version.FileId);
 
-            _accessService.hasAccessToFile(user, file, Permissions.Write);
+            _accessService.HasAccessToFile(user, file, Permissions.Write);
 
             var containerClient =
                 new BlobContainerClient(
@@ -725,7 +725,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             var file = _fileRepository.GetById(fileId);
             
-            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            _accessService.HasAccessToFile(user, file, Permissions.Read);
             
             var list = new List<FileEntity>();
             
@@ -764,7 +764,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new ValidationException("Cannot share group files.");
             }
-            _accessService.hasAccessToFile(currentUser, file, Permissions.Write);
+            _accessService.HasAccessToFile(currentUser, file, Permissions.Write);
             
             if (!file.IsShared)
             {
@@ -794,7 +794,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new ValidationException("Cannot share group files.");
             }
-            _accessService.hasAccessToFile(currentUser, file, Permissions.Write);
+            _accessService.HasAccessToFile(currentUser, file, Permissions.Write);
 
             if (!file.IsShared)
             {
@@ -853,7 +853,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
 
             var file = _fileRepository.GetById(sharedFile.FileId);
-            _accessService.hasAccessToFile(currentUser, file, Permissions.Read);
+            _accessService.HasAccessToFile(currentUser, file, Permissions.Read);
             
             if (file.IsFolder)
             {
@@ -871,7 +871,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DisableShareLink(FileEntity sharedFile, UserModel currentUser)
         {
             var file = _fileRepository.GetById(sharedFile.Id);
-            _accessService.hasAccessToFile(currentUser, file, Permissions.Write);
+            _accessService.HasAccessToFile(currentUser, file, Permissions.Write);
 
             if (file.IsFolder)
             {
@@ -891,7 +891,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DisableSharing(FileEntity sharedFile, UserModel currentUser)
         {
             var file = _fileRepository.GetById(sharedFile.Id);
-            _accessService.hasAccessToFile(currentUser, file, Permissions.Administrate);
+            _accessService.HasAccessToFile(currentUser, file, Permissions.Administrate);
             
             if (file.IsFolder)
             {
@@ -923,7 +923,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (parentGuid != Guid.Empty)
             {
                 var file = _fileRepository.GetById(parentGuid);
-                _accessService.hasAccessToFile(currentUser, file, Permissions.Read);
+                _accessService.HasAccessToFile(currentUser, file, Permissions.Read);
                 fileList = _fileRepository.GetByParentId(parentGuid);
             }
             else
@@ -941,7 +941,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = _fileRepository.GetById(fileEntity.Id);
             
-            _accessService.hasAccessToFile(currentUser, file, Permissions.Write);
+            _accessService.HasAccessToFile(currentUser, file, Permissions.Write);
             
             return _sharedFilesRepository.GetUsersByFileId(fileEntity.Id);
         }

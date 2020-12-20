@@ -73,7 +73,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public bool DeleteGroup(Guid groupId, UserModel user)
         {
             var group = _groupRepository.GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
             var result = _groupRepository.Delete(groupId);
 
             if (!result)
@@ -86,7 +86,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public Group RenameGroup(Guid groupId, UserModel user, string name)
         {
             var group = GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
             var result = _groupRepository.Rename(groupId, name);
             if (!result)
             {
@@ -115,7 +115,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public IEnumerable<UserModel> GetGroupUsers(UserModel user, Guid groupId)
         {
             var group = _groupRepository.GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group);
+            _accessService.HasAccessToGroup(user, group);
             var users = _groupRepository.GetUsersByGroupId(groupId);
 
             return users;
@@ -138,7 +138,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
             var newUserEntity = _userRepository.GetByEmail(model.Email);
             
             if(newUserEntity != null)
@@ -172,7 +172,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
 
             var result = _groupRepository.UpdatePermissions(model);
             
@@ -192,7 +192,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (user.Id != model.UserId)
             {
-                _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+                _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
             }
             
             return _groupRepository.RemoveUser(group.Id, model.UserId);
@@ -205,7 +205,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             var group = _groupRepository.GetByGroupId(groupGuid);
 
-            _accessService.hasAccessToGroup(currentUser, group);
+            _accessService.HasAccessToGroup(currentUser, group);
 
             if (userGuid == Guid.Empty)
             {
