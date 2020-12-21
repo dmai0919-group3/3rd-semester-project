@@ -383,7 +383,8 @@ namespace Group3.Semester3.DesktopClient.Views
                     (Model.SelectedFile.FileEntity.IsFolder ? "folder " : "file ") +
                     Model.SelectedFile.FileEntity.Name + " be?",
                 ButtonText = "Rename",
-                ButtonCommand = CommandRenameFile
+                ButtonCommand = CommandRenameFile,
+                Text = Model.SelectedFile.FileEntity.Name
             };
 
             bool success = false;

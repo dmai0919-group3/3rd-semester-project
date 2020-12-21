@@ -122,7 +122,7 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         #region Constants // TODO move everything to settings
-        const string host = "https://localhost:5001";
+        const string host = "https://ogo-file.space";
 
         private string LoginUrl = $"{host}/api/user/login";
         private string RegisterUrl = $"{host}/api/User/register";
@@ -165,6 +165,28 @@ namespace Group3.Semester3.DesktopClient.Services
 
             var response = httpClient.PostAsync(requestUrl, content);
             response.Wait();
+
+            return response.Result;
+        }
+
+        protected HttpResponseMessage DeleteRequest(string requestUrl, object parameter = null)
+        {
+            using var client = new HttpClient();
+            
+            var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
+
+            HttpRequestMessage request = new HttpRequestMessage(
+                HttpMethod.Delete,
+                requestUrl
+            );
+
+            request.Content = content;
+
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+
+            var response = client.SendAsync(request);
+            response.Wait();
+            var result = response.Result;
 
             return response.Result;
         }
@@ -331,7 +353,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
         public void DeleteFile(FileEntity file)
         {
-            var result = PostRequest(DeleteFileUrl, file);
+            var result = DeleteRequest(DeleteFileUrl, file);
 
             string resultContent;
 
