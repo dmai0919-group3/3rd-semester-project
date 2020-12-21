@@ -16,7 +16,6 @@ namespace Group3.Semester3.WebApp.Controllers
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class UserController : Controller
     {
-        // defining a user service through interface to flawlessly access the db
         private readonly IUserService _userService;
 
         public UserController(IUserService userService)
@@ -66,7 +65,7 @@ namespace Group3.Semester3.WebApp.Controllers
                 );
 
                 AddMessage(Messages.LoginSuccessful);
-                return RedirectToAction("Dashboard");
+                return RedirectToAction("Browse", "File");
             }
             catch (ValidationException e)
             {

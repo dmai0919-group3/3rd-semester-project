@@ -18,7 +18,7 @@ namespace Group3.Semester3.DesktopClient.Views
             panelFileDetails.Children.Clear();
             if (fileEntity == null) return;
 
-            var detailsPanel = new FileDetailsPanel(apiService, switcher, fileEntity);
+            var detailsPanel = new FileDetailsPanel(apiService, fileEntity);
 
             detailsPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
             detailsPanel.VerticalAlignment = VerticalAlignment.Stretch;
@@ -84,6 +84,35 @@ namespace Group3.Semester3.DesktopClient.Views
                 UpdateProgress();
             }
         }
+
+        //private async Task FileUploadAsync(FileEntity root, string filePath, string uploadName)
+        //{
+        //    Microsoft.Win32.SaveFileDialog dialog = new Microsoft.Win32.SaveFileDialog();
+        //    dialog.Title = "Save file as...";
+        //    dialog.FileName = file.Name;
+        //    if (dialog.ShowDialog() == true)
+        //    {
+        //        using WebClient client = new WebClient();
+
+        //        var task = new Model.MainWindowModel.DownloadTask
+        //        {
+        //            Abort = () => client?.CancelAsync(),
+        //            Message = file.Name
+        //        };
+        //        Model.Tasks.Add(task);
+
+        //        client.DownloadProgressChanged += (o, e) =>
+        //        {
+        //            task.ProgressPercentage = e.ProgressPercentage;
+        //            task.Size = e.TotalBytesToReceive;
+        //            UpdateProgress();
+        //        };
+
+        //        await client.DownloadFileTaskAsync(new Uri(apiService.GetDownloadLink(file.Id).downloadLink), dialog.FileName);
+        //        Model.Tasks.Remove(task);
+        //        UpdateProgress();
+        //    }
+        //}
 
         private void UpdateProgress()
         {

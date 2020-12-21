@@ -3,24 +3,69 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Group3.Semester3.DesktopClient"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <StackPanel Margin="200,0,200,0">
+             xmlns:local="clr-namespace:Group3.Semester3.DesktopClient.Model"
+             xmlns:cc="clr-namespace:Group3.Semester3.DesktopClient.ViewHelpers"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d" Height="355" Width="550" Loaded="UserControl_Loaded">
 
-        <Label Content="Registration" Foreground="Gray" FontSize="24" HorizontalAlignment="Center"/>
-        <Label Content="Name" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
-        <TextBox Name="name" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
-        <Label Content="Email address" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
-        <TextBox Name="email" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
-        <Label Content="Password" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
-        <PasswordBox Name="password1" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
-        <Label Content="Password again" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
-        <PasswordBox Name="password2" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
-        <StackPanel Orientation="Horizontal" Margin="125 25" HorizontalAlignment="Center">
-            <Button Name="btnRegister" Click="btnRegister_Click" Content="Submit" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Left" Margin="10"></Button>
-            <Button Name="btnCancel" Click="btnCancel_Click" Content="Cancel" Background="LightGray" Foreground="Black" FontSize="14" HorizontalAlignment="Right" Margin="10"/>
+    <materialDesign:DialogHost CloseOnClickAway="True" Identifier="RegisterDialog">
+        <StackPanel Margin="74,10,74,0">
 
+            <Label Content="Registration" Foreground="Gray" FontSize="24" HorizontalAlignment="Center"/>
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Name" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+                <Label Grid.Column="1" Content="* This field is required" Foreground="Red" FontSize="14" 
+                       HorizontalAlignment="Right"
+                       x:Name="NameRequiredPrompt" Visibility="Hidden"/>
+            </Grid>
+            <TextBox Name="textBoxName" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Email address" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+                <Label Grid.Column="1" Content="* This field is required" Foreground="Red" FontSize="14" 
+                       HorizontalAlignment="Right"
+                       x:Name="EmailRequiredPrompt" Visibility="Hidden"/>
+            </Grid>
+            <TextBox Name="textBoxEmail" Background="LightGray" Foreground="Black" FontSize="14"></TextBox>
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Password" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+                <Label Grid.Column="1" Content="* This field is required" Foreground="Red" FontSize="14" 
+                       HorizontalAlignment="Right"
+                       x:Name="PasswordRequiredPrompt" Visibility="Hidden"/>
+            </Grid>
+            <PasswordBox Name="passwordBoxPassword" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="Repeat password" Foreground="Gray" FontSize="14" HorizontalAlignment="Left"/>
+                <Label Grid.Column="1" Content="* This field is required" Foreground="Red" FontSize="14" 
+                       HorizontalAlignment="Right"
+                       x:Name="PasswordRepeatRequiredPrompt" Visibility="Hidden"/>
+            </Grid>
+            <PasswordBox Name="passwordBoxRepeatPassword" Background="LightGray" Foreground="Black" FontSize="14"></PasswordBox>
+            <Grid HorizontalAlignment="Center" Width="246" Margin="0 23">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Button Name="btnRegister" Click="btnRegister_Click" Content="Submit" Background="LightGray" Foreground="Black"
+                        FontSize="14" HorizontalAlignment="Center" Margin="10" Grid.Column="0" Width="100"/>
+                <Button Name="btnCancel" Click="btnCancel_Click" Content="Cancel" Background="LightGray" Foreground="Black"
+                        FontSize="14" HorizontalAlignment="Center" Margin="10" Grid.Column="1"  Width="100"/>
+            </Grid>
         </StackPanel>
-    </StackPanel>
+    </materialDesign:DialogHost>
 </UserControl>

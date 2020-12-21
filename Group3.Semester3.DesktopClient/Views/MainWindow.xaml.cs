@@ -36,9 +36,8 @@ namespace Group3.Semester3.DesktopClient.Views
     public partial class MainWindow : Window
     {
         private ApiService apiService;
-        private Switcher switcher;
 
-        private MainWindowModel Model = new Model.MainWindowModel();
+        private MainWindowModel Model;
 
         private BitmapImage IconFolder;
         private BitmapImage IconFolderOpen;
@@ -48,20 +47,21 @@ namespace Group3.Semester3.DesktopClient.Views
         private BitmapImage IconImage;
         private BitmapImage IconExecutable;
 
+        private string CommandCreateFolder = "CreateFolder";
+        private string CommandRemoveFile = "RemoveFile";
+        private string CommandRenameFile = "RenameFile";
+
         Stack<FileEntity> folderStack = new Stack<FileEntity>();
 
-        public FileEntityWrapper SelectedFile { get; set; }
 
-        public MainWindow(ApiService apiService, Switcher switcher)
+        public MainWindow(ApiService apiService)
         {
-            DataContext = Model.FileViewList;
-
-            this.switcher = switcher;
             this.apiService = apiService;
 
             InitializeComponent();
 
-            // ono
+            Model = DataContext as MainWindowModel;
+
             IconFolder = Resources["IconFolder"] as BitmapImage;
             IconExecutable = Resources["IconExecutable"] as BitmapImage;
             IconText = Resources["IconText"] as BitmapImage;
@@ -72,13 +72,37 @@ namespace Group3.Semester3.DesktopClient.Views
 
             labelUserName.Content = $"{apiService.User.Name} ({apiService.User.Email})".ToUpper();
 
-            UpdateFilePanel(new FileEntity
-            {
-                Name = "Test Set.xml"
-            });
-
+            UpdateGroupList();
             UpdateFileList();
             UpdateProgress();
+        }
+
+        private void UpdateGroupList()
+        {
+            var selectedGroupEntry = Model.GroupList.Where(x => x.Selected).FirstOrDefault();
+
+            Model.GroupList.Clear();
+
+            Model.GroupList.Add(new GroupWrapper
+            {
+                Group = new Group
+                {
+                    Id = Guid.Empty,
+                    Name = "My Files"
+                },
+                Selected = true// selectedGroupEntry?.Group?.Id == Guid.Empty
+            });
+
+            foreach (var group in apiService.GetGroups())
+            {
+                Model.GroupList.Add(new GroupWrapper
+                {
+                    Group = group,
+                    Selected = selectedGroupEntry?.Group?.Id == group.Id
+                });
+            }
+
+            treeViewGroups.Items.Refresh();
         }
 
         private void UpdateFileList(FileEntity rootFolder = null)
@@ -87,12 +111,14 @@ namespace Group3.Semester3.DesktopClient.Views
 
             FileEntity upFolder = null;
 
-            var l = (rootFolder == null) ? apiService.FileList() : apiService.FileList(rootFolder.Id);
+            var l = (rootFolder == null) ?
+                apiService.FileList(groupId: Model.SelectedGroup.Id) :
+                apiService.FileList(rootFolder.Id, Model.SelectedGroup.Id);
 
-            if(l.Count > 0 && l[0].ParentId == Guid.Empty)
+            if (l.Count > 0 && l[0].ParentId == Guid.Empty)
             {
                 folderStack.Clear();
-                SelectedFile = null;
+                Model.SelectedFile = null;
                 UpdateFilePanel();
             }
 
@@ -108,13 +134,17 @@ namespace Group3.Semester3.DesktopClient.Views
                 var e = new FileEntityWrapper
                 {
                     Icon = IconFolderOpen,
-                    FileEntity = upFolder
+                    FileEntity = upFolder,
+                    Dummy = true
                 };
                 Model.FileViewList.Add(e);
             }
 
             {
-                string name = "Home";
+                string name;
+                if (Model.SelectedGroup.Id != Guid.Empty) name = Model.SelectedGroup.Name;
+                else name = "Home";
+
                 foreach (var x in folderStack.Reverse())
                 {
                     name += $" / {x.Name}";
@@ -124,7 +154,8 @@ namespace Group3.Semester3.DesktopClient.Views
 
             foreach (FileEntity f in l.Where(x => x.IsFolder).OrderBy(x => x.Name))
             {
-                Model.FileViewList.Add(new FileEntityWrapper { 
+                Model.FileViewList.Add(new FileEntityWrapper
+                {
                     FileEntity = f,
                     Icon = IconFolder
                 });
@@ -164,7 +195,7 @@ namespace Group3.Semester3.DesktopClient.Views
                 Model.FileViewList.Add(e);
             }
 
-            if(upFolder != null) upFolder.Name = "[UP]";
+            if (upFolder != null) upFolder.Name = "[UP]";
 
             listFileListView.Items.Refresh();
         }
@@ -199,28 +230,108 @@ namespace Group3.Semester3.DesktopClient.Views
 
         private void MenuItemSave_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) _ = FileSaveAsAsync(SelectedFile.FileEntity);
+            if (Model.SelectedFile?.FileEntity?.IsFolder != true) _ = FileSaveAsAsync(Model.SelectedFile.FileEntity);
         }
 
         private void MenuItemRun_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) _ = FileDownloadAndExecAsync(SelectedFile.FileEntity);
-            if (SelectedFile?.FileEntity?.IsFolder == true) UpdateFileList(SelectedFile.FileEntity);
+            if (Model.SelectedFile?.FileEntity?.IsFolder != true) _ = FileDownloadAndExecAsync(Model.SelectedFile.FileEntity);
+            if (Model.SelectedFile?.FileEntity?.IsFolder == true) UpdateFileList(Model.SelectedFile.FileEntity);
         }
 
-        private void MenuItemRemove_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (SelectedFile != null && !SelectedFile.FileEntity.IsFolder) apiService.DeleteFile(SelectedFile.FileEntity);
-            //TODO 
-            if (SelectedFile?.FileEntity?.IsFolder == true) try { apiService.DeleteFile(SelectedFile.FileEntity); } catch { }
+            var prompt = new YesNoPrompt()
+            {
+                Title = $"Remove {(Model.SelectedFile.FileEntity.IsFolder ? "folder" : "file")}",
+                Message = "Are you sure you want to remove the " +
+                    (Model.SelectedFile.FileEntity.IsFolder ? "folder " : "file ") +
+                    Model.SelectedFile.FileEntity.Name + "?",
+                ButtonText = "Remove",
+                ButtonCommand = CommandRemoveFile
+            };
+
+            bool success = false;
+            string message = "An unexpected error has occurred";
+
+            DialogClosingEventHandler h = (e, args) =>
+            {
+                if ((string)args.Parameter != CommandRemoveFile)
+                {
+                    success = true;
+                    return;
+                }
+
+                try
+                {
+                    apiService.DeleteFile(Model.SelectedFile.FileEntity);
+                    success = true;
+                }
+                catch (ApiService.ApiAuthorizationException ex)
+                {
+                    message = ex.Message;
+                }
+                catch { }
+            };
+
+            await DialogHost.Show(prompt, "RootDialog", h);
+
+            if (!success)
+            {
+                _ = DialogHost.Show(new ErrorNotificationMessage() { Message = message });
+            }
 
             if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
             else UpdateFileList();
         }
 
-        private void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
+        private async void MenuItemNewFolder_Click(object sender, RoutedEventArgs e)
         {
-            // var result = DialogHost.Show(new String("asdf"));
+            TextPrompt prompt = new TextPrompt()
+            {
+                Title = "Create new folder",
+                Message = "Enter the name of the folder",
+                ButtonText = "Create folder",
+                ButtonCommand = CommandCreateFolder
+            };
+
+            bool success = false;
+            string message = "An unexpected error has occurred";
+
+            DialogClosingEventHandler h = (e, args) =>
+            {
+                if ((string)args.Parameter != CommandCreateFolder)
+                {
+                    success = true;
+                    return;
+                }
+
+                try
+                {
+                    apiService.CreateFolder(
+                        prompt.Text,
+                        folderStack.Count > 0 ? folderStack.Peek().Id : Guid.Empty,
+                        Model.SelectedGroup.Id);
+                    success = true;
+                }
+                catch (ApiService.ApiAuthorizationException ex)
+                {
+                    message = ex.Message;
+                }
+                catch { }
+            };
+
+            await DialogHost.Show(prompt, "RootDialog", h);
+
+            if (!success)
+            {
+                _ = DialogHost.Show(new ErrorNotificationMessage() { Message = message });
+            }
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
+
+
         }
 
         private void CommandBinding_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -236,6 +347,134 @@ namespace Group3.Semester3.DesktopClient.Views
                 else UpdateFileList();
             }
             catch { }
+        }
+
+        private void TreeViewGroups_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            foreach (var item in Model.GroupList)
+            {
+                item.Selected = item.Group.Id == (e.NewValue as GroupWrapper)?.Group?.Id;
+            }
+
+            if (Model.GroupList.Count(x => x.Selected) == 0) Model.GroupList[0].Selected = true;
+
+            Model.SelectedGroup = Model.GroupList.Where(x => x.Selected).First().Group;
+
+            folderStack.Clear();
+            UpdateFileList();
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            TextPrompt msg = new TextPrompt();
+            msg.Message = "Hello information";
+
+            await DialogHost.Show(msg, "RootDialog");
+
+            await DialogHost.Show(new InfoNotificationMessage() { Message = msg.Text }, "RootDialog");
+        }
+
+        private async void MenuItemRename_Click(object sender, RoutedEventArgs e)
+        {
+            var prompt = new TextPrompt()
+            {
+                Title = $"Rename {(Model.SelectedFile.FileEntity.IsFolder ? "folder" : "file")}",
+                Message = "What should the new name of the " +
+                    (Model.SelectedFile.FileEntity.IsFolder ? "folder " : "file ") +
+                    Model.SelectedFile.FileEntity.Name + " be?",
+                ButtonText = "Rename",
+                ButtonCommand = CommandRenameFile
+            };
+
+            bool success = false;
+            string message = "An unexpected error has occurred";
+
+            DialogClosingEventHandler h = (e, args) =>
+            {
+                if ((string)args.Parameter != CommandRenameFile)
+                {
+                    success = true;
+                    return;
+                }
+
+                try
+                {
+                    apiService.RenameFile(Model.SelectedFile.FileEntity, prompt.Text);
+                    success = true;
+                }
+                catch (ApiService.ApiAuthorizationException ex)
+                {
+                    message = ex.Message;
+                }
+                catch { }
+            };
+
+            await DialogHost.Show(prompt, "RootDialog", h);
+
+            if (!success)
+            {
+                _ = DialogHost.Show(new ErrorNotificationMessage() { Message = message });
+            }
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
+        }
+
+        private void UploadPanel_Drop(object sender, DragEventArgs e)
+        {
+            if (!((DialogHost)GetValue(ContentProperty)).IsOpen ||
+            !(((DialogHost)GetValue(ContentProperty)).DialogContent is UploadPopup)) return;
+
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                List<FileToUpload> l = new List<FileToUpload>();
+
+                foreach (var filename in files)
+                {
+                    l.Add(new FileToUpload
+                    {
+                        Name = System.IO.Path.GetFileName(filename),
+                        Path = filename
+                    });
+                }
+
+                Guid parent = Guid.Empty;
+                if (folderStack.Count > 0) parent = folderStack.Peek().Id;
+
+                apiService.UploadFiles(l, parent);
+            }
+
+            if (((DialogHost)GetValue(ContentProperty)).IsOpen &&
+            ((DialogHost)GetValue(ContentProperty)).DialogContent is UploadPopup)
+            {
+                DialogHost.Close("RootDialog");
+            }
+
+            if (folderStack.Count > 0) UpdateFileList(folderStack.Peek());
+            else UpdateFileList();
+        }
+
+        private async void window_DragOver(object sender, DragEventArgs e)
+        {
+            if (((DialogHost)GetValue(ContentProperty)).IsOpen) return;
+
+            await DialogHost.Show(new UploadPopup()
+            {
+                Title = "Drop your files here",
+                Message = "Drag and drop files here you'd like to upload!"
+            },
+            "RootDialog");
+        }
+
+        private void window_DragLeave(object sender, MouseEventArgs e)
+        {
+            if (((DialogHost)GetValue(ContentProperty)).IsOpen &&
+                ((DialogHost)GetValue(ContentProperty)).DialogContent is UploadPopup )
+            {
+                DialogHost.Close("RootDialog");
+            }
         }
     }
 }

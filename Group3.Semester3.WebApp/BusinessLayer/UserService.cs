@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
-    // interface for a User service
     public interface IUserService
     {
         /// <summary>
@@ -72,7 +71,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
     public class UserService : IUserService
     {
-        // getting an instance of a user repository to be able to communicate with the db layer
         private IUserRepository _userRepository;
 
         public UserService(IUserRepository userRepository)

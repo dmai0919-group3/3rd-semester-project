@@ -9,5 +9,10 @@ namespace Group3.Semester3.WebApp.Entities
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+
+        public override string ToString()
+        {
+            return new string(Name);
+        }
     }
 }

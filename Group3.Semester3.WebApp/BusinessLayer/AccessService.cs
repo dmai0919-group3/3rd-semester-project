@@ -25,8 +25,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="file">The FileEntity object we are checking the user's permissions on</param>
         /// <param name="accessLevelRequired">The access level required for certain operation</param>
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
-        public void hasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired);
-        public void hasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1);
+        public void HasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired);
+        public void HasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1);
     }
 
     public class AccessService : IAccessService
@@ -49,7 +49,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="file">The FileEntity object we are checking the user's permissions on</param>
         /// <param name="accessLevelRequired">The access level required for certain operation</param>
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
-        public void hasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired)
+        public void HasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired)
         {
             if (file.GroupId != Guid.Empty)
             {
@@ -102,7 +102,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
         }
         
-        public void hasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1)
+        public void HasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1)
         {
             var userGroupModel = _groupRepository.GetUserGroupModel(group.Id, user.Id);
             

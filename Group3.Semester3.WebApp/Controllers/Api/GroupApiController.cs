@@ -176,9 +176,9 @@ namespace Group3.Semester3.WebApp.Controllers.Api
             }
         }
 
-        [Route("get-users/{groupId}")]
+        [Route("get-users")]
         [HttpGet]
-        public ActionResult GetGroupUsers(Guid groupId)
+        public ActionResult GetGroupUsers([FromQuery] Guid groupId)
         {
             try
             {

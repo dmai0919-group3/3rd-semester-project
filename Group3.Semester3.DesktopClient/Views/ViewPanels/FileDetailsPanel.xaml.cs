@@ -21,13 +21,11 @@ namespace Group3.Semester3.DesktopClient.Views.ViewPanels
     public partial class FileDetailsPanel : UserControl
     {
         private FileEntity fileEntity;
-        private Switcher switcher;
         private ApiService apiService;
 
-        public FileDetailsPanel(ApiService apiService, Switcher switcher, FileEntity fileEntity)
+        public FileDetailsPanel(ApiService apiService, FileEntity fileEntity)
         {
             this.fileEntity = fileEntity;
-            this.switcher = switcher;
             this.apiService = apiService;
 
             InitializeComponent();

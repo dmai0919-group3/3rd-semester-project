@@ -12,7 +12,6 @@ namespace Group3.Semester3.DesktopClient
     public partial class App : Application
     {
         private ApiService _apiService;
-        private Switcher _switcher;
 
         /// <summary>
         /// This method is called when the application is started. It initializes the ApiService and Switcher objects used across the whole application.
@@ -23,9 +22,8 @@ namespace Group3.Semester3.DesktopClient
         private void OnStartup(object sender, StartupEventArgs e)
         {
             _apiService = new ApiService();
-            _switcher = new Switcher();
 
-            new Login(_apiService, _switcher).Show();
+            new Login(_apiService).Show();
         }
     }
 }
