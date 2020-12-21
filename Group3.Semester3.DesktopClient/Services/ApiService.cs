@@ -122,7 +122,7 @@ namespace Group3.Semester3.DesktopClient.Services
         }
 
         #region Constants // TODO move everything to settings
-        const string host = "https://localhost:5001";
+        const string host = "https://ogo-file.space";
 
         private string LoginUrl = $"{host}/api/user/login";
         private string RegisterUrl = $"{host}/api/User/register";

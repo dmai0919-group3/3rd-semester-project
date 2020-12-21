@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Group3.Semester3.WebApp</RootNamespace>
     <StartupObject>Group3.Semester3.WebApp.Program</StartupObject>
+    <UserSecretsId>79b3133f-02c4-4134-b765-bc9be1ba17b9</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

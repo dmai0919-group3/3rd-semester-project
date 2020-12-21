@@ -210,7 +210,8 @@
                                     </ContextMenu>
                                 </DockPanel.ContextMenu>
                                 <TextBlock DockPanel.Dock="Bottom" HorizontalAlignment="Center" Text="{Binding FileEntity.Name}"/>
-                                <Image HorizontalAlignment="Center" VerticalAlignment="Top" Width="48" Height="48" Source="{Binding Icon}" DockPanel.Dock="Top">
+                                <Image HorizontalAlignment="Center" VerticalAlignment="Top" Width="48" Height="48" Source="{Binding Icon}" DockPanel.Dock="Top"
+                                       OpacityMask="#cc000000">
                                 </Image>
                             </DockPanel>
                         </DataTemplate>
