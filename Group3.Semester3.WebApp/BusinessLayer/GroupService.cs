@@ -1,4 +1,5 @@
 ﻿using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Groups;
 using Group3.Semester3.WebApp.Models.Users;
@@ -52,7 +53,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (!created)
             {
-                throw new Exception("Failed to create group");
+                throw new Exception(Messages.FailedToCreateGroup);
             }
             
             var userGroup = new AddUserGroupModel()
@@ -78,7 +79,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (!result)
             {
-                throw new ValidationException("Group non-existent or not deleted.");
+                throw new ValidationException(Messages.GroupNotExistsDeleted);
             }
             else return result;
         }
@@ -90,7 +91,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var result = _groupRepository.Rename(groupId, name);
             if (!result)
             {
-                throw new ValidationException("Group non-existent or not renamed.");
+                throw new ValidationException(Messages.GroupNotExistsRenamed);
             }
             else return GetByGroupId(groupId);
         }
@@ -100,7 +101,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var group = _groupRepository.GetByGroupId(groupId);
             if (group == null)
             {
-                throw new ValidationException("No group found.");
+                throw new ValidationException(Messages.GroupNotFound);
             }
             else return group;
         }
@@ -147,7 +148,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (IsPartOfGroup(newUser, group))
                 {
-                    throw new ValidationException("User is already part of the group");
+                    throw new ValidationException(Messages.UserAlreadyInGroup);
                 }
 
                 model.UserId = newUser.Id;
@@ -156,7 +157,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (!result)
                 {
-                    throw new ValidationException("Failed to add user");
+                    throw new ValidationException(Messages.FailedToAddUser);
                 }
                 
                 var userModel = _groupRepository.GetUserModel(group.Id, model.UserId);
@@ -164,7 +165,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                throw new ValidationException("User not found");
+                throw new ValidationException(Messages.UserNotFound);
             }
         }
 
@@ -178,7 +179,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             if (!result)
             {
-                throw new ValidationException("Failed to update users permission");
+                throw new ValidationException(Messages.FailedToUpdatePermissions);
             }
 
             var affectedUser = _groupRepository.GetUserModel(model.GroupId, model.UserId);
@@ -221,7 +222,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                throw new ValidationException("User is not part of this group");
+                throw new ValidationException(Messages.UserNotInGroup);
             }
         }
 

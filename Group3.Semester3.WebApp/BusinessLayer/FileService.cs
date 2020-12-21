@@ -313,7 +313,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                         // TODO generate error
                     }
                 }
-                else throw new ValidationException("No files chosen.");
+                else throw new ValidationException(Messages.NoFiles);
             }
 
             return fileEntries;
@@ -418,7 +418,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (!result)
             {
-                throw new ValidationException("File non-existent or not deleted.");
+                throw new ValidationException(Messages.FileNotExistsDeleted);
             }
             else return result;
         }
@@ -440,7 +440,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var result = _fileRepository.Update(file);
             if (!result)
             {
-                throw new ValidationException("File non-existent or not renamed.");
+                throw new ValidationException(Messages.FileNotExistsRenamed);
             }
             else return GetById(fileId);
         }
@@ -474,7 +474,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var file = _fileRepository.GetById(id);
             if (file == null)
             {
-                throw new ValidationException("No file found.");
+                throw new ValidationException(Messages.FileNotFound);
             }
             else return file;
         }
@@ -523,7 +523,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (!created)
             {
-                throw new ValidationException("Failed to create folder");
+                throw new ValidationException(Messages.FailedToCreateFolder);
             }
 
             return folder;
@@ -551,14 +551,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             if (model.Id == model.ParentId)
             {
-                throw new ValidationException("Can not move file into itself");
+                throw new ValidationException(Messages.MoveFileIntoItself);
             }
             var file = GetById(model.Id);
             _accessService.hasAccessToFile(user, file, Permissions.Write);
             var result = _fileRepository.MoveIntoFolder(model.Id, model.ParentId);
             if (!result)
             {
-                throw new ValidationException("File has not been moved, try again.");
+                throw new ValidationException(Messages.FileNotMoved);
             }
             else return true;
         }
@@ -614,7 +614,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             if (file == null)
             {
-                throw new ConcurrencyException("File was deleted by another user");
+                throw new ConcurrencyException(Messages.FileDeletedByAnother);
             }
             
             _accessService.hasAccessToFile(user, file, Permissions.Write);
@@ -625,7 +625,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (result <= 0)
                 {
-                    throw new ConcurrencyException("File was changed by another user. Please try again");
+                    throw new ConcurrencyException(Messages.FileChangedByAnother);
                 }
             }
 
@@ -661,7 +661,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                throw new ValidationException("Failed to update a file");
+                throw new ValidationException(Messages.FailedToUpdateFile);
             }
             
             return file;
@@ -710,7 +710,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if (!success)
             {
-                throw new ValidationException("Failed to revert file version");
+                throw new ValidationException(Messages.FailedToRevertVersion);
             }
             
             return newVersion;
@@ -720,7 +720,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             if (fileId == Guid.Empty)
             {
-                throw new ValidationException("File id can not be empty");
+                throw new ValidationException(Messages.FileIdEmpty);
             }
 
             var file = _fileRepository.GetById(fileId);
@@ -753,7 +753,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (user == null)
                 {
-                    throw new ValidationException("User with this email not found");
+                    throw new ValidationException(Messages.UserNotFoundByEmail);
                 }
 
                 sharedFile.UserId = user.Id;
@@ -762,7 +762,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             if(file.GroupId != Guid.Empty) 
             {
-                throw new ValidationException("Cannot share group files.");
+                throw new ValidationException(Messages.ShareGroupFiles);
             }
             _accessService.hasAccessToFile(currentUser, file, Permissions.Write);
             
@@ -792,7 +792,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var file = _fileRepository.GetById(fileEntity.Id);
             if(file.GroupId != Guid.Empty) 
             {
-                throw new ValidationException("Cannot share group files.");
+                throw new ValidationException(Messages.ShareGroupFiles);
             }
             _accessService.hasAccessToFile(currentUser, file, Permissions.Write);
 
