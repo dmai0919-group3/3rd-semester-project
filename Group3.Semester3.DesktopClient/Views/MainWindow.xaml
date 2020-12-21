@@ -134,16 +134,17 @@
                 <Button Content="GROUP" HorizontalAlignment="Left" VerticalAlignment="Center" 
                         Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="57,0,0,0" FontSize="12"/>
                 <Button Content="USER" HorizontalAlignment="Left" VerticalAlignment="Center" 
-                        Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="123,0,0,0" Width="105" FontSize="12"/>
+                        Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="123,0,0,0" Width="71" FontSize="12"/>
             </Grid>
-            <Grid Grid.Row="1" Background="#FF474747" x:Name="panelGroupList">
+            <Grid Grid.Row="1" Background="#FF474747" x:Name="panelGroupList" Effect="{StaticResource MaterialDesignShadowDepth3}">
+
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="55"/>
                 </Grid.RowDefinitions>
                 <Button Content="Manage Groups" HorizontalAlignment="Center" Margin="0,0,0,12" Grid.Row="1"
                         VerticalAlignment="Bottom" Width="178" Foreground="White" FontSize="12" Height="30"
-                        Click="Button_Click"/>
+                        />
                 <TreeView Margin="0,61,0,0" Foreground="#DDFFFFFF" 
                           ItemsSource="{Binding GroupList}" SelectedItemChanged="TreeViewGroups_SelectedItemChanged"
                           x:Name="treeViewGroups">
@@ -168,7 +169,8 @@
                     <Label x:Name="labelProgress" Content="Progress" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="#DD2B2B2B"/>
                 </Grid>
             </Grid>
-            <StackPanel Grid.Column="2" Grid.Row="1" Background="#FFF0F0F0" x:Name="panelFileDetails"/>
+            <StackPanel Grid.Column="2" Grid.Row="1" Background="#FFF0F0F0" x:Name="panelFileDetails" 
+                        Effect="{StaticResource MaterialDesignShadowDepth3}" Panel.ZIndex="-999" />
             <Label Content="My Workspace" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="18" 
                    Margin="5,7,0,0" Height="30" Width="193" Foreground="#DDFFFFFF" Grid.Row="1" Style="{DynamicResource MaterialDesignLabel}"/>
             <Label Content="Groups" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,33,0,0" Height="30" 
