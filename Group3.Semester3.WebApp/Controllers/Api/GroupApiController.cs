@@ -153,7 +153,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         }
 
         [Route("remove-user")]
-        [HttpPost]
+        [HttpDelete]
         public ActionResult RemoveUser(UserGroupModel model)
         {
             try

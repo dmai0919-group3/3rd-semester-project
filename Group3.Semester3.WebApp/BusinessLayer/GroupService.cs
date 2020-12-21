@@ -198,6 +198,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
+            if (model.UserId == Guid.Empty)
+            {
+                model.UserId = user.Id;
+            }
+            
             if (user.Id != model.UserId)
             {
                 _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
