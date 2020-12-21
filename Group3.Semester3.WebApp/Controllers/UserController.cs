@@ -65,7 +65,7 @@ namespace Group3.Semester3.WebApp.Controllers
                 );
 
                 AddMessage("User logged in successfully");
-                return RedirectToAction("Dashboard");
+                return RedirectToAction("Browse", "File");
             }
             catch (ValidationException e)
             {
