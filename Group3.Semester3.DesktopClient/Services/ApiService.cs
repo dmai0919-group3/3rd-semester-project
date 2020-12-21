@@ -169,17 +169,9 @@ namespace Group3.Semester3.DesktopClient.Services
             return response.Result;
         }
 
-        protected HttpResponseMessage DeleteRequest(string requestUrl)
+        protected HttpResponseMessage DeleteRequest(string requestUrl, object parameter = null)
         {
-            using var httpClient = new HttpClient();
 
-            if (!string.IsNullOrEmpty(BearerToken))
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
-
-            var response = httpClient.DeleteAsync(requestUrl);
-            response.Wait();
-
-            return response.Result;
         }
 
         protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
@@ -344,7 +336,7 @@ namespace Group3.Semester3.DesktopClient.Services
 
         public void DeleteFile(FileEntity file)
         {
-            var result = DeleteRequest(DeleteFileUrl);
+            var result = DeleteRequest(DeleteFileUrl, file);
 
             string resultContent;
 
