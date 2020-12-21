@@ -71,7 +71,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 return group;
             }
-            else throw new ValidationException("Group name cannot be empty.");
+            else throw new ValidationException(Messages.GroupNameEmpty);
         }
 
         public bool DeleteGroup(Guid groupId, UserModel user)
@@ -100,7 +100,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 }
                 else return GetByGroupId(groupId);
             }
-            else throw new ValidationException("Group name cannot be empty.");
+            else throw new ValidationException(Messages.GroupNameEmpty);
 
         }
 

@@ -23,6 +23,7 @@ namespace Group3.Semester3.WebApp.Helpers
         public const string FailedToRevertVersion = "Failed to revert file version";
         public const string FileIdEmpty = "File id can not be empty";
         public const string UserNotFoundByEmail = "User with this email not found";
+        
         public const string ShareGroupFiles = "Cannot share group files";
         public const string FailedToCreateGroup = "Failed to create group";
         public const string GroupNotExistsDeleted = "Group does not exist or not deleted";
@@ -30,6 +31,8 @@ namespace Group3.Semester3.WebApp.Helpers
         public const string GroupNotFound = "No group found";
         public const string UserAlreadyInGroup = "User is already part of the group";
         public const string FailedToAddUser = "Failed to add user";
+        public const string GroupNameEmpty = "Group name cannot be empty";
+        
         public const string UserNotFound = "User not found";
         public const string FailedToUpdatePermissions = "Failed to update users permissions";
         public const string UserNotInGroup = "User is not part of this group";
