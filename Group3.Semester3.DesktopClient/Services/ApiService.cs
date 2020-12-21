@@ -171,7 +171,24 @@ namespace Group3.Semester3.DesktopClient.Services
 
         protected HttpResponseMessage DeleteRequest(string requestUrl, object parameter = null)
         {
+            using var client = new HttpClient();
+            
+            var content = new StringContent(JsonConvert.SerializeObject(parameter), System.Text.Encoding.UTF8, "application/json");
 
+            HttpRequestMessage request = new HttpRequestMessage(
+                HttpMethod.Delete,
+                requestUrl
+            );
+
+            request.Content = content;
+
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", BearerToken);
+
+            var response = client.SendAsync(request);
+            response.Wait();
+            var result = response.Result;
+
+            return response.Result;
         }
 
         protected HttpResponseMessage GetRequest(string requestUrl, string parameters = null)
