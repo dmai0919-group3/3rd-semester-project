@@ -308,8 +308,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ArgumentException">If the given password is only whitespace or empty.</exception>
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            if (password == null) throw new ArgumentNullException("password", Messages.PasswordNull);
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException(Messages.PasswordEmpty, "password");
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ValidationException(Messages.PasswordEmpty);
+            }
 
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
@@ -329,10 +331,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ArgumentException">If the entered password, hash or salt is empty or invalid.</exception>
         private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
         {
-            if (password == null) throw new ArgumentNullException("password", Messages.PasswordNull);
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException(Messages.PasswordEmpty, "password");
-            if (storedHash.Length != 64) throw new ArgumentException(Messages.PasswordHashLenghtInvalid, "passwordHash");
-            if (storedSalt.Length != 128) throw new ArgumentException(Messages.PasswordSaltLenghtInvalid, "passwordHash");
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ValidationException(Messages.PasswordEmpty);
+            }
+
+            if (storedHash.Length != 64) 
+                throw new ArgumentException(Messages.PasswordHashLenghtInvalid, "passwordHash");
+            
+            if (storedSalt.Length != 128) 
+                throw new ArgumentException(Messages.PasswordSaltLenghtInvalid, "passwordSalt");
 
             using (var hmac = new System.Security.Cryptography.HMACSHA512(storedSalt))
             {

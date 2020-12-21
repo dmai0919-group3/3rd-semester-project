@@ -42,12 +42,12 @@ namespace Group3.Semester3.WebApp.Helpers
         public const string PasswordsNotMatching = "Passwords are not matching";
         public const string UserNotExistsDeleted = "User does not exist or not deleted";
         public const string UserNotExistsAltered = "User does not exist or not altered";
-        public const string PasswordEmpty = "The password cannot be empty or whitespace only";
-        public const string PasswordNull = "Password cannot be null";
-        public const string PasswordHashLenghtInvalid = "Invalid length of password hash (64 bytes expected)";
-        public const string PasswordSaltLenghtInvalid = "Invalid length of password salt (128 bytes expected)";
+        public const string PasswordEmpty = "The password cannot be empty";
         public const string LoginSuccessful = "User logged in successfully";
         public const string RegistrationSuccessful = "User registered successfully";
         public const string UserUpdateSuccessful = "User updated successfully";
+        
+        public const string PasswordHashLenghtInvalid = "Invalid length of password hash (64 bytes expected)";
+        public const string PasswordSaltLenghtInvalid = "Invalid length of password salt (128 bytes expected)";
     }
 }
