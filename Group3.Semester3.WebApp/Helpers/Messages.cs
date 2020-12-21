@@ -34,6 +34,7 @@ namespace Group3.Semester3.WebApp.Helpers
         public const string FailedToUpdatePermissions = "Failed to update users permissions";
         public const string UserNotInGroup = "User is not part of this group";
         public const string EmailEmpty = "Email or password cannot be empty";
+        public const string EmailInvalid = "Email is invalid";
         public const string IncorrectInitials = "Incorrect email or password";
         public const string PasswordIsRequired = "Password is required";
         public const string UserNotCreated = "User not created";
@@ -46,6 +47,8 @@ namespace Group3.Semester3.WebApp.Helpers
         public const string LoginSuccessful = "User logged in successfully";
         public const string RegistrationSuccessful = "User registered successfully";
         public const string UserUpdateSuccessful = "User updated successfully";
+        public const string UserAlreadyExists = "User already registered";
+        public const string PasswordTooShort = "Password is too short, at least 8 characters required";
         
         public const string PasswordHashLenghtInvalid = "Invalid length of password hash (64 bytes expected)";
         public const string PasswordSaltLenghtInvalid = "Invalid length of password salt (128 bytes expected)";

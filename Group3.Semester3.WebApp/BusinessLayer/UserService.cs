@@ -91,6 +91,11 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var email = model.Email;
             var password = model.Password;
 
+            if (!IsValidEmail(email))
+            {
+                throw new ValidationException(Messages.EmailInvalid);
+            }
+
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 throw new ValidationException(Messages.EmailEmpty);
 
@@ -168,15 +173,25 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             if (string.IsNullOrWhiteSpace(model.Password))
                 throw new ValidationException(Messages.PasswordIsRequired);
 
-            var dbUser = _userRepository.GetByEmail(model.Email);
+            var password = model.Password.Trim();
 
-            // TODO: how to validate this so that we prevent hacker from knowing this 
-            // email is in db and bruteforcing? *Mogens said this in sprint 1*
+            if (password.Length < 8)
+            {
+                throw new ValidationException(Messages.PasswordTooShort);
+            }
+
+            if (!IsValidEmail(model.Email))
+            {
+                throw new ValidationException(Messages.EmailInvalid);
+            }
+            
+            var dbUser = _userRepository.GetByEmail(model.Email);
+            
             if (dbUser != null)
-                throw new ValidationException("User with email " + model.Email + " is already registered");
+                throw new ValidationException(Messages.UserAlreadyExists);
 
             byte[] passwordHash, passwordSalt;
-            CreatePasswordHash(model.Password, out passwordHash, out passwordSalt);
+            CreatePasswordHash(password, out passwordHash, out passwordSalt);
 
             User user = new User() { Email = model.Email, Name = model.Name };
 
@@ -353,6 +368,23 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             return true;
         }
+        
+        private bool IsValidEmail(string email)
+        {
+            try {
+                if (string.IsNullOrEmpty(email))
+                {
+                    return false;
+                }
+                
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch {
+                return false;
+            }
+        }
+        
         #endregion
     }
 }
