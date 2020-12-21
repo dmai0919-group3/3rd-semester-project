@@ -45,7 +45,7 @@ namespace Group3.Semester3.WebApp.Controllers.Api
         }
 
         [Route("delete")]
-        [HttpPost]
+        [HttpDelete]
         public ActionResult Delete(Group model)
         {
             try
