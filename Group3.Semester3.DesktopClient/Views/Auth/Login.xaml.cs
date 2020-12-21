@@ -33,7 +33,7 @@ namespace Group3.Semester3.DesktopClient.Views.Auth
 
             Model = (LoginWindowModel)DataContext;
 
-#if DEBUG
+#if false
             apiService.Authorize("erik@erik.sk", "123");
             new MainWindow(apiService).Show();
         }

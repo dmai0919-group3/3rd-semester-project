@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Group3.Semester3.DesktopClient</RootNamespace>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>ico_small.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,9 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\folder-24px.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Resource>
     <Resource Include="Views\Auth\icon_big.png" />
     <Resource Include="Views\Auth\icon_small.png" />
     <Resource Include="Views\Auth\login_logo.png" />

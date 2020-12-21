@@ -133,7 +133,7 @@
                         Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Width="57" FontSize="12"/>
                 <Button Content="GROUP" HorizontalAlignment="Left" VerticalAlignment="Center" 
                         Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="57,0,0,0" FontSize="12"/>
-                <Button Content="MENUITEM" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                <Button Content="USER" HorizontalAlignment="Left" VerticalAlignment="Center" 
                         Background="{x:Null}" BorderBrush="{x:Null}" Foreground="#FFEDFDFF" Margin="123,0,0,0" Width="105" FontSize="12"/>
             </Grid>
             <Grid Grid.Row="1" Background="#FF474747" x:Name="panelGroupList">
