@@ -1,4 +1,5 @@
 ﻿using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Groups;
 using Group3.Semester3.WebApp.Models.Users;
@@ -22,6 +23,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public UserModel AddUser(UserModel user, AddUserGroupModel model);
         public UserModel UpdateUserPermissions(UserModel user, AddUserGroupModel model);
         public bool RemoveUser(UserModel user, UserGroupModel model);
+        public UserModel GetUser(UserModel currentUser, string groupId, string userId);
 
     }
     public class GroupService : IGroupService
@@ -40,58 +42,66 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
         public Group CreateGroup(UserModel user, CreateGroupModel model)
         {
-
-            var group = new Group()
+            if(!string.IsNullOrEmpty(model.Name))
             {
-                Id = Guid.NewGuid(),
-                Name = model.Name,
-            };
+                var group = new Group()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = model.Name,
+                };
 
-            var created = _groupRepository.Insert(group);
+                var created = _groupRepository.Insert(group);
 
-            if (!created)
-            {
-                throw new Exception("Failed to create group");
+                if (!created)
+                {
+                    throw new Exception(Messages.FailedToCreateGroup);
+                }
+
+                var userGroup = new AddUserGroupModel()
+                {
+                    GroupId = group.Id,
+                    UserId = user.Id,
+                    HasAdministrate = true,
+                    HasManage = true,
+                    HasRead = true,
+                    HasWrite = true
+                };
+
+                _groupRepository.AddUser(userGroup);
+
+                return group;
             }
-            
-            var userGroup = new AddUserGroupModel()
-            {
-                GroupId = group.Id, 
-                UserId = user.Id,
-                HasAdministrate = true,
-                HasManage = true,
-                HasRead = true,
-                HasWrite = true
-            };
-
-            _groupRepository.AddUser(userGroup);
-
-            return group;
+            else throw new ValidationException(Messages.GroupNameEmpty);
         }
 
         public bool DeleteGroup(Guid groupId, UserModel user)
         {
             var group = _groupRepository.GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
             var result = _groupRepository.Delete(groupId);
 
             if (!result)
             {
-                throw new ValidationException("Group non-existent or not deleted.");
+                throw new ValidationException(Messages.GroupNotExistsDeleted);
             }
             else return result;
         }
 
         public Group RenameGroup(Guid groupId, UserModel user, string name)
         {
-            var group = GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
-            var result = _groupRepository.Rename(groupId, name);
-            if (!result)
+            if (!string.IsNullOrEmpty(name))
             {
-                throw new ValidationException("Group non-existent or not renamed.");
+                var group = GetByGroupId(groupId);
+                _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
+                var result = _groupRepository.Rename(groupId, name);
+                if (!result)
+                {
+                    throw new ValidationException(Messages.GroupNotExistsRenamed);
+                }
+                else return GetByGroupId(groupId);
             }
-            else return GetByGroupId(groupId);
+            else throw new ValidationException(Messages.GroupNameEmpty);
+
         }
 
         public Group GetByGroupId(Guid groupId)
@@ -99,7 +109,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var group = _groupRepository.GetByGroupId(groupId);
             if (group == null)
             {
-                throw new ValidationException("No group found.");
+                throw new ValidationException(Messages.GroupNotFound);
             }
             else return group;
         }
@@ -114,7 +124,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public IEnumerable<UserModel> GetGroupUsers(UserModel user, Guid groupId)
         {
             var group = _groupRepository.GetByGroupId(groupId);
-            _accessService.hasAccessToGroup(user, group);
+            _accessService.HasAccessToGroup(user, group);
             var users = _groupRepository.GetUsersByGroupId(groupId);
 
             return users;
@@ -137,7 +147,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
             var newUserEntity = _userRepository.GetByEmail(model.Email);
             
             if(newUserEntity != null)
@@ -146,7 +156,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (IsPartOfGroup(newUser, group))
                 {
-                    throw new ValidationException("User is already part of the group");
+                    throw new ValidationException(Messages.UserAlreadyInGroup);
                 }
 
                 model.UserId = newUser.Id;
@@ -155,15 +165,15 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (!result)
                 {
-                    throw new ValidationException("Failed to add user");
+                    throw new ValidationException(Messages.FailedToAddUser);
                 }
                 
-                var userModel = _groupRepository.GetUserModel(@group.Id, model.UserId);
+                var userModel = _groupRepository.GetUserModel(group.Id, model.UserId);
                 return userModel;
             }
             else
             {
-                throw new ValidationException("User not found");
+                throw new ValidationException(Messages.UserNotFound);
             }
         }
 
@@ -171,13 +181,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
-            _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+            _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
 
             var result = _groupRepository.UpdatePermissions(model);
             
             if (!result)
             {
-                throw new ValidationException("Failed to update users permission");
+                throw new ValidationException(Messages.FailedToUpdatePermissions);
             }
 
             var affectedUser = _groupRepository.GetUserModel(model.GroupId, model.UserId);
@@ -189,12 +199,44 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var group = _groupRepository.GetByGroupId(model.GroupId);
 
+            if (model.UserId == Guid.Empty)
+            {
+                model.UserId = user.Id;
+            }
+            
             if (user.Id != model.UserId)
             {
-                _accessService.hasAccessToGroup(user, group, Permissions.Administrate);
+                _accessService.HasAccessToGroup(user, group, Permissions.Administrate);
             }
             
             return _groupRepository.RemoveUser(group.Id, model.UserId);
+        }
+
+        public UserModel GetUser(UserModel currentUser, string groupId, string userId)
+        {
+            var groupGuid = ParseGuid(groupId);
+            var userGuid = ParseGuid(userId);
+            
+            var group = _groupRepository.GetByGroupId(groupGuid);
+
+            _accessService.HasAccessToGroup(currentUser, group);
+
+            if (userGuid == Guid.Empty)
+            {
+                userGuid = currentUser.Id;
+            }
+            
+            var userModel = new UserModel() {Id = userGuid};
+
+            if (IsPartOfGroup(userModel, group))
+            {
+                var user = _groupRepository.GetUserModel(groupGuid, userGuid);
+                return user;
+            }
+            else
+            {
+                throw new ValidationException(Messages.UserNotInGroup);
+            }
         }
 
         public bool IsPartOfGroup(UserModel user, Group group)

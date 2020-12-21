@@ -5,6 +5,10 @@ let dirArray = {"00000000-0000-0000-0000-000000000000": "Home"};
 let currentDir = emptyGuid;
 let currentGroup = emptyGuid;
 
+let browsingSharedFiles = false;
+
+let currentUser = null;
+
 let previewFiles = ['.png', '.jpg', '.jpeg', '.mp4', '.avi', '.webm', '.mp3', '.wav'];
 
 $(function () {
@@ -58,40 +62,54 @@ $(function () {
                 Object.assign(items, download);
             }
             
-            let standardItems = {
-                sharing: {
-                    name: "Sharing",
-                    callback: function (key, opt) {
-                        let $element = opt.$trigger;
-                        let id = $element.attr('id');
+            if (currentGroup === emptyGuid && currentUser.permissions.hasAdministrate) {
+                let sharing = {
+                    sharing: {
+                        name: "Sharing",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
 
-                        showSharingModal(id);
-                    }
-                },
-                move: {
-                    name: "Move to folder",
-                    callback: function (key, opt) {
-                        let $element = opt.$trigger;
-                        let id = $element.attr('id');
-
-                        showMoveFileModal(id);
-                    }
-                },
-                rename: {
-                    name: "Rename",
-                    callback: function (key, opt) {
-                        showRenameFileModal(key, opt);
-                    }
-                },
-                delete: {
-                    name: "Delete",
-                    callback: function (key, opt) {
-                        showDeleteFileModal(key, opt);
+                            showSharingModal(id);
+                        }
                     }
                 }
+                Object.assign(items, sharing);
             }
             
-            Object.assign(items, standardItems);
+            if (currentUser.permissions.hasManage) {
+                let move = {
+                    move: {
+                        name: "Move to folder",
+                        callback: function (key, opt) {
+                            let $element = opt.$trigger;
+                            let id = $element.attr('id');
+
+                            showMoveFileModal(id);
+                        }
+                    }
+                }
+                Object.assign(items, move);
+            }
+            
+            if (currentUser.permissions.hasWrite) {
+                let standardItems = {
+                    rename: {
+                        name: "Rename",
+                        callback: function (key, opt) {
+                            showRenameFileModal(key, opt);
+                        }
+                    },
+                    delete: {
+                        name: "Delete",
+                        callback: function (key, opt) {
+                            showDeleteFileModal(key, opt);
+                        }
+                    }
+                }
+
+                Object.assign(items, standardItems);
+            }
             
             return {items: items};
         }
@@ -179,8 +197,7 @@ function renameFile() {
             $fileNameElement.text(fileName);
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to rename a file");
+            alert(result.responseText);
         }
     });
 
@@ -218,20 +235,22 @@ function deleteFile() {
             $('#' + fileId).remove();
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to delete a file");
+            alert(result.responseText);
         }
     });
 }
 
 function browseDirectoryFiles(parentId) {
-    
     if (parentId === 'shared') {
-        showSharedFiles();
-        return ;
+        browsingSharedFiles = true;
+        currentGroup = emptyGuid;
     }
 
     let url = browseFilesUrl;
+    
+    if (browsingSharedFiles) {
+        url = browseSharedFilesUrl;
+    }
     
     let data = {
         parentId: parentId,
@@ -249,20 +268,21 @@ function browseDirectoryFiles(parentId) {
                 Object.keys(dirArray).reverse()
                     .forEach(function(index) {
                         if (index !== parentId && !found) {
-                            console.log(index);
                             delete dirArray[index];
                         } else {
                             found = true;
                         }
                     });
             } else {
-                let name = $("#"+parentId).find(".file-name").text();
-                dirArray[parentId] = name;
+                if (parentId !== 'shared') {
+                    let name = $("#"+parentId).find(".file-name").text();
+                    dirArray[parentId] = name;
+                }
             }
 
             currentDir = parentId;
             
-            if (currentDir != emptyGuid) {
+            if (currentDir !== emptyGuid && currentDir !== 'shared') {
                 $('#go-back-button').show();
             } else {
                 $('#go-back-button').hide();
@@ -270,11 +290,19 @@ function browseDirectoryFiles(parentId) {
             
             updateDirectoryPath();
             
-            changeFiles(result);
+            currentUser = result.user;
+            
+            if (currentUser.permissions.hasWrite) {
+                $('#dropdownMenuButton').show();
+            } else {
+                $('#dropdownMenuButton').hide();
+            }
+            
+            
+            changeFiles(result.files);
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to load files");
+            alert(result.responseText);
         }
     });
 }
@@ -325,8 +353,7 @@ function createFolder() {
             $("#createFolderModal").modal("hide");
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to create a folder");
+            alert(result.responseText);
         }
     });
 }
@@ -518,13 +545,11 @@ function moveFile(id, parentId) {
 
                 $("#moveFileModal").modal("hide");
             } else {
-                // TODO: Handle better in the future
                 alert("Failed to move a file");
             }
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert(result);
+            alert(result.responseText);
         }
     });
 }
@@ -555,7 +580,7 @@ function showEditFileModal(key, opt)
             $('#editFileModal').modal();
         },
         error: function (result) {
-            alert(result);
+            alert(result.responseText);
         }
     });
     
@@ -582,11 +607,11 @@ function editFileSave() {
         statusCode: {
             200: function (result) {
 
-                alert("File updated!");
+                alert("File updated!", "Success");
                 $("#editFileModal").modal("hide");
             },
             400: function (result) {
-                alert(result);
+                alert(result.responseText);
             },
             409: function (result) {
                 $('#overwriteEditModal').modal();
@@ -607,6 +632,9 @@ function initFileDownload(fileId, versionId = "") {
         data: data,
         success: function (result) {
             startFileDownload(result.file, result.downloadLink);
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     })
 }
@@ -659,6 +687,9 @@ function previewFile(fileId, fileName) {
 
                 $modalBody.append(element);
             }, 900);
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     })
 }
@@ -676,6 +707,9 @@ function loadUserGroups() {
             result.forEach(group => {
                 addGroupToSubmenu(group);
             })
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     });
 }
@@ -699,9 +733,12 @@ $(document).ready(function () {
             } else {
                 currentGroup = id;
             }
-
+            
+            browsingSharedFiles = false;
             browseDirectoryFiles(emptyGuid);
         } else {
+            
+            browsingSharedFiles = true;
             browseDirectoryFiles(id)
         }
         $('#sidebar').removeClass('active');
@@ -740,7 +777,7 @@ function createGroup() {
             window.location.href = "/group/"+group.id;
         },
         error: function (result) {
-            alert(result);
+            alert(result.responseText);
         }
     });
 }
@@ -769,8 +806,7 @@ function showSharedFiles() {
             changeFiles(result);
         },
         error: function (result) {
-            // TODO: Handle better in the future
-            alert("Failed to load shared files");
+            alert(result.responseText);
         }
     })
 }
@@ -837,7 +873,7 @@ function shareWithUser() {
             $('#shareWithUserModal').modal('hide');
         },
         error: function (result) {
-            alert(result.resultText);
+            alert(result.responseText);
         }
     });
 }
@@ -861,7 +897,7 @@ $(document).ready(function () {
                 $('#file-share-disable-link').show();
             },
             error: function (result) {
-                alert(result.resultText);
+                alert(result.responseText);
             }
         });
     });
@@ -884,7 +920,7 @@ $(document).ready(function () {
                 $('#file-share-disable-link').hide();
             },
             error: function (result) {
-                alert(result.resultText);
+                alert(result.responseText);
             }
         });
     });
@@ -908,7 +944,7 @@ $(document).ready(function () {
                 $userElement.remove();
             },
             error: function (result) {
-                alert(result.resultText);
+                alert(result.responseText);
             }
         });
     });
@@ -927,9 +963,6 @@ connection.start().catch(function (err) {
 connection.on("NewComment", function (comment, fileId) {
     if (fileId === sidebarFileId) {
         addCommentToList(comment);
-    } else {
-        // TODO: Maybe send notification later
-        console.log('got comment from other file');
     }
 });
 
@@ -994,6 +1027,9 @@ $(document).ready(function () {
             contentType: "application/json",
             success: function (result) {
                 addVersionToList(result, true);
+            },
+            error: function (result) {
+                alert(result.responseText);
             }
         });
     }).on('click', '.file-version-download', function () {
@@ -1022,6 +1058,9 @@ function loadComments() {
             result.forEach(comment => {
                 addCommentToList(comment);
             });
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     });
 }
@@ -1040,6 +1079,9 @@ function loadVersions() {
             result.forEach(version => {
                 addVersionToList(version);
             });
+        },
+        error: function (result) {
+            alert(result.responseText);
         }
     });
 }

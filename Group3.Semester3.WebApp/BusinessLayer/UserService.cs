@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 
 namespace Group3.Semester3.WebApp.BusinessLayer
 {
-    // interface for a User service
     public interface IUserService
     {
         /// <summary>
@@ -71,7 +71,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
     public class UserService : IUserService
     {
-        // getting an instance of a user repository to be able to communicate with the db layer
         private IUserRepository _userRepository;
 
         public UserService(IUserRepository userRepository)
@@ -90,14 +89,19 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var email = model.Email;
             var password = model.Password;
 
+            if (!IsValidEmail(email))
+            {
+                throw new ValidationException(Messages.EmailInvalid);
+            }
+
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-                throw new ValidationException("Email or password cannot be empty.");
+                throw new ValidationException(Messages.EmailEmpty);
 
             var user = _userRepository.GetByEmail(email);
 
             // check if username exists
             if (user == null || !VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
-                throw new ValidationException("Incorrect email or password.");
+                throw new ValidationException(Messages.IncorrectInitials);
 
             // authentication successful, return user
 
@@ -127,7 +131,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     Name = user.Name
                 };
             }
-            else throw new ValidationException("No user found.");
+            else throw new ValidationException(Messages.UserNotFound);
         }
 
         /// <summary>
@@ -150,7 +154,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             var user = GetById(userId);
             if (user == null)
             {
-                throw new ValidationException("User not found");
+                throw new ValidationException(Messages.UserNotFound);
             }
             else return user;
         }
@@ -165,17 +169,27 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             // validation
             if (string.IsNullOrWhiteSpace(model.Password))
-                throw new ValidationException("Password is required");
+                throw new ValidationException(Messages.PasswordIsRequired);
 
+            var password = model.Password.Trim();
+
+            if (password.Length < 8)
+            {
+                throw new ValidationException(Messages.PasswordTooShort);
+            }
+
+            if (!IsValidEmail(model.Email))
+            {
+                throw new ValidationException(Messages.EmailInvalid);
+            }
+            
             var dbUser = _userRepository.GetByEmail(model.Email);
-
-            // TODO: how to validate this so that we prevent hacker from knowing this 
-            // email is in db and bruteforcing? *Mogens said this in sprint 1*
+            
             if (dbUser != null)
-                throw new ValidationException("User with email " + model.Email + " is already registered");
+                throw new ValidationException(Messages.UserAlreadyExists);
 
             byte[] passwordHash, passwordSalt;
-            CreatePasswordHash(model.Password, out passwordHash, out passwordSalt);
+            CreatePasswordHash(password, out passwordHash, out passwordSalt);
 
             User user = new User() { Email = model.Email, Name = model.Name };
 
@@ -185,7 +199,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             bool success = _userRepository.Insert(user);
 
             if (!success)
-                throw new ValidationException("User not created");
+                throw new ValidationException(Messages.UserNotCreated);
 
             return new UserModel()
             {
@@ -207,10 +221,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             if(currentUser.Id != user.Id)
             {
-                throw new ValidationException("Operation forbidden.");
+                throw new ValidationException(Messages.OperationForbidden);
             }
             if (user == null)
-                throw new ValidationException("User not found");
+                throw new ValidationException(Messages.UserNotFound);
 
             // update username if it has changed
             if (!string.IsNullOrWhiteSpace(userParam.Name) && userParam.Name != user.Name)
@@ -223,14 +237,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 if(string.IsNullOrWhiteSpace(userParam.OldPassword))
                 {
-                    throw new ValidationException("Old password cannot be empty");
+                    throw new ValidationException(Messages.OldPasswordEmpty);
                 }
                 
                 if (userParam.NewPassword.Equals(userParam.NewPasswordCheck)) {
                     
                     if(!VerifyPasswordHash(userParam.OldPassword, user.PasswordHash, user.PasswordSalt))
                     {
-                        throw new ValidationException("Wrong password");
+                        throw new ValidationException(Messages.WrongPassword);
                     }
                     
                     byte[] passwordHash, passwordSalt;
@@ -241,14 +255,14 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 }
                 else
                 {
-                    throw new ValidationException("Passwords are not matching");
+                    throw new ValidationException(Messages.PasswordsNotMatching);
                 }
             }
 
             var result = _userRepository.Update(user);
             if (!result)
             {
-                throw new ValidationException("User non-existent or not altered.");
+                throw new ValidationException(Messages.UserNotExistsAltered);
             }
             else return _userRepository.GetByEmail(user.Email);
         }
@@ -265,7 +279,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             bool result = _userRepository.Delete(id);
             if (!result)
             {
-                throw new ValidationException("User non-existent or not deleted.");
+                throw new ValidationException(Messages.UserNotExistsDeleted);
             }
             else return result;
 
@@ -307,8 +321,10 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ArgumentException">If the given password is only whitespace or empty.</exception>
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            if (password == null) throw new ArgumentNullException("password", "Password cannot be null");
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("The password cannot be empty or whitespace only.", "password");
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ValidationException(Messages.PasswordEmpty);
+            }
 
             using (var hmac = new System.Security.Cryptography.HMACSHA512())
             {
@@ -328,10 +344,16 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <exception cref="ArgumentException">If the entered password, hash or salt is empty or invalid.</exception>
         private static bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
         {
-            if (password == null) throw new ArgumentNullException("password", "Password cannot be null");
-            if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Value cannot be empty or whitespace only string.", "password");
-            if (storedHash.Length != 64) throw new ArgumentException("Invalid length of password hash (64 bytes expected).", "passwordHash");
-            if (storedSalt.Length != 128) throw new ArgumentException("Invalid length of password salt (128 bytes expected).", "passwordHash");
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ValidationException(Messages.PasswordEmpty);
+            }
+
+            if (storedHash.Length != 64) 
+                throw new ArgumentException(Messages.PasswordHashLenghtInvalid, "passwordHash");
+            
+            if (storedSalt.Length != 128) 
+                throw new ArgumentException(Messages.PasswordSaltLenghtInvalid, "passwordSalt");
 
             using (var hmac = new System.Security.Cryptography.HMACSHA512(storedSalt))
             {
@@ -344,6 +366,23 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             return true;
         }
+        
+        private bool IsValidEmail(string email)
+        {
+            try {
+                if (string.IsNullOrEmpty(email))
+                {
+                    return false;
+                }
+                
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch {
+                return false;
+            }
+        }
+        
         #endregion
     }
 }

@@ -46,7 +46,6 @@ namespace Group3.Semester3.DesktopClient.Services
 
         /// <summary>
         /// Pushes a set of files to the database
-        /// TODO It shouldn't return bool. Make it return a list of generated FileEntities instead.
         /// TODO Make it asynchronous and use callbacks to not make everything hang when there's an upload.
         /// </summary>
         /// <param name="files">List of files to upload</param>
@@ -307,6 +306,8 @@ namespace Group3.Semester3.DesktopClient.Services
 
         }
 
+        public class BrowseResult { public UserModel user; public List<FileEntity> files; };
+
         public List<FileEntity> FileList(Guid parentId = new Guid(), Guid groupId = new Guid())
         {
             var result = GetRequest(BrowseFilesUrl, $"?groupId={groupId}&parentId={parentId}");
@@ -321,7 +322,11 @@ namespace Group3.Semester3.DesktopClient.Services
             if (!result.IsSuccessStatusCode)
                 throw new ApiAuthorizationException("Error communicating with the server");
 
-            return JsonConvert.DeserializeObject<List<FileEntity>>(resultContent);
+            var browseResult = JsonConvert.DeserializeObject<BrowseResult>(resultContent);
+            
+            // TODO: Return BrowseResult with the user later, when permissions get implemented
+            
+            return browseResult.files;
         }
 
         public void DeleteFile(FileEntity file)

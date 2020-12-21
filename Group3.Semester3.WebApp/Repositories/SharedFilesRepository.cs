@@ -21,6 +21,7 @@ namespace Group3.Semester3.WebApp.Repositories
         public bool DeleteForAll(Guid fileId);
         public bool DeleteBySharedFile(SharedFile sharedFile);
         public bool IsSharedWithUser(Guid fileId, Guid userId);
+        public bool IsSharedWithUser(IEnumerable<FileEntity> files, Guid userId);
         public IEnumerable<UserModel> GetUsersByFileId(Guid fileId);
         public string GetHashByFileId(Guid fileId);
 
@@ -38,7 +39,8 @@ namespace Group3.Semester3.WebApp.Repositories
         public IEnumerable<FileEntity> GetByUserId(Guid userId)
         {
             
-            string query = "SELECT Files.* FROM SharedFiles JOIN Files ON (Files.Id = SharedFiles.FileId) WHERE SharedFiles.UserId = @UserId";
+            string query = "SELECT Files.* FROM SharedFiles JOIN Files ON (Files.Id = SharedFiles.FileId) "+
+                           "WHERE SharedFiles.UserId = @UserId";
 
             using (var connection = new SqlConnection(connectionString))
             {
@@ -127,6 +129,31 @@ namespace Group3.Semester3.WebApp.Repositories
                 var result = connection.Query(query, parameters);
                 
                 return result.Any();
+            }
+        }
+
+        public bool IsSharedWithUser(IEnumerable<FileEntity> files, Guid userId)
+        {
+            string query = "SELECT * FROM SharedFiles WHERE UserId=@UserId AND FileId IN @FileIds";
+            
+            var fileIds = files.Select(file => file.Id).ToList();
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                var parameters = new { FileIds = fileIds, UserId = userId};
+
+                try
+                {
+                    connection.Open();
+
+                    var result = connection.Query(query, parameters);
+                
+                    return result.Any();
+                }
+                catch (Exception e)
+                {
+                    return false;
+                }
             }
         }
 

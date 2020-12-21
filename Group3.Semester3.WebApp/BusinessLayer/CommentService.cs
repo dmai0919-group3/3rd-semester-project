@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
@@ -31,7 +32,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         public IEnumerable<Comment> GetComments(UserModel user, Guid fileId)
         {
             var file = _fileRepository.GetById(fileId);
-            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            _accessService.HasAccessToFile(user, file, Permissions.Read);
             var comments = _commentRepository.GetByFileIdAndParentId(fileId, Guid.Empty);
             return comments;
         }
@@ -40,7 +41,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = _fileRepository.GetById(comment.FileId);
             
-            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            _accessService.HasAccessToFile(user, file, Permissions.Read);
 
             comment.Id = Guid.NewGuid();
             comment.Sent = DateTime.Now;
@@ -53,7 +54,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             }
             else
             {
-                throw new ValidationException("Failed to create comment");
+                throw new ValidationException(Messages.FailedToCreateComment);
             }
         }
 
@@ -61,7 +62,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         {
             var file = _fileRepository.GetById(fileId);
             
-            _accessService.hasAccessToFile(user, file, Permissions.Read);
+            _accessService.HasAccessToFile(user, file, Permissions.Read);
 
             return true;
         }

@@ -101,7 +101,6 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch
                 {
-                    // ignored
                 }
 
                 return false;

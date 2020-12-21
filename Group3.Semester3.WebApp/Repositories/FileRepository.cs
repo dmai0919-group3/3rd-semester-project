@@ -72,10 +72,8 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <param name="fileId">The Guid of the file</param>
         /// <param name="parentId">The Guid of the new parent folder</param>
         /// <returns>True if the parent has changed and false if not.</returns>
-        public bool MoveIntofolder(Guid fileId, Guid parentId);
+        public bool MoveIntoFolder(Guid fileId, Guid parentId);
 
-        public bool InsertFileVersion(FileVersion fileVersion);
-        
         public IEnumerable<FileVersion> GetFileVersions(Guid fileId);
 
         public FileEntity GetFile(Guid parentId, Guid userId, Guid groupId, string name);
@@ -83,6 +81,8 @@ namespace Group3.Semester3.WebApp.Repositories
         public FileVersion GetFileVersion(Guid id);
 
         public IEnumerable<FileEntity> GetParents(Guid id);
+
+        public bool UpdateFileAndCreateNewVersion(FileEntity fileEntity, FileVersion fileVersion);
 
     }
     public class FileRepository : IFileRepository
@@ -349,7 +349,7 @@ namespace Group3.Semester3.WebApp.Repositories
         /// <param name="fileId">The Guid of the file</param>
         /// <param name="parentId">The Guid of the new parent folder</param>
         /// <returns>True if the parent has changed and false if not.</returns>
-        public bool MoveIntofolder(Guid fileId, Guid parentId)
+        public bool MoveIntoFolder(Guid fileId, Guid parentId)
         {
             string query = "UPDATE Files SET ParentId=@ParentId WHERE Id=@Id";
 
@@ -379,34 +379,6 @@ namespace Group3.Semester3.WebApp.Repositories
             }
         }
 
-        public bool InsertFileVersion(FileVersion fileVersion)
-        {
-            string query = "INSERT INTO FileVersions (Id, FileId, AzureName, Note, Created, UserId)" +
-                           " VALUES (@Id, @FileId, @AzureName, @Note, @Created, @UserId)";
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                try
-                {
-                    connection.Open();
-                    
-                    int rowsChanged = connection.Execute(query, fileVersion);
-
-                    if (rowsChanged > 0)
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    
-                }
-                
-            }
-
-            return false;
-        }
-
         public IEnumerable<FileVersion> GetFileVersions(Guid fileId)
         {
             string query = "SELECT FileVersions.*, Users.Name AS Username FROM FileVersions " +
@@ -429,7 +401,6 @@ namespace Group3.Semester3.WebApp.Repositories
                 }
                 catch (Exception e)
                 {
-                    var s = "";
                 }
             }
 
@@ -523,6 +494,49 @@ namespace Group3.Semester3.WebApp.Repositories
             }
 
             return null;
+        }
+
+        public bool UpdateFileAndCreateNewVersion(FileEntity fileEntity, FileVersion fileVersion)
+        {
+            string fileVersionQuery = "INSERT INTO FileVersions (Id, FileId, AzureName, Note, Created, UserId)" +
+                           " VALUES (@Id, @FileId, @AzureName, @Note, @Created, @UserId)";
+            string fileUpdateQuery = "UPDATE Files SET Name=@Name, Updated=@Updated, IsShared=@IsShared, Size=@Size, AzureName=@AzureName WHERE Id=@Id";
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                    
+                var transaction = connection.BeginTransaction();
+                
+                try
+                {
+                    int fileUpdateRowsChanged = connection.Execute(fileUpdateQuery, fileEntity, transaction);
+                    int fileVersionRowsChanged = connection.Execute(fileVersionQuery, fileVersion, transaction);
+
+                    if (fileUpdateRowsChanged > 0 && fileVersionRowsChanged > 0)
+                    {
+                       transaction.Commit();
+                       return true;
+                    }
+                    else
+                    {
+                        transaction.Rollback();
+                    }
+                }
+                catch
+                {
+                    try
+                    {
+                        transaction.Rollback();
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+            }
+
+            return false;
         }
     }
 }

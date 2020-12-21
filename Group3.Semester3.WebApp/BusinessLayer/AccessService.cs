@@ -1,4 +1,5 @@
 ﻿using Group3.Semester3.WebApp.Entities;
+using Group3.Semester3.WebApp.Helpers;
 using Group3.Semester3.WebApp.Helpers.Exceptions;
 using Group3.Semester3.WebApp.Models.Users;
 using Group3.Semester3.WebApp.Repositories;
@@ -24,8 +25,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="file">The FileEntity object we are checking the user's permissions on</param>
         /// <param name="accessLevelRequired">The access level required for certain operation</param>
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
-        public void hasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired);
-        public void hasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1);
+        public void HasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired);
+        public void HasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1);
     }
 
     public class AccessService : IAccessService
@@ -48,7 +49,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
         /// <param name="file">The FileEntity object we are checking the user's permissions on</param>
         /// <param name="accessLevelRequired">The access level required for certain operation</param>
         /// <exception cref="ValidationException">If the user doesn't have access to a given file, this exception is thrown.</exception>
-        public void hasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired)
+        public void HasAccessToFile(UserModel user, FileEntity file, int accessLevelRequired)
         {
             if (file.GroupId != Guid.Empty)
             {
@@ -58,18 +59,18 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                 if (userGroup == null)
                 {
-                    throw new ValidationException("Operation Forbidden");
+                    throw new ValidationException(Messages.OperationForbidden);
                 }
                 
                 if ((userGroup.Permissions & accessLevelRequired) == 0)
                 {
-                    throw new ValidationException("Operation Forbidden");
+                    throw new ValidationException(Messages.OperationForbidden);
                 }
                 
                 return;
             }
             
-            if (!user.Id.Equals(file.UserId))
+            if (user.Id != file.UserId)
             {
                 // TODO: Replace with custom shared user permission
                 if ((1 & accessLevelRequired) != 0)
@@ -83,13 +84,13 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     }
                     else
                     {
-                        // Check if parent folder is shared
-                        // This is because files are not shared in the folder tree, only folders
-                        if (!file.IsFolder && file.ParentId != Guid.Empty)
+                        // Check if some of the parent folders are shared
+                        // This is because files are not shared in the folder tree, only one main parent folder
+                        if (file.ParentId != Guid.Empty)
                         {
-                            var parent = _fileRepository.GetById(file.ParentId);
+                            var parents = _fileRepository.GetParents(file.Id);
 
-                            if (_sharedFilesRepository.IsSharedWithUser(parent.Id, user.Id))
+                            if (_sharedFilesRepository.IsSharedWithUser(parents, user.Id))
                             {
                                 return;
                             }
@@ -97,22 +98,22 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     }
                 }
                 
-                throw new ValidationException("Operation forbidden.");
+                throw new ValidationException(Messages.OperationForbidden);
             }
         }
         
-        public void hasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1)
+        public void HasAccessToGroup(UserModel user, Group group, int accessLevelRequired = 1)
         {
             var userGroupModel = _groupRepository.GetUserGroupModel(group.Id, user.Id);
             
             if (userGroupModel == null)
             {
-                throw new ValidationException("Operation forbidden.");
+                throw new ValidationException(Messages.OperationForbidden);
             }
             
             if ((userGroupModel.Permissions & accessLevelRequired) == 0)
             {
-                throw new ValidationException("Operation forbidden.");
+                throw new ValidationException(Messages.OperationForbidden);
             }
         }
     }

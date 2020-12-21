@@ -110,15 +110,18 @@
 
 <script>
     const browseFilesUrl = "@Url.Action("BrowseFiles", "FileApi")";
+    const browseSharedFilesUrl = "@Url.Action("BrowseSharedFiles", "FileApi")";
+    
     const renameUrl = "@Url.Action("Rename", "FileApi")";
     const deleteUrl = "@Url.Action("Delete", "FileApi")";
+    
     const createFolderUrl = "@Url.Action("CreateFolder", "FileApi")";
     const uploadFilesUrl = "@Url.Action("UploadFiles", "FileApi")";
     const moveFileUrl = "@Url.Action("MoveIntoFolder", "FileApi")";
     const updateFileUrl = "@Url.Action("SetFileContents", "FileApi")";
     const listUserGroups = "@Url.Action("Index", "GroupApi")";
     const createGroupUrl = "@Url.Action("CreateGroup", "GroupApi")";
-    const browseSharedFilesUrl = "@Url.Action("BrowseSharedFiles", "FileApi")";
+    const getUserGroupPermissionsUrl = "@Url.Action("GetGroupUser", "GroupApi")";
     
     const shareWithUserUrl = "@Url.Action("ShareFileWith", "FileApi")";
     const enableLinkSharing = "@Url.Action("ShareFile", "FileApi")";
@@ -147,7 +150,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Rename file</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Rename</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -155,7 +158,7 @@
             <div class="modal-body">
                 <form>
                     <div class="form-group">
-                        <label for="file-name" class="col-form-label">File name:</label>
+                        <label for="file-name" class="col-form-label">Name:</label>
                         <input type="text" class="form-control" id="file-name">
                     </div>
                     <div class="form-group">
@@ -175,7 +178,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Delete file</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
