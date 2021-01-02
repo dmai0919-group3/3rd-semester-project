@@ -2,6 +2,8 @@
 using System;
 using Group3.Semester3.WebApp.Entities;
 using Moq;
+using Group3.Semester3.WebApp.Models.FileSystem;
+using Group3.Semester3.WebApp.Models.Users;
 
 namespace Group3.Semester3.WebAppTests
 {
@@ -11,19 +13,22 @@ namespace Group3.Semester3.WebAppTests
         private FileEntity _file;
         private Guid _testFileGuid;
         private string _testAzureName;
+        private Guid _testParentId;
         
         [SetUp]
         public void Setup()
         {
             _helper = new Helper();
-            
+
+            _testParentId = Guid.NewGuid();
             _testFileGuid = Guid.NewGuid();
             _testAzureName = Guid.NewGuid().ToString();
             _file = new FileEntity()
             {
                 Id = _testFileGuid,
                 AzureName = _testAzureName,
-                Name = "test"
+                Name = "test",
+                ParentId = _testParentId
             };
             
             _helper.MockedAccessService.Setup(
@@ -35,9 +40,9 @@ namespace Group3.Semester3.WebAppTests
             _helper.MockedFileRepository.Setup(s => s.Update(It.IsAny<FileEntity>())).Returns(true);
             _helper.MockedAzureService.Setup(s => s.DeleteFileAsync(_testAzureName)).Verifiable();
             _helper.MockedAzureService.Setup(s => s.GenerateDownloadLink(_testAzureName, "test")).Returns(_testAzureName);
-            _helper.MockedFileRepository.Setup(s => s.Insert(_file)).Returns(true);
-            _helper.MockedAccessService.Setup(s => s.HasAccessToFile(null, null, )).Returns(true);
+            _helper.MockedFileRepository.Setup(s => s.Insert(It.IsAny<FileEntity>())).Returns(true);
 
+            _helper.MockedFileRepository.Setup(s => s.MoveIntoFolder(_testFileGuid, _file.ParentId)).Returns(true);
         }
 
         [Test]
@@ -68,7 +73,7 @@ namespace Group3.Semester3.WebAppTests
         }
 
         [Test]
-        public void TestDelete()
+        public void TestDeleteFile()
         {
             var fileService = _helper.GetFileService();
             
@@ -79,16 +84,20 @@ namespace Group3.Semester3.WebAppTests
             _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
 
             Assert.AreEqual(true, result);
+        }
 
-            // Test for folder deletion
+        [Test]
+        public void TestDeleteFolder()
+        {
+            var fileService = _helper.GetFileService();
             
             _file.IsFolder = true;
 
-            result = fileService.DeleteFile(_testFileGuid, null);
+            var result = fileService.DeleteFile(_testFileGuid, null);
             
-            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Exactly(3));
-            _helper.MockedFileRepository.Verify(s => s.Delete(_testFileGuid), Times.Exactly(2));
-            _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.Delete(_testFileGuid), Times.Once);
+            _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Never);
             
             Assert.AreEqual(true, result);
         }
@@ -108,12 +117,47 @@ namespace Group3.Semester3.WebAppTests
         [Test]
         public void TestCreateFolder()
         {
+            var userModel = new UserModel { Id = Guid.NewGuid() };
+            _helper.MockedAccessService.Setup(
+                    s => s.HasAccessToFile(userModel, It.IsAny<FileEntity>(), It.IsAny<int>()))
+                .Verifiable();
+
+            var fileService = _helper.GetFileService();
+            var createFolderModel = new CreateFolderModel { Name = "folder" };
+
+            var folder = fileService.CreateFolder(userModel, createFolderModel);
+            
+
+            _helper.MockedFileRepository.Verify(s => s.Insert(It.IsAny<FileEntity>()), Times.Exactly(1));
+            _helper.MockedAccessService.Verify(s => s.HasAccessToFile(null, It.IsAny<FileEntity>(), It.IsAny<int>()), Times.Never);
+            Assert.AreEqual(createFolderModel.Name, folder.Name);
+        }
+
+        [Test]
+        public void TestGetById()
+        {
             var fileService = _helper.GetFileService();
 
-            var folder = fileService.CreateFolder(null, null);
+            var returnedFile = fileService.GetById(_testFileGuid);
 
-            _helper.MockedFileRepository.Verify(s => s.Insert(_file), Times.Exactly(1));
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Once);
 
+            Assert.AreEqual(_testFileGuid, returnedFile.Id);
+        }
+
+        [Test]
+        public void TestMoveIntoFolder()
+        {
+            var fileService = _helper.GetFileService();
+
+            var isMoved = fileService.MoveIntoFolder(_file, null);
+
+            _helper.MockedAccessService.Verify(
+                    s => s.HasAccessToFile(null, It.IsAny<FileEntity>(), It.IsAny<int>()), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.MoveIntoFolder(_testFileGuid, _file.ParentId), Times.Once);
+
+            Assert.IsTrue(isMoved);
         }
     }
 }
