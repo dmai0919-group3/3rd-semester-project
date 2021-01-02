@@ -264,7 +264,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 throw new ValidationException(Messages.UserNotExistsAltered);
             }
-            else return _userRepository.GetByEmail(user.Email);
+            else return user;
         }
 
         /// <summary>

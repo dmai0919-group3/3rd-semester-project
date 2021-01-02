@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Group3.Semester3.WebApp.BusinessLayer;
-using Group3.Semester3.WebApp.Entities;
 using Group3.Semester3.WebApp.Repositories;
 using Moq;
 
@@ -26,9 +22,9 @@ namespace Group3.Semester3.WebAppTests
                 MockedAzureService.Object);
         }
 
-        public static IEmailService GetEmailService()
+        public IUserService GetUserService()
         {
-            return null;
+            return new UserService(MockedUserRepository.Object);
         }
     }
 }
