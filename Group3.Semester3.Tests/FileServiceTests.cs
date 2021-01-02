@@ -11,19 +11,22 @@ namespace Group3.Semester3.WebAppTests
         private FileEntity _file;
         private Guid _testFileGuid;
         private string _testAzureName;
+        private Guid _testParentId;
         
         [SetUp]
         public void Setup()
         {
             _helper = new Helper();
-            
+
+            _testParentId = Guid.NewGuid();
             _testFileGuid = Guid.NewGuid();
             _testAzureName = Guid.NewGuid().ToString();
             _file = new FileEntity()
             {
                 Id = _testFileGuid,
                 AzureName = _testAzureName,
-                Name = "test"
+                Name = "test",
+                ParentId = _testParentId
             };
             
             _helper.MockedAccessService.Setup(
@@ -34,7 +37,7 @@ namespace Group3.Semester3.WebAppTests
             _helper.MockedFileRepository.Setup(s => s.Delete(_testFileGuid)).Returns(true);
             _helper.MockedFileRepository.Setup(s => s.Update(It.IsAny<FileEntity>())).Returns(true);
             _helper.MockedAzureService.Setup(s => s.DeleteFileAsync(_testAzureName)).Verifiable();
-            
+            _helper.MockedFileRepository.Setup(s => s.MoveIntoFolder(_testFileGuid, _file.ParentId)).Returns(true);
         }
 
         [Test]
@@ -88,6 +91,33 @@ namespace Group3.Semester3.WebAppTests
             _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
             
             Assert.AreEqual(true, result);
+        }
+
+        [Test]
+        public void TestGetById()
+        {
+            var fileService = _helper.GetFileService();
+
+            var returnedFile = fileService.GetById(_testFileGuid);
+
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Once);
+
+            Assert.AreEqual(_testFileGuid, returnedFile.Id);
+        }
+
+        [Test]
+        public void TestMoveIntoFolder()
+        {
+            var fileService = _helper.GetFileService();
+
+            var isMoved = fileService.MoveIntoFolder(_file, null);
+
+            _helper.MockedAccessService.Verify(
+                    s => s.HasAccessToFile(null, It.IsAny<FileEntity>(), It.IsAny<int>()), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.MoveIntoFolder(_testFileGuid, _file.ParentId), Times.Once);
+
+            Assert.IsTrue(isMoved);
         }
     }
 }
