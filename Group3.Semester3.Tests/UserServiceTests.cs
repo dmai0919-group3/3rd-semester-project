@@ -17,7 +17,7 @@ namespace Group3.Semester3.WebAppTests
         [SetUp]
         public void Setup()
         {
-            userService = Helper.GetUserService();
+            //userService = Helper.GetUserService();
         }
 
         [Test, Order(0)]

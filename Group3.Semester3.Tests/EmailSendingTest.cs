@@ -16,7 +16,7 @@ namespace Group3.Semester3.WebAppTests
         [SetUp]
         public void Setup()
         {
-            _configuration = Helper.ConfigurationRoot();
+            //_configuration = Helper.ConfigurationRoot();
             _emailService = Helper.GetEmailService();
             user = new UserModel()
             {

@@ -1,25 +1,46 @@
-﻿using Group3.Semester3.WebApp.BusinessLayer;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Group3.Semester3.WebApp.Entities;
+using Moq;
 
 namespace Group3.Semester3.WebAppTests
 {
     class FileServiceTests
     {
-        IFileService fileService;
-        Guid fileId = new Guid("ced12f9b810e4efba9a4094fddfc33d4");
-        Guid userId = new Guid("10F24309-A32F-431F-AE8C-A7E342437221");
+        private Helper _helper;
+        private FileEntity _file;
+        private Guid _testFileGuid;
+        private string _testAzureName;
+        
         [SetUp]
         public void Setup()
         {
-            fileService = Helper.GetFileService();
+            _helper = new Helper();
+            
+            _testFileGuid = Guid.NewGuid();
+            _testAzureName = Guid.NewGuid().ToString();
+            _file = new FileEntity()
+            {
+                Id = _testFileGuid,
+                AzureName = _testAzureName,
+                Name = "test"
+            };
+            
+            _helper.MockedAccessService.Setup(
+                    s => s.HasAccessToFile(null, It.IsAny<FileEntity>(), It.IsAny<int>()))
+                .Verifiable();
+            
+            _helper.MockedFileRepository.Setup(s => s.GetById(_testFileGuid)).Returns(_file);
+            _helper.MockedFileRepository.Setup(s => s.Delete(_testFileGuid)).Returns(true);
+            _helper.MockedFileRepository.Setup(s => s.Update(It.IsAny<FileEntity>())).Returns(true);
+            _helper.MockedAzureService.Setup(s => s.DeleteFileAsync(_testAzureName)).Verifiable();
+            
         }
 
-        [Test, Order(0)]
+        [Test]
         public void Test1()
         {
+            var fileService = _helper.GetFileService();
             if (fileService == null)
             {
                 Assert.Fail();
@@ -30,20 +51,43 @@ namespace Group3.Semester3.WebAppTests
             }
         }
 
-        [Test, Order(1)]
+        [Test]
         public void TestRename()
         {
-            var oldFile = fileService.GetById(fileId);
-            //var newFile = fileService.RenameFile(fileId, userId, "test");
-            //Assert.AreEqual("test", newFile.Name);
+            var fileService = _helper.GetFileService();
+
+            var renameFile = fileService.RenameFile(_testFileGuid, null, "test-renamed");
+            
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Exactly(2));
+            _helper.MockedFileRepository.Verify(s => s.Update(renameFile), Times.Once);
+            
+            Assert.AreEqual("test-renamed", renameFile.Name);
         }
 
-        [Test, Order(2)]
+        [Test]
         public void TestDelete()
         {
-            var file = fileService.GetById(fileId);
-            //bool result = fileService.DeleteFile(fileId, userId);
-            //Assert.AreEqual(true, result);
+            var fileService = _helper.GetFileService();
+            
+            var result = fileService.DeleteFile(_testFileGuid, null);
+            
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Exactly(2));
+            _helper.MockedFileRepository.Verify(s => s.Delete(_testFileGuid), Times.Once);
+            _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
+
+            Assert.AreEqual(true, result);
+
+            // Test for folder deletion
+            
+            _file.IsFolder = true;
+
+            result = fileService.DeleteFile(_testFileGuid, null);
+            
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Exactly(3));
+            _helper.MockedFileRepository.Verify(s => s.Delete(_testFileGuid), Times.Exactly(2));
+            _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
+            
+            Assert.AreEqual(true, result);
         }
     }
 }
