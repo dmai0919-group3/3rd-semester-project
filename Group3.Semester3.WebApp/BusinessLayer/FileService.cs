@@ -145,22 +145,22 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
     public class FileService : IFileService
     {
-        private IConfiguration _configuration;
         private IFileRepository _fileRepository;
         private IAccessService _accessService;
         private IGroupRepository _groupRepository;
         private ISharedFilesRepository _sharedFilesRepository;
         private IUserRepository _userRepository;
+        private IAzureService _azureService;
 
-        public FileService(IConfiguration configuration, IFileRepository fileRepository, IAccessService accessService, 
-            IGroupRepository groupRepository, ISharedFilesRepository sharedFilesRepository, IUserRepository userRepository)
+        public FileService(IFileRepository fileRepository, IAccessService accessService, IGroupRepository groupRepository, 
+            ISharedFilesRepository sharedFilesRepository, IUserRepository userRepository, IAzureService azureService)
         {
-            _configuration = configuration;
             _fileRepository = fileRepository;
             _accessService = accessService;
             _groupRepository = groupRepository;
             _sharedFilesRepository = sharedFilesRepository;
             _userRepository = userRepository;
+            _azureService = azureService;
         }
 
         /// <summary>
@@ -238,13 +238,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             List<FileEntry> fileEntries = new List<FileEntry>();
 
-            BlobContainerClient containerClient =
-                new BlobContainerClient(
-                    _configuration.GetConnectionString("AzureConnectionString"),
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
-
-            containerClient.CreateIfNotExists();
-
             foreach (var formFile in files)
             {
                 if (formFile.Length > 0)
@@ -254,7 +247,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                     {
                         var existingFile = _fileRepository.GetFile(parentGuid, user.Id, groupGuid, formFile.FileName);
                         
-                        await containerClient.UploadBlobAsync(blobGuid.ToString(), formFile.OpenReadStream());
+                        await _azureService.UploadBlobAsync(blobGuid.ToString(), formFile.OpenReadStream());
 
                         if (existingFile == null)
                         {
@@ -302,7 +295,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
                             if (!success)
                             {
-                                await containerClient.GetBlobClient(blobGuid.ToString()).DeleteAsync();
+                                await _azureService.DeleteFileAsync(blobGuid.ToString());
                             }
                         }
                         
@@ -353,36 +346,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             {
                 azureName = file.AzureName;
             }
-            
-            BlobContainerClient containerClient =
-                new BlobContainerClient(
-                    _configuration.GetConnectionString("AzureConnectionString"),
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
-            containerClient.CreateIfNotExists();
-
-            BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
-            {
-                StartsOn = DateTime.UtcNow,
-                ExpiresOn = DateTime.UtcNow.AddHours(24),
-                BlobContainerName = containerClient.Name,
-                BlobName = azureName,
-                Resource = "b",
-                ContentDisposition = new ContentDisposition()
-                {
-                    FileName = file.Name
-                }.ToString()
-            };
-
-            blobSasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
-
-            StorageSharedKeyCredential storageSharedKeyCredential = new StorageSharedKeyCredential(
-                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureStorageAccount,
-                _configuration.GetSection("AppSettings").Get<AppSettings>().AzureAccountKey);
-
-            string sasToken = blobSasBuilder.ToSasQueryParameters(storageSharedKeyCredential).ToString();
-
-            return $"{containerClient.GetBlockBlobClient(azureName).Uri}?{sasToken}";
+            return _azureService.GenerateDownloadLink(azureName, file.Name);
         }
 
         /// <summary>
@@ -400,12 +365,9 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             if (!file.IsFolder)
             {
-                BlobContainerClient containerClient =
-                    new BlobContainerClient(
-                        _configuration.GetConnectionString("AzureConnectionString"),
-                        _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
-                
-                containerClient.DeleteBlob(_fileRepository.GetById(fileId).AzureName.ToString());
+                string azureName = _fileRepository.GetById(fileId).AzureName.ToString();
+
+                _azureService.DeleteFileAsync(azureName);
             }
             else
             {
@@ -584,15 +546,8 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             var file = _fileRepository.GetById(fileId);
             _accessService.HasAccessToFile(user, file, Permissions.Read);
-            var containerClient =
-                new BlobContainerClient(
-                    _configuration.GetConnectionString("AzureConnectionString"),
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
 
-            containerClient.CreateIfNotExists();
-
-            var response = containerClient.GetBlobClient(file.AzureName).Download();
-            var stream = response.Value.Content;
+            var stream = _azureService.GetFileContents(file.AzureName);
 
             StreamReader reader = new StreamReader(stream);
             string text = reader.ReadToEnd();
@@ -639,13 +594,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             byte[] byteArray = Encoding.ASCII.GetBytes(model.Contents);
             var contentStream = new MemoryStream(byteArray);
 
-            var containerClient =
-                new BlobContainerClient(
-                    _configuration.GetConnectionString("AzureConnectionString"),
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
-
-            containerClient.CreateIfNotExists();
-            
             var newVersion = new FileVersion()
             {
                 Id = Guid.NewGuid(),
@@ -664,7 +612,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
             
             if (success)
             {
-                containerClient.GetBlobClient(file.AzureName).Upload(contentStream, true);
+                _azureService.UploadFileContents(file.AzureName, contentStream);
             }
             else
             {
@@ -691,13 +639,6 @@ namespace Group3.Semester3.WebApp.BusinessLayer
 
             _accessService.HasAccessToFile(user, file, Permissions.Write);
 
-            var containerClient =
-                new BlobContainerClient(
-                    _configuration.GetConnectionString("AzureConnectionString"),
-                    _configuration.GetSection("AppSettings").Get<AppSettings>().AzureDefaultContainer);
-
-            containerClient.CreateIfNotExists();
-            
             var newVersion = new FileVersion()
             {
                 Id = Guid.NewGuid(),
@@ -709,7 +650,7 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 Username = user.Name
             };
 
-            file.Size = containerClient.GetBlobClient(version.AzureName).GetProperties().Value.ContentLength;
+            file.Size = _azureService.GetFileSize(file.AzureName);
             file.AzureName = version.AzureName;
             file.Updated = DateTime.Now;
 

@@ -98,6 +98,8 @@ namespace Group3.Semester3.WebApp
             
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<ICommentRepository, CommentRepository>();
+            
+            services.AddScoped<IAzureService, AzureService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
