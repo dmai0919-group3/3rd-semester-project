@@ -68,7 +68,7 @@ namespace Group3.Semester3.WebAppTests
         }
 
         [Test]
-        public void TestDelete()
+        public void TestDeleteFile()
         {
             var fileService = _helper.GetFileService();
             
@@ -79,16 +79,20 @@ namespace Group3.Semester3.WebAppTests
             _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
 
             Assert.AreEqual(true, result);
+        }
 
-            // Test for folder deletion
+        [Test]
+        public void TestDeleteFolder()
+        {
+            var fileService = _helper.GetFileService();
             
             _file.IsFolder = true;
 
-            result = fileService.DeleteFile(_testFileGuid, null);
+            var result = fileService.DeleteFile(_testFileGuid, null);
             
-            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Exactly(3));
-            _helper.MockedFileRepository.Verify(s => s.Delete(_testFileGuid), Times.Exactly(2));
-            _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.GetById(_testFileGuid), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.Delete(_testFileGuid), Times.Once);
+            _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Never);
             
             Assert.AreEqual(true, result);
         }
