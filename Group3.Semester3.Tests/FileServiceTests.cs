@@ -34,7 +34,10 @@ namespace Group3.Semester3.WebAppTests
             _helper.MockedFileRepository.Setup(s => s.Delete(_testFileGuid)).Returns(true);
             _helper.MockedFileRepository.Setup(s => s.Update(It.IsAny<FileEntity>())).Returns(true);
             _helper.MockedAzureService.Setup(s => s.DeleteFileAsync(_testAzureName)).Verifiable();
-            
+            _helper.MockedAzureService.Setup(s => s.GenerateDownloadLink(_testAzureName, "test")).Returns(_testAzureName);
+            _helper.MockedFileRepository.Setup(s => s.Insert(_file)).Returns(true);
+            _helper.MockedAccessService.Setup(s => s.HasAccessToFile(null, null, )).Returns(true);
+
         }
 
         [Test]
@@ -88,6 +91,29 @@ namespace Group3.Semester3.WebAppTests
             _helper.MockedAzureService.Verify(s => s.DeleteFileAsync(_testAzureName), Times.Once);
             
             Assert.AreEqual(true, result);
+        }
+
+        [Test]
+        public void TestGenerateDownloadLink()
+        {
+            var fileService = _helper.GetFileService();
+
+            var downloadLink = fileService.GenerateDownloadLink(_file, null);
+
+            _helper.MockedAzureService.Verify(s => s.GenerateDownloadLink(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(1));
+
+            Assert.AreEqual(downloadLink, _file.AzureName);
+        }
+
+        [Test]
+        public void TestCreateFolder()
+        {
+            var fileService = _helper.GetFileService();
+
+            var folder = fileService.CreateFolder(null, null);
+
+            _helper.MockedFileRepository.Verify(s => s.Insert(_file), Times.Exactly(1));
+
         }
     }
 }
