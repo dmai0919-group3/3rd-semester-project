@@ -1,9 +1,12 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using Group3.Semester3.WebApp.Entities;
 using Moq;
 using Group3.Semester3.WebApp.Models.FileSystem;
 using Group3.Semester3.WebApp.Models.Users;
+using Microsoft.AspNetCore.Http;
 
 namespace Group3.Semester3.WebAppTests
 {
@@ -14,6 +17,7 @@ namespace Group3.Semester3.WebAppTests
         private Guid _testFileGuid;
         private string _testAzureName;
         private Guid _testParentId;
+        private UserModel _userModel;
         
         [SetUp]
         public void Setup()
@@ -31,18 +35,32 @@ namespace Group3.Semester3.WebAppTests
                 ParentId = _testParentId
             };
             
+            _userModel = new UserModel { Id = Guid.NewGuid() };
+            
             _helper.MockedAccessService.Setup(
                     s => s.HasAccessToFile(null, It.IsAny<FileEntity>(), It.IsAny<int>()))
                 .Verifiable();
+            _helper.MockedAccessService.Setup(
+                    s => s.HasAccessToFile(_userModel, It.IsAny<FileEntity>(), It.IsAny<int>()))
+                .Verifiable();
             
             _helper.MockedFileRepository.Setup(s => s.GetById(_testFileGuid)).Returns(_file);
+            
             _helper.MockedFileRepository.Setup(s => s.Delete(_testFileGuid)).Returns(true);
             _helper.MockedFileRepository.Setup(s => s.Update(It.IsAny<FileEntity>())).Returns(true);
-            _helper.MockedAzureService.Setup(s => s.DeleteFileAsync(_testAzureName)).Verifiable();
-            _helper.MockedAzureService.Setup(s => s.GenerateDownloadLink(_testAzureName, "test")).Returns(_testAzureName);
             _helper.MockedFileRepository.Setup(s => s.Insert(It.IsAny<FileEntity>())).Returns(true);
 
+            _helper.MockedFileRepository.Setup(s =>
+                s.GetFile(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), _file.Name)).Returns(_file);
             _helper.MockedFileRepository.Setup(s => s.MoveIntoFolder(_testFileGuid, _file.ParentId)).Returns(true);
+            
+            _helper.MockedFileRepository.Setup(s => s.UpdateFileAndCreateNewVersion(It.IsAny<FileEntity>(), It.IsAny<FileVersion>()))
+                .Returns(true);
+            
+            
+            _helper.MockedAzureService.Setup(s => s.DeleteFileAsync(_testAzureName)).Verifiable();
+            _helper.MockedAzureService.Setup(s => s.GenerateDownloadLink(_testAzureName, "test")).Returns(_testAzureName);
+            _helper.MockedAzureService.Setup(s => s.UploadBlobAsync(It.IsAny<string>(), It.IsAny<Stream>())).Verifiable();
         }
 
         [Test]
@@ -57,6 +75,62 @@ namespace Group3.Semester3.WebAppTests
             {
                 Assert.Pass();
             }
+        }
+
+        [Test]
+        public void TestUploadNewFile()
+        {
+            var fileService = _helper.GetFileService();
+
+            var uploadFiles = new List<IFormFile>();
+            
+            var file = new FormFile(new MemoryStream(), 0,10,"test-new", "test-new");
+            
+            uploadFiles.Add(file);
+            
+            var result = fileService.UploadFile(_userModel, "", "", uploadFiles);
+
+            Assert.DoesNotThrow(() =>
+            {
+                var fileResult = result.Result.Find(entry => entry.Name == file.Name);
+                Assert.AreEqual(file.Name, fileResult.Name);
+            });
+            
+            _helper.MockedAzureService.Verify(s => s.UploadBlobAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Once);
+            _helper.MockedFileRepository.Verify(s => s.Insert(It.IsAny<FileEntity>()), Times.Once);
+        }
+
+        [Test]
+        public void TestUploadExistingFile()
+        {
+            var fileService = _helper.GetFileService();
+
+            var uploadFiles = new List<IFormFile>();
+            
+            var file = new FormFile(new MemoryStream(), 0,10,"test", "test");
+            
+            uploadFiles.Add(file);
+            
+            var result = fileService.UploadFile(_userModel, "", "", uploadFiles);
+
+            // Existing files should not be added to result list
+            Assert.IsEmpty(result.Result);
+            
+            _helper.MockedAzureService.Verify(s => s.UploadBlobAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Once);
+            _helper.MockedFileRepository.Verify(s => 
+                s.UpdateFileAndCreateNewVersion(It.IsAny<FileEntity>(), It.IsAny<FileVersion>()), Times.Once);
+        }
+
+        [Test]
+        public void TestDownload()
+        {
+            var fileService = _helper.GetFileService();
+
+            var (fileEntity, link) = fileService.DownloadFile(_testFileGuid, "", null);
+            
+            Assert.AreEqual(_file.AzureName, link);
+            
+            Assert.AreEqual(_file.Id, fileEntity.Id);
         }
 
         [Test]

@@ -243,65 +243,58 @@ namespace Group3.Semester3.WebApp.BusinessLayer
                 if (formFile.Length > 0)
                 {
                     var blobGuid = Guid.NewGuid();
-                    try
+                    var existingFile = _fileRepository.GetFile(parentGuid, user.Id, groupGuid, formFile.FileName);
+                    
+                    await _azureService.UploadBlobAsync(blobGuid.ToString(), formFile.OpenReadStream());
+
+                    if (existingFile == null)
                     {
-                        var existingFile = _fileRepository.GetFile(parentGuid, user.Id, groupGuid, formFile.FileName);
+                        var newFileId = Guid.NewGuid();
                         
-                        await _azureService.UploadBlobAsync(blobGuid.ToString(), formFile.OpenReadStream());
-
-                        if (existingFile == null)
+                        fileEntries.Add(new FileEntry
                         {
-                            var newFileId = Guid.NewGuid();
-                            
-                            fileEntries.Add(new FileEntry
-                            {
-                                Name = formFile.FileName,
-                                Id = newFileId,
-                                Parent = new DirectoryEntry { Id = parentGuid }
-                            });
+                            Name = formFile.FileName,
+                            Id = newFileId,
+                            Parent = new DirectoryEntry { Id = parentGuid }
+                        });
 
-                            var file = new FileEntity()
-                            {
-                                Id = newFileId,
-                                AzureName = blobGuid.ToString(),
-                                Name = formFile.FileName,
-                                UserId = user.Id,
-                                ParentId = parentGuid,
-                                GroupId = groupGuid,
-                                IsFolder = false,
-                                Updated = DateTime.Now,
-                                Size = formFile.Length
-                            };
-
-                            _fileRepository.Insert(file);
-                        }
-                        else
+                        var file = new FileEntity()
                         {
-                            var newVersion = new FileVersion()
-                            {
-                                Id = Guid.NewGuid(),
-                                FileId = existingFile.Id,
-                                AzureName = existingFile.AzureName,
-                                Note = "New version uploaded",
-                                Created = DateTime.Now,
-                                UserId = user.Id
-                            };
-                            
-                            existingFile.AzureName = blobGuid.ToString();
-                            existingFile.Size = formFile.Length;
-                            existingFile.Updated = DateTime.Now;
+                            Id = newFileId,
+                            AzureName = blobGuid.ToString(),
+                            Name = formFile.FileName,
+                            UserId = user.Id,
+                            ParentId = parentGuid,
+                            GroupId = groupGuid,
+                            IsFolder = false,
+                            Updated = DateTime.Now,
+                            Size = formFile.Length
+                        };
 
-                            var success = _fileRepository.UpdateFileAndCreateNewVersion(existingFile, newVersion);
-
-                            if (!success)
-                            {
-                                await _azureService.DeleteFileAsync(blobGuid.ToString());
-                            }
-                        }
-                        
+                        _fileRepository.Insert(file);
                     }
-                    catch (Exception e)
+                    else
                     {
+                        var newVersion = new FileVersion()
+                        {
+                            Id = Guid.NewGuid(),
+                            FileId = existingFile.Id,
+                            AzureName = existingFile.AzureName,
+                            Note = "New version uploaded",
+                            Created = DateTime.Now,
+                            UserId = user.Id
+                        };
+                        
+                        existingFile.AzureName = blobGuid.ToString();
+                        existingFile.Size = formFile.Length;
+                        existingFile.Updated = DateTime.Now;
+
+                        var success = _fileRepository.UpdateFileAndCreateNewVersion(existingFile, newVersion);
+
+                        if (!success)
+                        {
+                            await _azureService.DeleteFileAsync(blobGuid.ToString());
+                        }
                     }
                 }
                 else throw new ValidationException(Messages.NoFiles);
