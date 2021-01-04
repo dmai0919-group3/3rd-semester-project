@@ -1,77 +1,30 @@
 using Group3.Semester3.WebApp.BusinessLayer;
 using Group3.Semester3.WebApp.Repositories;
-using Microsoft.Extensions.Configuration;
+using Moq;
 
 namespace Group3.Semester3.WebAppTests
 {
 
-    public static class Helper
+    public class Helper
     {
+        
+        public readonly Mock<IUserRepository> MockedUserRepository = new Mock<IUserRepository>();
+        public readonly Mock<IFileRepository> MockedFileRepository = new Mock<IFileRepository>();
+        public readonly Mock<IAccessService> MockedAccessService = new Mock<IAccessService>();
+        public readonly Mock<IGroupRepository> MockedGroupRepository = new Mock<IGroupRepository>();
+        public readonly Mock<IAzureService> MockedAzureService = new Mock<IAzureService>();
+        public readonly Mock<ISharedFilesRepository> MockedSharedFilesRepository = new Mock<ISharedFilesRepository>();
 
-        private static IUserService _userService;
-        private static IFileService _fileService;
-        private static IEmailService _emailService;
-        private static IUserRepository _userRepository;
-        private static IFileRepository _fileRepository;
-        private static IConfiguration _configuration;
-
-        public static IUserService GetUserService()
+        public IFileService GetFileService()
         {
-            if (_userService == null)
-            {
-                _userService = new UserService(GetUserRepository());
-            }
-
-            return _userService;
+            return new FileService(MockedFileRepository.Object, MockedAccessService.Object, 
+                MockedGroupRepository.Object, MockedSharedFilesRepository.Object, MockedUserRepository.Object, 
+                MockedAzureService.Object);
         }
 
-        public static IUserRepository GetUserRepository()
+        public IUserService GetUserService()
         {
-            if (_userRepository == null)
-            {
-                _userRepository = new UserRepository(ConfigurationRoot());
-            }
-
-            return _userRepository;
-        }
-
-        public static IFileService GetFileService()
-        {
-            if (_fileService == null)
-            {
-                //_fileService = new FileService(ConfigurationRoot(), GetFileRepository());
-            }
-
-            return _fileService;
-        }
-
-        public static IEmailService GetEmailService()
-        {
-            if (_emailService == null)
-            {
-                _emailService = new EmailService(ConfigurationRoot());
-            }
-            return _emailService;
-        }
-
-        public static IFileRepository GetFileRepository()
-        {
-            if (_fileRepository == null)
-            {
-                _fileRepository = new FileRepository(ConfigurationRoot());
-            }
-
-            return _fileRepository;
-        }
-
-        public static IConfiguration ConfigurationRoot()
-        {
-            _configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddJsonFile("appsettings.Development.json", optional: true)
-                .Build();
-
-            return _configuration;
+            return new UserService(MockedUserRepository.Object);
         }
     }
 }

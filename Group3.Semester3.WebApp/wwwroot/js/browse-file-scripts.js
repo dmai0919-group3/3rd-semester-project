@@ -136,22 +136,6 @@ $(function () {
         let id = this.id;
         browseDirectoryFiles(id);
     });
-
-    $("#sidebar").mCustomScrollbar({
-        theme: "minimal"
-    });
-
-    $('#dismiss, .overlay').on('click', function () {
-        $('#sidebar').removeClass('active');
-        $('.overlay').removeClass('active');
-    });
-
-    $('#sidebarCollapse').on('click', function () {
-        $('#sidebar').addClass('active');
-        $('.overlay').addClass('active');
-        $('.collapse.in').toggleClass('in');
-        $('a[aria-expanded=true]').attr('aria-expanded', 'false');
-    });
     
     loadUserGroups();
 });
@@ -326,6 +310,29 @@ function changeFiles(result) {
     });
 }
 
+function addFileToFileList(file) {
+    let $fileContainer = $('#file-container');
+
+    let markup = fileMarkup;
+
+    markup = markup.replaceAll("{{fileId}}", file.id);
+    markup = markup.replaceAll("{{fileName}}", file.name);
+
+    if (file.isFolder) {
+        markup = markup.replaceAll("{{classes}}", "file folder");
+        markup = markup.replaceAll("{{icon}}", folderIconUrl);
+    } else {
+        if (file.name.endsWith('.txt')) {
+            markup = markup.replaceAll("{{classes}}", "file txt-file");
+        } else {
+            markup = markup.replaceAll("{{classes}}", "file");
+        }
+        markup = markup.replaceAll("{{icon}}", fileIconUrl);
+    }
+
+    $fileContainer.append(markup);
+}
+
 function showCreateFolderModal() {
     $("#createFolderModal").modal();
 
@@ -435,29 +442,6 @@ function updateDirectoryPath() {
             dirPathElement.append(append);
             dirPathElement.append(" / ");
         });
-}
-
-function addFileToFileList(file) {
-    let $fileContainer = $('#file-container');
-
-    let markup = fileMarkup;
-
-    markup = markup.replaceAll("{{fileId}}", file.id);
-    markup = markup.replaceAll("{{fileName}}", file.name);
-
-    if (file.isFolder) {
-        markup = markup.replaceAll("{{classes}}", "file folder");
-        markup = markup.replaceAll("{{icon}}", folderIconUrl);
-    } else {
-        if (file.name.endsWith('.txt')) {
-            markup = markup.replaceAll("{{classes}}", "file txt-file");
-        } else {
-            markup = markup.replaceAll("{{classes}}", "file");
-        }
-        markup = markup.replaceAll("{{icon}}", fileIconUrl);
-    }
-
-    $fileContainer.append(markup);
 }
 
 function showMoveFileModal(fileId) {
