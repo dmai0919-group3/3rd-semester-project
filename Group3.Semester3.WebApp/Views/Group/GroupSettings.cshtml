@@ -35,7 +35,7 @@
     let removeUserUrl = "@Url.Action("RemoveUser", "GroupApi")";
     let renameGroupUrl = "@Url.Action("Rename", "GroupApi")";
     let changePermissionsUrl = "@Url.Action("ChangeUserPermissions", "GroupApi")";
-    
+
     $(document).ready(function () {
         $('#add-user-button').hide();
         $('#group-rename-button').hide();
@@ -62,6 +62,8 @@
                 alert("Failed to load users: " +  result);
             }
         });
+
+
         $('#user-list').on('click', '.user-remove', function () {
             removeUser(this);
         }).on('click', '.edit-permissions', function () {
@@ -208,7 +210,7 @@
         $('#change-users-permissions').empty();
         
         let permissions = Object.keys(user.permissions);
-        
+
         permissions = permissions.filter(value => {
            return value.includes('has'); 
         });
@@ -234,35 +236,35 @@
     }
     
     function changeUserPermissions() {
-         let id = $('#change-users-permissions-id').val();
+        let id = $('#change-users-permissions-id').val();
+             
+        let data = {};
+        $("#change-permissions-form").serializeArray().map(function(x){
+            data[x.name] = true;
+        });
+        
+        data.UserId = id;
+        data.GroupId = currentGroupId;
+        
+        $.ajax({
+            url: changePermissionsUrl,
+            method: 'PUT',
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (user) {
                  
-         let data = {};
-         $("#change-permissions-form").serializeArray().map(function(x){
-             data[x.name] = true;
-         }); 
-         
-         data.UserId = id;
-         data.GroupId = currentGroupId;
-         
-         $.ajax({
-             url: changePermissionsUrl,
-             method: 'PUT',
-             data: JSON.stringify(data),
-             contentType: "application/json",
-             success: function (user) {
-                 
-                 users = users.filter(object => {
-                     return object.id !== user.id;
-                 });
-                 
-                 users.push(user);
-                 
-                 $('#changePermissionsModal').modal('hide');
-             },
-             error: function (result) {
-                 alert(result.responseText);
-             }
-         });
+                users = users.filter(object => {
+                    return object.id !== user.id;
+                });
+                
+                users.push(user);
+                
+                $('#changePermissionsModal').modal('hide');
+            },
+            error: function (result) {
+                alert(result.responseText);
+            }
+        });
     }
     
 </script>
